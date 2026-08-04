@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Shield, User, Lock } from 'lucide-react';
+import { X, Lock } from 'lucide-react';
 import { useFestival } from '../context/FestivalContext';
 
 interface LoginModalProps {
@@ -24,11 +24,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     } finally {
       setGoogleLoading(false);
     }
-  };
-
-  const handlePresetLogin = (email: string) => {
-    loginCustomUser(email);
-    onClose();
   };
 
   return (
@@ -67,7 +62,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           <button
             onClick={handleGoogleClick}
             disabled={googleLoading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-black/5 border border-black/15 text-[#111111] font-sans-manrope font-bold text-sm flex items-center justify-center gap-3 cursor-pointer shadow-xs transition-all"
+            className="w-full py-4 px-4 rounded-2xl bg-white hover:bg-black/5 border border-black/15 text-[#111111] font-sans-manrope font-bold text-sm flex items-center justify-center gap-3 cursor-pointer shadow-xs transition-all hover:scale-[1.01]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -90,83 +85,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <span>{googleLoading ? 'Connecting to Firebase...' : 'Sign in with Google'}</span>
           </button>
 
-          <div className="flex items-center gap-3">
-            <div className="h-[1px] bg-black/10 flex-1" />
-            <span className="text-[11px] font-bold text-[#5F5F5F] uppercase">Quick Demo Login</span>
-            <div className="h-[1px] bg-black/10 flex-1" />
-          </div>
-
-          {/* Quick Demo Role Accounts */}
-          <div className="space-y-2.5">
-            <button
-              onClick={() => handlePresetLogin('vaishnavil4433@gmail.com')}
-              className="w-full p-3 rounded-2xl bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200 text-left flex items-center justify-between transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                  <Shield className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-sans-manrope font-extrabold text-xs text-blue-900">
-                    vaishnavil4433@gmail.com
-                  </h4>
-                  <p className="font-sans-manrope text-[11px] text-blue-700">
-                    Developer Account (Full Access + User Management)
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-md">
-                DEV
-              </span>
-            </button>
-
-            <button
-              onClick={() => handlePresetLogin('teacher@gmail.com')}
-              className="w-full p-3 rounded-2xl bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200 text-left flex items-center justify-between transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-xs">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-sans-manrope font-extrabold text-xs text-amber-900">
-                    teacher@gmail.com
-                  </h4>
-                  <p className="font-sans-manrope text-[11px] text-amber-700">
-                    Teacher Account (Granted Admin Access by Developer)
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-extrabold bg-amber-600 text-white px-2 py-0.5 rounded-md">
-                ADMIN
-              </span>
-            </button>
-
-            <button
-              onClick={() => handlePresetLogin('arya@gmail.com')}
-              className="w-full p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left flex items-center justify-between transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-600 text-white flex items-center justify-center font-bold text-xs">
-                  <User className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-sans-manrope font-extrabold text-xs text-slate-900">
-                    arya@gmail.com
-                  </h4>
-                  <p className="font-sans-manrope text-[11px] text-slate-600">
-                    Normal Visitor Account (role = user, browse only)
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-extrabold bg-slate-600 text-white px-2 py-0.5 rounded-md">
-                USER
-              </span>
-            </button>
-          </div>
-
-          <div className="p-3 bg-[#FAF8F5] rounded-xl border border-black/5 text-[11px] font-sans-manrope text-[#5F5F5F]">
-            🔥 <strong>Firebase Project:</strong> Connected to project <code>kalathmakam-5783c</code> with real-time Firestore database sync.
+          <div className="p-3.5 bg-white rounded-2xl border border-black/8 text-[11px] font-sans-manrope text-[#5F5F5F] text-center space-y-1">
+            <p>🔥 <strong>Firebase Authentication</strong></p>
+            <p className="text-[10px] text-[#5F5F5F]/80">Connected to <code>kalathmakam-5783c</code> with real-time Firestore synchronization.</p>
           </div>
 
         </div>
