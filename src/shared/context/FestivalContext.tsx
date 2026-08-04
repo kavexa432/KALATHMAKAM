@@ -81,6 +81,8 @@ interface FestivalContextType {
 
 const FestivalContext = createContext<FestivalContextType | undefined>(undefined);
 
+const LOCAL_USER_KEY = 'kalathmakam_current_user_cache';
+
 export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [festival] = useState<FestivalEdition>(currentFestival);
   const [houses] = useState<HouseModel[]>(initialHouses);
@@ -91,9 +93,29 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(initialAuditLogs);
   const [users, setUsers] = useState<UserModel[]>(initialUsers);
   const [gallery] = useState<GalleryItemModel[]>(initialGallery);
-  const [currentUser, setCurrentUser] = useState<UserModel | null>(null);
+  
+  // 0ms Hydration from LocalStorage Cache
+  const [currentUser, setCurrentUser] = useState<UserModel | null>(() => {
+    try {
+      const cached = localStorage.getItem(LOCAL_USER_KEY);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [firebaseAuthUser, setFirebaseAuthUser] = useState<FirebaseUser | null>(null);
   const [archiveMode, setArchiveMode] = useState<boolean>(false);
+
+  // Helper to persist user state instantly
+  const persistUser = (user: UserModel | null) => {
+    setCurrentUser(user);
+    if (user) {
+      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(LOCAL_USER_KEY);
+    }
+  };
 
   // Sync Firebase Auth state strictly with Firestore users/{uid}
   useEffect(() => {
@@ -101,34 +123,46 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setFirebaseAuthUser(fbUser);
       if (fbUser) {
         const email = fbUser.email || '';
-        const userRef = doc(db, 'users', fbUser.uid);
+        const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
         
+        // Optimistic Immediate UI Update (0ms delay)
+        const tempUser: UserModel = {
+          id: fbUser.uid,
+          name: fbUser.displayName || email.split('@')[0].toUpperCase(),
+          email,
+          role: isDev ? 'developer' : 'user',
+          approved: isDev ? true : false,
+          permissions: isDev ? ['All'] : [],
+          status: 'Active',
+          avatarUrl: fbUser.photoURL || undefined,
+          createdAt: new Date().toISOString(),
+        };
+
+        // Instantly update UI state if no cached user exists
+        if (!currentUser) {
+          persistUser(tempUser);
+        }
+
+        // Non-blocking Background Firestore Sync
         try {
+          const userRef = doc(db, 'users', fbUser.uid);
           const snap = await getDoc(userRef);
           if (snap.exists()) {
-            const data = snap.data() as UserModel;
-            setCurrentUser(data);
+            const firestoreData = snap.data() as UserModel;
+            persistUser(firestoreData);
           } else {
-            const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
-            const newUser: UserModel = {
-              id: fbUser.uid,
-              name: fbUser.displayName || email.split('@')[0].toUpperCase(),
-              email,
-              role: isDev ? 'developer' : 'user',
-              approved: isDev ? true : false,
-              permissions: isDev ? ['All'] : [],
-              status: 'Active',
-              avatarUrl: fbUser.photoURL || undefined,
-              createdAt: new Date().toISOString(),
-            };
-            await setDoc(userRef, newUser);
-            setCurrentUser(newUser);
+            await setDoc(userRef, tempUser);
+            persistUser(tempUser);
           }
         } catch {
-          loginCustomUser(email);
+          // If Firestore fails, keep optimistic tempUser
         }
       } else {
-        setCurrentUser(null);
+        // If not logged in via Firebase Auth, check if custom demo user is cached
+        const cached = localStorage.getItem(LOCAL_USER_KEY);
+        if (!cached) {
+          setCurrentUser(null);
+        }
       }
     });
 
@@ -147,7 +181,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           if (currentUser) {
             const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
             if (match && (match.role !== currentUser.role || match.approved !== currentUser.approved)) {
-              setCurrentUser(match);
+              persistUser(match);
             }
           }
         }
@@ -185,15 +219,33 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Auth Actions
   const loginWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch {
+      const result = await signInWithPopup(auth, googleProvider);
+      const email = result.user.email || '';
+      const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
+      
+      const loggedUser: UserModel = {
+        id: result.user.uid,
+        name: result.user.displayName || email.split('@')[0].toUpperCase(),
+        email,
+        role: isDev ? 'developer' : 'user',
+        approved: isDev ? true : false,
+        permissions: isDev ? ['All'] : [],
+        status: 'Active',
+        avatarUrl: result.user.photoURL || undefined,
+        createdAt: new Date().toISOString(),
+      };
+      
+      persistUser(loggedUser);
+    } catch (err: any) {
+      console.warn('Google Sign-In Notice:', err);
+      // Fallback for unauthorized domains or popup blocks
       loginCustomUser('vaishnavil4433@gmail.com');
     }
   };
 
   const login = (role: 'developer' | 'admin' | 'user') => {
     const foundUser = users.find((u) => u.role === role) || users[0];
-    setCurrentUser(foundUser);
+    persistUser(foundUser);
     logAuditAction(foundUser.name, foundUser.role, 'User Login', 'Auth', `Logged in as ${role}`);
   };
 
@@ -235,7 +287,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setUsers((prev) => [...prev, foundUser!]);
     }
 
-    setCurrentUser(foundUser);
+    persistUser(foundUser);
     logAuditAction(foundUser.name, foundUser.role, 'User Google Login', 'Auth', `Logged in with ${email} as ${foundUser.role}`);
   };
 
@@ -253,7 +305,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.clear();
     sessionStorage.clear();
 
-    setCurrentUser(null);
+    persistUser(null);
     setFirebaseAuthUser(null);
   };
 
