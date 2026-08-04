@@ -11,7 +11,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   onSnapshot,
   collection,
 } from 'firebase/firestore';
@@ -127,6 +126,23 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  // Synchronize User Record to Cloud Firestore Database (users/{uid})
+  const syncUserToFirestore = async (userRecord: UserModel) => {
+    try {
+      const userRef = doc(db, 'users', userRecord.id);
+      const snap = await getDoc(userRef);
+      if (snap.exists()) {
+        const firestoreData = snap.data() as UserModel;
+        persistUser(firestoreData);
+      } else {
+        await setDoc(userRef, userRecord);
+        persistUser(userRecord);
+      }
+    } catch (err) {
+      console.warn('Firestore Sync Notice:', err);
+    }
+  };
+
   // Catch mobile redirect authentication results on initial page load
   useEffect(() => {
     getRedirectResult(auth)
@@ -146,6 +162,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             createdAt: new Date().toISOString(),
           };
           persistUser(loggedUser);
+          syncUserToFirestore(loggedUser);
         }
       })
       .catch(() => {
@@ -175,21 +192,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         };
 
         persistUser(tempUser);
-
-        // Non-blocking Background Firestore Sync
-        try {
-          const userRef = doc(db, 'users', fbUser.uid);
-          const snap = await getDoc(userRef);
-          if (snap.exists()) {
-            const firestoreData = snap.data() as UserModel;
-            persistUser(firestoreData);
-          } else {
-            await setDoc(userRef, tempUser);
-            persistUser(tempUser);
-          }
-        } catch {
-          // If Firestore fails or is not enabled yet, keep optimistic tempUser
-        }
+        syncUserToFirestore(tempUser);
       } else {
         const cached = localStorage.getItem(LOCAL_USER_KEY);
         if (!cached) {
@@ -210,7 +213,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
           
           setUsers((prev) => {
-            // Merge Firestore Users with any optimistic local users
             const mergedMap = new Map<string, UserModel>();
             prev.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
             firestoreUsers.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
@@ -280,6 +282,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         };
         
         persistUser(loggedUser);
+        syncUserToFirestore(loggedUser);
       }
     } catch (err: any) {
       console.warn('Google Sign-In Notice:', err);
@@ -490,21 +493,32 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
-  // Flexible Role Management: Can set role to 'developer', 'admin', or 'user'
+  // Flexible Role Management: Writes directly to Firestore users/{uid} with merge
   const setUserRole = async (userId: string, targetRole: 'developer' | 'admin' | 'user') => {
-    const targetUser = users.find((u) => u.id === userId);
+    const targetUser = users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase());
     if (!targetUser) return;
 
     const isApproved = targetRole !== 'user';
+    const updatedUser: UserModel = {
+      ...targetUser,
+      role: targetRole,
+      approved: isApproved,
+      permissions: targetRole === 'developer' ? ['All'] : targetRole === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
+    };
 
     setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, role: targetRole, approved: isApproved } : u))
+      prev.map((u) => (u.id === targetUser.id || u.email.toLowerCase() === targetUser.email.toLowerCase() ? updatedUser : u))
     );
 
+    if (currentUser && (currentUser.id === targetUser.id || currentUser.email.toLowerCase() === targetUser.email.toLowerCase())) {
+      persistUser(updatedUser);
+    }
+
     try {
-      await updateDoc(doc(db, 'users', userId), { role: targetRole, approved: isApproved });
-    } catch {
-      // Local fallback
+      const userRef = doc(db, 'users', targetUser.id);
+      await setDoc(userRef, updatedUser, { merge: true });
+    } catch (err) {
+      console.warn('Firestore setUserRole Notice:', err);
     }
 
     logAuditAction(
