@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-paper: #FAF8F5;
+    --primary-pink: #FF5E84;
+    --secondary-orange: #FF8A00;
+    --accent-blue: #4DA8FF;
+    --accent-purple: #7A3CF5;
+    --accent-gold: #D8A74A;
+    --text-main: #111111;
+    --text-muted: #5F5F5F;
+
+    /* Exact House Branding Colors */
+    --house-nova: #EF4444;   /* Red */
+    --house-vega: #F59E0B;   /* Yellow */
+    --house-orion: #3B82F6;  /* Blue */
+    --house-astra: #10B981;  /* Green */
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Manrope', sans-serif;
+    background-color: #FAF8F5;
+    color: var(--text-main);
+  }
+
+  body {
+    overflow-x: hidden;
+    background-color: #FAF8F5;
+    /* Subtle 2% luxury paper grain noise texture */
+    background-image: 
+      radial-gradient(at 15% 15%, rgba(255, 94, 132, 0.04) 0px, transparent 50%),
+      radial-gradient(at 85% 25%, rgba(245, 158, 11, 0.04) 0px, transparent 50%),
+      radial-gradient(at 50% 75%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+      radial-gradient(at 30% 90%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
+  }
+}
+
+/* Custom Typography Utilities */
+.font-serif-cormorant {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-sans-manrope {
+  font-family: 'Manrope', sans-serif;
+}
+
+.font-malayalam {
+  font-family: 'Noto Serif Malayalam', serif;
+}
+
+/* Glassmorphism primitives */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.glass-nav {
+  background: rgba(250, 248, 245, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.96);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 45px rgba(255, 94, 132, 0.12);
+  border-color: rgba(255, 94, 132, 0.3);
+}
+
+/* Gradient Utilities */
+.gradient-text-pink {
+  background: linear-gradient(135deg, #FF6584 0%, #FFA040 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-btn-primary {
+  background: linear-gradient(135deg, #FF6B8B 0%, #FFA033 100%);
+  box-shadow: 0 4px 15px rgba(255, 94, 132, 0.2);
+  transition: all 0.3s ease;
+}
+
+.gradient-btn-primary:hover {
+  box-shadow: 0 8px 25px rgba(255, 94, 132, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Hardware Accelerated Crisp Transforms */
+.gpu-render {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Multi-layer Float Parallax Animations */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(0.8deg); }
+}
+
+@keyframes floatMedium {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-1.2deg); }
+}
+
+@keyframes floatFast {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+.animate-float-slow {
+  animation: floatSlow 7s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: floatMedium 5s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: floatFast 4s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 94, 132, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 94, 132, 0.6);
+}
