@@ -49,6 +49,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Instant redirect / view jump handler without long smooth-scrolling delay
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+
+    if (targetId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      window.location.hash = '#home';
+      setActiveSection('home');
+      return;
+    }
+
+    const el = document.getElementById(targetId);
+    if (el) {
+      const topOffset = el.getBoundingClientRect().top + window.pageYOffset - 75;
+      window.scrollTo({ top: topOffset, behavior: 'instant' as ScrollBehavior });
+      window.location.hash = `#${targetId}`;
+      setActiveSection(targetId);
+    }
+  };
+
   const isDev = currentUser?.role === 'developer' || currentUser?.role === 'Developer';
   const isAdmin = (currentUser?.role === 'admin' || currentUser?.role === 'Admin') && currentUser?.approved;
   const isNormalUser = currentUser && !isDev && !isAdmin;
@@ -64,7 +85,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
           <div className="flex items-center justify-between h-[65px] sm:h-[70px] lg:h-[75px]">
             
             {/* Official Custom Malayalam Calligraphy Logo Image */}
-            <a href="#home" className="flex items-center gap-2 group shrink-0 py-0.5">
+            <a
+              href="#home"
+              onClick={(e) => handleNavClick(e, 'home')}
+              className="flex items-center gap-2 group shrink-0 py-0.5"
+            >
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
@@ -80,6 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   <a
                     key={link.id}
                     href={link.href}
+                    onClick={(e) => handleNavClick(e, link.id)}
                     className={`relative font-sans-manrope text-[13px] font-semibold transition-colors duration-300 ${
                       isActive
                         ? 'text-[#FF5E84] font-bold'
@@ -109,6 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   {isDev && (
                     <a
                       href="#control-center"
+                      onClick={(e) => handleNavClick(e, 'control-center')}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
                     >
                       <Shield className="w-3.5 h-3.5 text-white" />
@@ -120,6 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   {isAdmin && (
                     <a
                       href="#control-center"
+                      onClick={(e) => handleNavClick(e, 'control-center')}
                       className="bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
                     >
                       <Lock className="w-3.5 h-3.5 text-[#FF5E84]" />
@@ -175,7 +203,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                 <a
                   key={link.id}
                   href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => handleNavClick(e, link.id)}
                   className={`text-sm font-bold py-2 px-3 rounded-lg transition-colors ${
                     activeSection === link.id
                       ? 'bg-[#FF5E84]/10 text-[#FF5E84]'
