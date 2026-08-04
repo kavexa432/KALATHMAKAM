@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Award,
@@ -16,6 +16,7 @@ import {
   UserX,
   Sparkles,
   FileSpreadsheet,
+  Lock,
 } from 'lucide-react';
 import { useFestival } from '../../shared/context/FestivalContext';
 import { ResultApprovalQueue } from './components/ResultApprovalQueue';
@@ -56,27 +57,46 @@ export const Dashboard: React.FC = () => {
   const [qrPosition, setQrPosition] = useState<'1st' | '2nd' | '3rd' | 'Participation'>('1st');
   const [qrSuccessMessage, setQrSuccessMessage] = useState('');
 
-  if (!currentUser) {
-    return (
-      <div className="py-20 text-center font-sans-manrope text-sm text-[#5F5F5F]">
-        Please log in to access the Festival Mission Control Dashboard.
-      </div>
-    );
-  }
+  const isDev = currentUser?.role === 'Developer';
+  const isAdmin = currentUser?.role === 'Admin' || isDev;
 
-  const isDev = currentUser.role === 'Developer';
-  const isAdmin = currentUser.role === 'Admin' || isDev;
+  // Route Guard: Redirect unauthorized users back to #home if manually navigating via URL
+  useEffect(() => {
+    if (!isAdmin) {
+      if (window.location.hash === '#dashboard' || window.location.hash === '#control-center') {
+        window.location.hash = '#home';
+      }
+    }
+  }, [isAdmin, currentUser]);
 
-  if (!isAdmin) {
+  if (!currentUser || !isAdmin) {
     return (
-      <div className="py-20 text-center font-sans-manrope text-sm text-[#5F5F5F] max-w-lg mx-auto bg-white rounded-3xl p-8 border border-black/10 shadow-lg my-12">
-        <Shield className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-        <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
-          Access Restricted
-        </h3>
-        <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-2">
-          Your account (<strong>{currentUser.email}</strong>) currently has <code>role = user</code>. You can browse the public website, but dashboard access requires Admin permissions granted by the Developer.
-        </p>
+      <div id="control-center" className="py-20 bg-[#FAF8F5]">
+        <div className="max-w-lg mx-auto bg-white rounded-3xl p-8 border border-black/10 shadow-lg text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+            <Lock className="w-7 h-7" />
+          </div>
+          <h3 className="font-serif-cormorant font-bold text-3xl text-[#111111]">
+            Access Restricted
+          </h3>
+          <p className="font-sans-manrope text-xs text-[#5F5F5F] leading-relaxed">
+            {currentUser ? (
+              <>
+                Your account (<strong>{currentUser.email}</strong>) is currently authenticated as <code>role = user</code>. You can browse the public website, but Control Center & Dashboard access is restricted to authorized Admins & Developers.
+              </>
+            ) : (
+              <>
+                Please log in with an authorized Admin or Developer account to access the Festival Management Portal.
+              </>
+            )}
+          </p>
+          <a
+            href="#home"
+            className="inline-block px-6 py-2.5 rounded-full bg-[#111111] text-white font-sans-manrope font-bold text-xs shadow-xs"
+          >
+            Return to Homepage
+          </a>
+        </div>
       </div>
     );
   }
@@ -111,7 +131,7 @@ export const Dashboard: React.FC = () => {
   };
 
   return (
-    <section id="dashboard" className="relative py-12 bg-[#FAF8F5] border-t border-black/8">
+    <section id="control-center" className="relative py-12 bg-[#FAF8F5] border-t border-black/8">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Control Room Header */}
@@ -635,22 +655,22 @@ export const Dashboard: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold w-20">NOVA</span>
-                  <div className="flex-1 h-3 rounded-full bg-red-500" style={{ width: '85%' }} />
+                  <div className="flex-1 h-[#1px] rounded-full bg-red-500" style={{ width: '85%' }} />
                   <span className="text-xs font-bold">450 Pts</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold w-20">VEGA</span>
-                  <div className="flex-1 h-3 rounded-full bg-amber-500" style={{ width: '80%' }} />
+                  <div className="flex-1 h-[#1px] rounded-full bg-amber-500" style={{ width: '80%' }} />
                   <span className="text-xs font-bold">430 Pts</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold w-20">ORION</span>
-                  <div className="flex-1 h-3 rounded-full bg-blue-500" style={{ width: '75%' }} />
+                  <div className="flex-1 h-[#1px] rounded-full bg-blue-500" style={{ width: '75%' }} />
                   <span className="text-xs font-bold">400 Pts</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold w-20">ASTRA</span>
-                  <div className="flex-1 h-3 rounded-full bg-emerald-500" style={{ width: '70%' }} />
+                  <div className="flex-1 h-[#1px] rounded-full bg-emerald-500" style={{ width: '70%' }} />
                   <span className="text-xs font-bold">395 Pts</span>
                 </div>
               </div>

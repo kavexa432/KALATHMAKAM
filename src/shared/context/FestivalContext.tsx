@@ -94,7 +94,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [firebaseAuthUser, setFirebaseAuthUser] = useState<FirebaseUser | null>(null);
   const [archiveMode, setArchiveMode] = useState<boolean>(false);
 
-  // Sync Firebase Auth state
+  // Sync Firebase Auth state strictly with Firestore users/{uid}
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseAuthUser(fbUser);
@@ -105,15 +105,17 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           const snap = await getDoc(userRef);
           if (snap.exists()) {
+            // Read role strictly from Firestore document
             const data = snap.data() as UserModel;
             setCurrentUser(data);
           } else {
-            const isDev = email.toLowerCase().includes('vaishnavi') || email.toLowerCase().includes('developer');
+            // Create user document in Firestore. ONLY vaishnavil4433@gmail.com gets Developer role automatically.
+            const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
             const newUser: UserModel = {
               id: fbUser.uid,
               name: fbUser.displayName || email.split('@')[0].toUpperCase(),
               email,
-              role: isDev ? 'Developer' : 'User',
+              role: isDev ? 'Developer' : 'User', // Default role = "User"
               permissions: isDev ? ['All'] : [],
               status: 'Active',
               avatarUrl: fbUser.photoURL || undefined,
@@ -122,8 +124,11 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setCurrentUser(newUser);
           }
         } catch {
+          // Fallback if offline
           loginCustomUser(email);
         }
+      } else {
+        setCurrentUser(null);
       }
     });
 
@@ -139,6 +144,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
           setUsers(firestoreUsers);
 
+          // Update active logged-in user role dynamically if modified by Developer
           if (currentUser) {
             const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
             if (match && match.role !== currentUser.role) {
@@ -196,7 +202,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let foundUser = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     
     if (!foundUser) {
-      if (email.includes('vaishnavi') || email.includes('developer')) {
+      if (email.toLowerCase() === 'vaishnavil4433@gmail.com') {
         foundUser = {
           id: `dev-${Date.now()}`,
           name: 'Vaishnavi (System Developer)',
@@ -205,7 +211,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           permissions: ['All'],
           status: 'Active',
         };
-      } else if (email.includes('teacher') || email.includes('admin')) {
+      } else if (email.toLowerCase() === 'teacher@gmail.com') {
         foundUser = {
           id: `admin-${Date.now()}`,
           name: 'Liju Teacher (Stage Admin)',
@@ -235,11 +241,17 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (currentUser) {
       logAuditAction(currentUser.name, currentUser.role, 'User Logout', 'Auth', 'User logged out');
     }
+    
     try {
       await signOut(auth);
     } catch {
       // Ignore
     }
+
+    // Clear all local storage and session state
+    localStorage.clear();
+    sessionStorage.clear();
+
     setCurrentUser(null);
     setFirebaseAuthUser(null);
   };

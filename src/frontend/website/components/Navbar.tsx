@@ -96,31 +96,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               })}
             </nav>
 
-            {/* Right Controls: User Profile / Login Pill + Hamburger Toggle */}
+            {/* Right Controls: Role Based Pill + Logout */}
             <div className="flex items-center gap-3 sm:gap-4">
               
               {currentUser ? (
                 <div className="flex items-center gap-2">
+                  {/* Developer Role: Control Center Button */}
                   {currentUser.role === 'Developer' && (
                     <a
-                      href="#dashboard"
+                      href="#control-center"
                       className="bg-blue-600 hover:bg-blue-700 text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
                     >
                       <Shield className="w-3.5 h-3.5 text-white" />
-                      <span>Developer Dashboard</span>
+                      <span>Control Center</span>
                     </a>
                   )}
 
+                  {/* Admin Role: Dashboard Button */}
                   {currentUser.role === 'Admin' && (
                     <a
                       href="#dashboard"
                       className="bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
                     >
                       <Lock className="w-3.5 h-3.5 text-[#FF5E84]" />
-                      <span>Admin Dashboard</span>
+                      <span>Dashboard</span>
                     </a>
                   )}
 
+                  {/* Normal User Role: Profile Badge ONLY (No Dashboard Button!) */}
                   {currentUser.role === 'User' && (
                     <span className="text-xs font-bold text-[#111111] bg-white border border-black/10 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs">
                       <User className="w-3.5 h-3.5 text-[#FF5E84]" />
@@ -136,6 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   </button>
                 </div>
               ) : (
+                /* Visitor Role: Login Button */
                 <button
                   onClick={onOpenLogin}
                   className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[13px] px-6 py-2 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
