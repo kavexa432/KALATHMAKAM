@@ -109,11 +109,19 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [firebaseAuthUser, setFirebaseAuthUser] = useState<FirebaseUser | null>(null);
   const [archiveMode, setArchiveMode] = useState<boolean>(false);
 
-  // Helper to persist user state instantly
+  // Helper to persist user state & update user registry list
   const persistUser = (user: UserModel | null) => {
     setCurrentUser(user);
     if (user) {
       localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+      // Upsert into users array list immediately so it displays in User Management table
+      setUsers((prev) => {
+        const exists = prev.some((u) => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase());
+        if (exists) {
+          return prev.map((u) => (u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase() ? { ...u, ...user } : u));
+        }
+        return [user, ...prev];
+      });
     } else {
       localStorage.removeItem(LOCAL_USER_KEY);
     }
@@ -166,10 +174,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           createdAt: new Date().toISOString(),
         };
 
-        // Instantly update UI state if no cached user exists
-        if (!currentUser) {
-          persistUser(tempUser);
-        }
+        persistUser(tempUser);
 
         // Non-blocking Background Firestore Sync
         try {
@@ -183,10 +188,9 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             persistUser(tempUser);
           }
         } catch {
-          // If Firestore fails, keep optimistic tempUser
+          // If Firestore fails or is not enabled yet, keep optimistic tempUser
         }
       } else {
-        // If not logged in via Firebase Auth, check if custom demo user is cached
         const cached = localStorage.getItem(LOCAL_USER_KEY);
         if (!cached) {
           setCurrentUser(null);
@@ -204,7 +208,14 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!snapshot.empty) {
           const firestoreUsers: UserModel[] = [];
           snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
-          setUsers(firestoreUsers);
+          
+          setUsers((prev) => {
+            // Merge Firestore Users with any optimistic local users
+            const mergedMap = new Map<string, UserModel>();
+            prev.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
+            firestoreUsers.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
+            return Array.from(mergedMap.values());
+          });
 
           if (currentUser) {
             const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
@@ -250,10 +261,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       if (isMobile) {
-        // Mobile & In-App Browsers: Use Redirect
         await signInWithRedirect(auth, googleProvider);
       } else {
-        // Desktop Browsers: Use Popup
         const result = await signInWithPopup(auth, googleProvider);
         const email = result.user.email || '';
         const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
