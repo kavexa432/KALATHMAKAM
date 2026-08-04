@@ -71,6 +71,7 @@ interface FestivalContextType {
   publishResult: (resultId: string) => void;
   addAnnouncement: (content: string, type: AnnouncementType, priority: PriorityLevel, houseId?: HouseId, points?: number) => void;
   togglePermission: (userId: string, permission: string) => void;
+  setUserRole: (userId: string, targetRole: 'developer' | 'admin' | 'user') => void;
   toggleAdminAccess: (userId: string) => void;
   createAdminUser: (name: string, email: string) => void;
   removeUser: (userId: string) => void;
@@ -105,18 +106,16 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           const snap = await getDoc(userRef);
           if (snap.exists()) {
-            // Read role & approved status strictly from Firestore
             const data = snap.data() as UserModel;
             setCurrentUser(data);
           } else {
-            // Document creation flow
             const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
             const newUser: UserModel = {
               id: fbUser.uid,
               name: fbUser.displayName || email.split('@')[0].toUpperCase(),
               email,
-              role: isDev ? 'developer' : 'user', // Default role = "user"
-              approved: isDev ? true : false,      // Default approved = false
+              role: isDev ? 'developer' : 'user',
+              approved: isDev ? true : false,
               permissions: isDev ? ['All'] : [],
               status: 'Active',
               avatarUrl: fbUser.photoURL || undefined,
@@ -126,7 +125,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setCurrentUser(newUser);
           }
         } catch {
-          // Fallback if offline
           loginCustomUser(email);
         }
       } else {
@@ -146,7 +144,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
           setUsers(firestoreUsers);
 
-          // Update active logged-in user role & approval dynamically when granted Admin by Developer
           if (currentUser) {
             const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
             if (match && (match.role !== currentUser.role || match.approved !== currentUser.approved)) {
@@ -397,20 +394,19 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
-  const toggleAdminAccess = async (userId: string) => {
+  // Flexible Role Management: Can set role to 'developer', 'admin', or 'user'
+  const setUserRole = async (userId: string, targetRole: 'developer' | 'admin' | 'user') => {
     const targetUser = users.find((u) => u.id === userId);
     if (!targetUser) return;
 
-    const isNowAdmin = targetUser.role !== 'admin' && targetUser.role !== 'Admin';
-    const newRole = isNowAdmin ? 'admin' : 'user';
-    const newApproved = isNowAdmin ? true : false;
+    const isApproved = targetRole !== 'user';
 
     setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, role: newRole, approved: newApproved } : u))
+      prev.map((u) => (u.id === userId ? { ...u, role: targetRole, approved: isApproved } : u))
     );
 
     try {
-      await updateDoc(doc(db, 'users', userId), { role: newRole, approved: newApproved });
+      await updateDoc(doc(db, 'users', userId), { role: targetRole, approved: isApproved });
     } catch {
       // Local fallback
     }
@@ -418,10 +414,18 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     logAuditAction(
       currentUser?.name || 'Developer',
       'developer',
-      isNowAdmin ? 'Granted Admin Access' : 'Revoked Admin Access',
+      `Set User Role to ${targetRole}`,
       'User Management',
-      `${isNowAdmin ? 'Granted' : 'Revoked'} Admin privileges for ${targetUser.name} (${targetUser.email})`
+      `Changed role of ${targetUser.name} (${targetUser.email}) to ${targetRole}`
     );
+  };
+
+  const toggleAdminAccess = async (userId: string) => {
+    const targetUser = users.find((u) => u.id === userId);
+    if (!targetUser) return;
+
+    const isNowAdmin = targetUser.role !== 'admin' && targetUser.role !== 'Admin';
+    setUserRole(userId, isNowAdmin ? 'admin' : 'user');
   };
 
   const createAdminUser = (name: string, email: string) => {
@@ -497,6 +501,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         publishResult,
         addAnnouncement,
         togglePermission,
+        setUserRole,
         toggleAdminAccess,
         createAdminUser,
         removeUser,

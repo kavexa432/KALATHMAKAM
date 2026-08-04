@@ -17,6 +17,7 @@ import {
   Sparkles,
   FileSpreadsheet,
   Lock,
+  Code,
 } from 'lucide-react';
 import { useFestival } from '../../shared/context/FestivalContext';
 import { ResultApprovalQueue } from './components/ResultApprovalQueue';
@@ -34,7 +35,7 @@ export const Dashboard: React.FC = () => {
     users,
     auditLogs,
     addAnnouncement,
-    toggleAdminAccess,
+    setUserRole,
     submitResult,
   } = useFestival();
 
@@ -246,7 +247,7 @@ export const Dashboard: React.FC = () => {
               onClick={() => setActiveTab('Announcements')}
               className={`px-5 py-2.5 rounded-full font-sans-manrope font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
                 activeTab === 'Announcements'
-                  ? 'bg-[#111111] text-white shadow-sm'
+                  ? 'bg-[#111111] text-[#5F5F5F] shadow-sm'
                   : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border border-black/5'
               }`}
             >
@@ -265,7 +266,7 @@ export const Dashboard: React.FC = () => {
                 }`}
               >
                 <Shield className="w-3.5 h-3.5 text-[#3B82F6]" />
-                <span>User & Admin Management</span>
+                <span>User & Role Management</span>
               </button>
             )}
 
@@ -312,7 +313,7 @@ export const Dashboard: React.FC = () => {
                 <span className="text-[11px] text-[#10B981] font-bold">● Live Stage Operations</span>
               </div>
 
-              <div className="bg-[#FAF8F5] rounded-2xl p-5 border border-black/8 shadow-2xs">
+              <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Pending Results</span>
                 <div className="font-serif-cormorant font-bold text-4xl text-[#F59E0B]">{pendingResultsCount || 4}</div>
                 <span className="text-[11px] text-[#5F5F5F] font-bold">Awaiting Final Sign-off</span>
@@ -513,16 +514,16 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {/* ONLY Developer sees User & Admin Management */}
+        {/* ONLY Developer sees User & Role Management */}
         {activeTab === 'UserManagement' && isDev && (
           <div className="bg-white rounded-3xl p-8 border border-black/8 shadow-md text-left space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-black/8">
               <div>
                 <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
-                  User & Admin Management (Developer Authority Only)
+                  User & Role Management (Developer Authority)
                 </h3>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                  Promote registered users to Admin role or revoke access. Teachers logging in with Google start as <code>role: user (approved: false)</code> until approved here.
+                  Promote registered users to Developer or Admin role, or revoke access. Registered Google users start as <code>role: user</code> until granted privileges here.
                 </p>
               </div>
               <Sparkles className="w-6 h-6 text-blue-600" />
@@ -534,9 +535,9 @@ export const Dashboard: React.FC = () => {
                   <tr className="border-b border-black/10 text-[#5F5F5F] font-extrabold uppercase">
                     <th className="py-3 px-4">User Account</th>
                     <th className="py-3 px-4">Email</th>
-                    <th className="py-3 px-4">Role</th>
-                    <th className="py-3 px-4">Approval Status</th>
-                    <th className="py-3 px-4 text-right">Developer Actions</th>
+                    <th className="py-3 px-4">Current Role</th>
+                    <th className="py-3 px-4">Access Level</th>
+                    <th className="py-3 px-4 text-right">Developer Role Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5">
@@ -569,32 +570,55 @@ export const Dashboard: React.FC = () => {
                           ) : uIsAdmin ? (
                             <span className="text-emerald-600 font-bold">✓ Approved Admin</span>
                           ) : (
-                            <span className="text-slate-500 font-medium">Unapproved (User)</span>
+                            <span className="text-slate-500 font-medium">Public User (No Dashboard)</span>
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          {!uIsDev && (
-                            <button
-                              onClick={() => toggleAdminAccess(u.id)}
-                              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ml-auto ${
-                                uIsAdmin
-                                  ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                                  : 'bg-amber-500 text-white hover:bg-amber-600 shadow-2xs'
-                              }`}
-                            >
-                              {uIsAdmin ? (
-                                <>
-                                  <UserX className="w-3.5 h-3.5" />
-                                  <span>Remove Admin</span>
-                                </>
-                              ) : (
-                                <>
-                                  <UserCheck className="w-3.5 h-3.5" />
-                                  <span>Grant Admin</span>
-                                </>
-                              )}
-                            </button>
-                          )}
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Make Developer Button */}
+                            {!uIsDev && (
+                              <button
+                                onClick={() => setUserRole(u.id, 'developer')}
+                                className="px-3 py-1 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                              >
+                                <Code className="w-3 h-3" />
+                                <span>Make Developer</span>
+                              </button>
+                            )}
+
+                            {/* Make Admin / Remove Admin Button */}
+                            {!uIsDev && (
+                              <button
+                                onClick={() => setUserRole(u.id, uIsAdmin ? 'user' : 'admin')}
+                                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                                  uIsAdmin
+                                    ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                                    : 'bg-amber-500 text-white hover:bg-amber-600 shadow-2xs'
+                                }`}
+                              >
+                                {uIsAdmin ? (
+                                  <>
+                                    <UserX className="w-3 h-3" />
+                                    <span>Demote to User</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserCheck className="w-3 h-3" />
+                                    <span>Make Admin</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+
+                            {uIsDev && currentUser.id !== u.id && (
+                              <button
+                                onClick={() => setUserRole(u.id, 'user')}
+                                className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-bold cursor-pointer"
+                              >
+                                Demote Developer
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
