@@ -57,8 +57,8 @@ export const Dashboard: React.FC = () => {
   const [qrPosition, setQrPosition] = useState<'1st' | '2nd' | '3rd' | 'Participation'>('1st');
   const [qrSuccessMessage, setQrSuccessMessage] = useState('');
 
-  const isDev = currentUser?.role === 'Developer';
-  const isAdmin = currentUser?.role === 'Admin' || isDev;
+  const isDev = currentUser?.role === 'developer' || currentUser?.role === 'Developer';
+  const isAdmin = isDev || ((currentUser?.role === 'admin' || currentUser?.role === 'Admin') && currentUser?.approved === true);
 
   // Route Guard: Redirect unauthorized users back to #home if manually navigating via URL
   useEffect(() => {
@@ -82,7 +82,7 @@ export const Dashboard: React.FC = () => {
           <p className="font-sans-manrope text-xs text-[#5F5F5F] leading-relaxed">
             {currentUser ? (
               <>
-                Your account (<strong>{currentUser.email}</strong>) is currently authenticated as <code>role = user</code>. You can browse the public website, but Control Center & Dashboard access is restricted to authorized Admins & Developers.
+                Your account (<strong>{currentUser.email}</strong>) is currently authenticated as <code>role = user</code> (Unapproved). You can browse the public website, but Festival Management access requires Admin privileges approved by the Developer in Control Center.
               </>
             ) : (
               <>
@@ -144,7 +144,7 @@ export const Dashboard: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="font-serif-cormorant font-bold text-3xl sm:text-4xl text-[#111111] leading-none">
-                    {isDev ? 'DEVELOPER CONTROL CENTER' : 'ADMIN FESTIVAL DASHBOARD'}
+                    {isDev ? 'DEVELOPER CONTROL CENTER' : 'FESTIVAL MANAGEMENT DASHBOARD'}
                   </h2>
                   <span
                     className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider ${
@@ -153,7 +153,7 @@ export const Dashboard: React.FC = () => {
                         : 'bg-amber-500/15 text-amber-700 border border-amber-500/30'
                     }`}
                   >
-                    ● {currentUser.role} SESSION
+                    ● {isDev ? 'DEVELOPER SESSION' : 'ADMIN SESSION'}
                   </span>
                 </div>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1">
@@ -254,6 +254,7 @@ export const Dashboard: React.FC = () => {
               <span>Announcements</span>
             </button>
 
+            {/* ONLY Developer sees User & Admin Management */}
             {isDev && (
               <button
                 onClick={() => setActiveTab('UserManagement')}
@@ -268,6 +269,7 @@ export const Dashboard: React.FC = () => {
               </button>
             )}
 
+            {/* ONLY Developer sees Audit Activity Log */}
             {isDev && (
               <button
                 onClick={() => setActiveTab('AuditLogs')}
@@ -282,6 +284,7 @@ export const Dashboard: React.FC = () => {
               </button>
             )}
 
+            {/* ONLY Developer sees Reports & Analytics */}
             {isDev && (
               <button
                 onClick={() => setActiveTab('Reports')}
@@ -309,7 +312,7 @@ export const Dashboard: React.FC = () => {
                 <span className="text-[11px] text-[#10B981] font-bold">● Live Stage Operations</span>
               </div>
 
-              <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
+              <div className="bg-[#FAF8F5] rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Pending Results</span>
                 <div className="font-serif-cormorant font-bold text-4xl text-[#F59E0B]">{pendingResultsCount || 4}</div>
                 <span className="text-[11px] text-[#5F5F5F] font-bold">Awaiting Final Sign-off</span>
@@ -510,16 +513,16 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Developer User & Admin Management */}
+        {/* ONLY Developer sees User & Admin Management */}
         {activeTab === 'UserManagement' && isDev && (
           <div className="bg-white rounded-3xl p-8 border border-black/8 shadow-md text-left space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-black/8">
               <div>
                 <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
-                  User & Admin Management (Developer Authority)
+                  User & Admin Management (Developer Authority Only)
                 </h3>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                  Promote registered users to Admin role or revoke access. Only users with Admin or Developer roles can access the management dashboard.
+                  Promote registered users to Admin role or revoke access. Teachers logging in with Google start as <code>role: user (approved: false)</code> until approved here.
                 </p>
               </div>
               <Sparkles className="w-6 h-6 text-blue-600" />
@@ -531,66 +534,71 @@ export const Dashboard: React.FC = () => {
                   <tr className="border-b border-black/10 text-[#5F5F5F] font-extrabold uppercase">
                     <th className="py-3 px-4">User Account</th>
                     <th className="py-3 px-4">Email</th>
-                    <th className="py-3 px-4">Current Role</th>
-                    <th className="py-3 px-4">Admin Privileges</th>
+                    <th className="py-3 px-4">Role</th>
+                    <th className="py-3 px-4">Approval Status</th>
                     <th className="py-3 px-4 text-right">Developer Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5">
-                  {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-[#FAF8F5]">
-                      <td className="py-3.5 px-4 font-extrabold text-[#111111]">
-                        {u.name}
-                      </td>
-                      <td className="py-3.5 px-4 text-[#5F5F5F]">{u.email}</td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                            u.role === 'Developer'
-                              ? 'bg-blue-100 text-blue-800'
-                              : u.role === 'Admin'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}
-                        >
-                          {u.role}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {u.role === 'Developer' ? (
-                          <span className="text-blue-600 font-bold">System Authority</span>
-                        ) : u.role === 'Admin' ? (
-                          <span className="text-amber-600 font-bold">Admin Dashboard Unlocked</span>
-                        ) : (
-                          <span className="text-slate-500">Public Browse Only</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        {u.role !== 'Developer' && (
-                          <button
-                            onClick={() => toggleAdminAccess(u.id)}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ml-auto ${
-                              u.role === 'Admin'
-                                ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                                : 'bg-amber-500 text-white hover:bg-amber-600 shadow-2xs'
+                  {users.map((u) => {
+                    const uIsDev = u.role === 'developer' || u.role === 'Developer';
+                    const uIsAdmin = (u.role === 'admin' || u.role === 'Admin') && u.approved;
+
+                    return (
+                      <tr key={u.id} className="hover:bg-[#FAF8F5]">
+                        <td className="py-3.5 px-4 font-extrabold text-[#111111]">
+                          {u.name}
+                        </td>
+                        <td className="py-3.5 px-4 text-[#5F5F5F]">{u.email}</td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                              uIsDev
+                                ? 'bg-blue-100 text-blue-800'
+                                : uIsAdmin
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-slate-100 text-slate-700'
                             }`}
                           >
-                            {u.role === 'Admin' ? (
-                              <>
-                                <UserX className="w-3.5 h-3.5" />
-                                <span>Remove Admin</span>
-                              </>
-                            ) : (
-                              <>
-                                <UserCheck className="w-3.5 h-3.5" />
-                                <span>Grant Admin Access</span>
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                            {u.role}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {uIsDev ? (
+                            <span className="text-blue-600 font-bold">System Developer</span>
+                          ) : uIsAdmin ? (
+                            <span className="text-emerald-600 font-bold">✓ Approved Admin</span>
+                          ) : (
+                            <span className="text-slate-500 font-medium">Unapproved (User)</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          {!uIsDev && (
+                            <button
+                              onClick={() => toggleAdminAccess(u.id)}
+                              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ml-auto ${
+                                uIsAdmin
+                                  ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                                  : 'bg-amber-500 text-white hover:bg-amber-600 shadow-2xs'
+                              }`}
+                            >
+                              {uIsAdmin ? (
+                                <>
+                                  <UserX className="w-3.5 h-3.5" />
+                                  <span>Remove Admin</span>
+                                </>
+                              ) : (
+                                <>
+                                  <UserCheck className="w-3.5 h-3.5" />
+                                  <span>Grant Admin</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -639,7 +647,7 @@ export const Dashboard: React.FC = () => {
               <div className="p-4 rounded-2xl bg-white border border-black/8">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Active Admins</span>
                 <div className="font-serif-cormorant font-bold text-3xl text-[#10B981]">
-                  {users.filter((u) => u.role === 'Admin' || u.role === 'Developer').length}
+                  {users.filter((u) => u.role === 'admin' || u.role === 'Admin' || u.role === 'developer' || u.role === 'Developer').length}
                 </div>
               </div>
               <div className="p-4 rounded-2xl bg-white border border-black/8">

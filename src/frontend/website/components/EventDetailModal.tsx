@@ -81,12 +81,19 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
             </h4>
 
             <ul className="space-y-2 text-xs font-sans-manrope text-[#5F5F5F]">
-              {event.rules.map((rule, idx) => (
-                <li key={idx} className="flex items-start gap-2">
+              {Array.isArray(event.rules) ? (
+                event.rules.map((rule: string, idx: number) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
+                    <span>{rule}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
-                  <span>{rule}</span>
+                  <span>{event.rules || 'Official CBSE festival rules apply.'}</span>
                 </li>
-              ))}
+              )}
             </ul>
           </div>
 
@@ -98,7 +105,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
             </h4>
 
             <div className="flex flex-wrap gap-2">
-              {event.judges.map((judge, idx) => (
+              {Array.isArray(event.judges) && event.judges.map((judge: string, idx: number) => (
                 <span
                   key={idx}
                   className="bg-[#FAF8F5] text-[#111111] font-bold text-xs px-3.5 py-1.5 rounded-full border border-black/8"

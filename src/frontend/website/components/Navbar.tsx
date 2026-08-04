@@ -49,6 +49,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isDev = currentUser?.role === 'developer' || currentUser?.role === 'Developer';
+  const isAdmin = (currentUser?.role === 'admin' || currentUser?.role === 'Admin') && currentUser?.approved;
+  const isNormalUser = currentUser && !isDev && !isAdmin;
+
   return (
     <>
       <header
@@ -102,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               {currentUser ? (
                 <div className="flex items-center gap-2">
                   {/* Developer Role: Control Center Button */}
-                  {currentUser.role === 'Developer' && (
+                  {isDev && (
                     <a
                       href="#control-center"
                       className="bg-blue-600 hover:bg-blue-700 text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
@@ -112,19 +116,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     </a>
                   )}
 
-                  {/* Admin Role: Dashboard Button */}
-                  {currentUser.role === 'Admin' && (
+                  {/* Approved Admin Role: Festival Management Button */}
+                  {isAdmin && (
                     <a
-                      href="#dashboard"
+                      href="#control-center"
                       className="bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
                     >
                       <Lock className="w-3.5 h-3.5 text-[#FF5E84]" />
-                      <span>Dashboard</span>
+                      <span>Festival Management</span>
                     </a>
                   )}
 
-                  {/* Normal User Role: Profile Badge ONLY (No Dashboard Button!) */}
-                  {currentUser.role === 'User' && (
+                  {/* Normal User / Unapproved Teacher: NO Dashboard Button! Display Name Tag */}
+                  {isNormalUser && (
                     <span className="text-xs font-bold text-[#111111] bg-white border border-black/10 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs">
                       <User className="w-3.5 h-3.5 text-[#FF5E84]" />
                       <span>{currentUser.name}</span>
@@ -149,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                 </button>
               )}
 
-              {/* Hamburger Toggle Button (Desktop & Mobile) */}
+              {/* Hamburger Toggle Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="w-10 h-10 rounded-full bg-white border border-black/5 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors"

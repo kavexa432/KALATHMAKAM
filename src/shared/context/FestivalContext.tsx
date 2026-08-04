@@ -62,7 +62,7 @@ interface FestivalContextType {
   getHouseMedals: (houseId: HouseId) => { gold: number; silver: number; bronze: number; total: number };
   
   // Workflow Actions
-  login: (role: 'Developer' | 'Admin') => void;
+  login: (role: 'developer' | 'admin' | 'user') => void;
   loginWithGoogle: () => Promise<void>;
   loginCustomUser: (email: string) => void;
   logout: () => Promise<void>;
@@ -105,20 +105,22 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           const snap = await getDoc(userRef);
           if (snap.exists()) {
-            // Read role strictly from Firestore document
+            // Read role & approved status strictly from Firestore
             const data = snap.data() as UserModel;
             setCurrentUser(data);
           } else {
-            // Create user document in Firestore. ONLY vaishnavil4433@gmail.com gets Developer role automatically.
+            // Document creation flow
             const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
             const newUser: UserModel = {
               id: fbUser.uid,
               name: fbUser.displayName || email.split('@')[0].toUpperCase(),
               email,
-              role: isDev ? 'Developer' : 'User', // Default role = "User"
+              role: isDev ? 'developer' : 'user', // Default role = "user"
+              approved: isDev ? true : false,      // Default approved = false
               permissions: isDev ? ['All'] : [],
               status: 'Active',
               avatarUrl: fbUser.photoURL || undefined,
+              createdAt: new Date().toISOString(),
             };
             await setDoc(userRef, newUser);
             setCurrentUser(newUser);
@@ -144,10 +146,10 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
           setUsers(firestoreUsers);
 
-          // Update active logged-in user role dynamically if modified by Developer
+          // Update active logged-in user role & approval dynamically when granted Admin by Developer
           if (currentUser) {
             const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
-            if (match && match.role !== currentUser.role) {
+            if (match && (match.role !== currentUser.role || match.approved !== currentUser.approved)) {
               setCurrentUser(match);
             }
           }
@@ -192,7 +194,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const login = (role: 'Developer' | 'Admin') => {
+  const login = (role: 'developer' | 'admin' | 'user') => {
     const foundUser = users.find((u) => u.role === role) || users[0];
     setCurrentUser(foundUser);
     logAuditAction(foundUser.name, foundUser.role, 'User Login', 'Auth', `Logged in as ${role}`);
@@ -207,7 +209,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           id: `dev-${Date.now()}`,
           name: 'Vaishnavi (System Developer)',
           email,
-          role: 'Developer',
+          role: 'developer',
+          approved: true,
           permissions: ['All'],
           status: 'Active',
         };
@@ -216,7 +219,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           id: `admin-${Date.now()}`,
           name: 'Liju Teacher (Stage Admin)',
           email,
-          role: 'Admin',
+          role: 'admin',
+          approved: true,
           permissions: ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'],
           status: 'Active',
         };
@@ -225,7 +229,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           id: `user-${Date.now()}`,
           name: email.split('@')[0].toUpperCase(),
           email,
-          role: 'User',
+          role: 'user',
+          approved: false,
           permissions: [],
           status: 'Active',
         };
@@ -248,7 +253,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // Ignore
     }
 
-    // Clear all local storage and session state
     localStorage.clear();
     sessionStorage.clear();
 
@@ -256,7 +260,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setFirebaseAuthUser(null);
   };
 
-  const logAuditAction = (user: string, role: 'Developer' | 'Admin' | 'User', action: string, entity: string, details: string) => {
+  const logAuditAction = (user: string, role: any, action: string, entity: string, details: string) => {
     const newLog: AuditLogItem = {
       id: `log-${Date.now()}`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -289,7 +293,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     logAuditAction(
       currentUser?.name || 'Admin',
-      currentUser?.role || 'Admin',
+      currentUser?.role || 'admin',
       'Submitted & Calculated House Result',
       newResultData.eventTitle,
       `Awarded ${newResultData.position} (+${pointsToAdd} pts) to ${newResultData.participantName} (${newResultData.houseId} House)`
@@ -302,7 +306,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
     logAuditAction(
       currentUser?.name || 'Admin',
-      currentUser?.role || 'Admin',
+      currentUser?.role || 'admin',
       'Verified Result',
       'Result Queue',
       `Verified result ID ${resultId}`
@@ -336,7 +340,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     logAuditAction(
       currentUser?.name || 'Admin',
-      currentUser?.role || 'Admin',
+      currentUser?.role || 'admin',
       'Published Result',
       target.eventTitle,
       `Published result. House ${target.houseId} received +${target.points} pts.`
@@ -364,7 +368,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLiveFeed((prev) => [newItem, ...prev]);
     logAuditAction(
       currentUser?.name || 'Admin',
-      currentUser?.role || 'Admin',
+      currentUser?.role || 'admin',
       'Created Announcement',
       type,
       content
@@ -386,7 +390,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
     logAuditAction(
       currentUser?.name || 'Developer',
-      'Developer',
+      'developer',
       'Updated User Permissions',
       'RBAC Grid',
       `Toggled ${permission} for user ${userId}`
@@ -397,22 +401,23 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const targetUser = users.find((u) => u.id === userId);
     if (!targetUser) return;
 
-    const isNowAdmin = targetUser.role !== 'Admin';
-    const newRole = isNowAdmin ? 'Admin' : 'User';
+    const isNowAdmin = targetUser.role !== 'admin' && targetUser.role !== 'Admin';
+    const newRole = isNowAdmin ? 'admin' : 'user';
+    const newApproved = isNowAdmin ? true : false;
 
     setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+      prev.map((u) => (u.id === userId ? { ...u, role: newRole, approved: newApproved } : u))
     );
 
     try {
-      await updateDoc(doc(db, 'users', userId), { role: newRole });
+      await updateDoc(doc(db, 'users', userId), { role: newRole, approved: newApproved });
     } catch {
       // Local fallback
     }
 
     logAuditAction(
       currentUser?.name || 'Developer',
-      'Developer',
+      'developer',
       isNowAdmin ? 'Granted Admin Access' : 'Revoked Admin Access',
       'User Management',
       `${isNowAdmin ? 'Granted' : 'Revoked'} Admin privileges for ${targetUser.name} (${targetUser.email})`
@@ -424,14 +429,15 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id: `usr-${Date.now()}`,
       name,
       email,
-      role: 'Admin',
+      role: 'admin',
+      approved: true,
       permissions: ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'],
       status: 'Active',
     };
     setUsers((prev) => [...prev, newUser]);
     logAuditAction(
       currentUser?.name || 'Developer',
-      'Developer',
+      'developer',
       'Created Admin User',
       'User Management',
       `Created new admin account for ${email}`
@@ -442,7 +448,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setUsers((prev) => prev.filter((u) => u.id !== userId));
     logAuditAction(
       currentUser?.name || 'Developer',
-      'Developer',
+      'developer',
       'Removed User',
       'User Management',
       `Removed user account ${userId}`
@@ -453,7 +459,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setArchiveMode((prev) => !prev);
     logAuditAction(
       currentUser?.name || 'Developer',
-      'Developer',
+      'developer',
       'Toggled Archive Mode',
       'System Settings',
       `Archive Mode changed to ${!archiveMode}`

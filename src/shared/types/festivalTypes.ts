@@ -1,115 +1,117 @@
 export type HouseId = 'NOVA' | 'VEGA' | 'ORION' | 'ASTRA';
 
-export type EventStatus =
-  | 'Draft'
-  | 'Published'
-  | 'Upcoming'
-  | 'Ongoing'
-  | 'LIVE NOW'
-  | 'Judging'
-  | 'Completed'
-  | 'Archived';
+export type UserRole = 'developer' | 'admin' | 'user' | 'Developer' | 'Admin' | 'User';
 
-export type ResultStatus = 'Pending Review' | 'Verified' | 'Published';
+export interface UserModel {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  approved?: boolean;
+  permissions: string[];
+  status: 'Active' | 'Inactive';
+  avatarUrl?: string;
+  createdAt?: string;
+}
 
-export type AnnouncementType =
-  | 'Announcement'
-  | 'Result'
-  | 'Stage Update'
-  | 'Emergency'
-  | 'General Notice'
-  | 'Schedule Change';
-
-export type PriorityLevel = 'Low' | 'Normal' | 'Important' | 'Critical';
-
-export type LeaderboardDay = 'Live' | 'Day 1' | 'Day 2' | 'Day 3' | 'Final';
+export interface SponsorModel {
+  id: string;
+  name: string;
+  tier: string;
+  logo?: string;
+  logoUrl?: string;
+  websiteUrl?: string;
+}
 
 export interface FestivalEdition {
   id: string;
-  year: string;
-  theme: string;
-  startDate: string;
-  endDate: string;
-  status: 'Live' | 'Archived';
-  logoUrl?: string;
+  name?: string;
+  edition?: string;
+  year?: number | string;
+  theme?: string;
+  schoolName?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  dates?: {
+    start: string;
+    end: string;
+    formatted: string;
+  };
+  stats?: {
+    eventsCount: number;
+    participantsCount: number;
+    stagesCount: number;
+    housesCount: number;
+  };
 }
 
 export interface HouseModel {
   id: HouseId;
   name: string;
+  tagline?: string;
   color: string;
-  secondaryColor: string;
-  motto: string;
-  flagSymbol: string;
+  secondaryColor?: string;
+  gradient?: string;
+  bgGlow?: string;
   captain: string;
   viceCaptain: string;
   teacherInCharge: string;
-  establishedYear: number;
-}
-
-export interface StudentModel {
-  id: string;
-  name: string;
-  classGrade: string;
-  houseId: HouseId;
-  avatarUrl?: string;
+  motto?: string;
+  flagSymbol?: string;
+  establishedYear?: number;
 }
 
 export interface StageModel {
   id: string;
+  code?: string;
   name: string;
-  code: string;
-  location: string;
-  capacity?: number;
+  venue?: string;
+  location?: string;
+  capacity: number;
+  currentEvent?: string;
+  status?: 'Active' | 'Idle' | 'Delayed' | string;
 }
 
 export interface EventModel {
   id: string;
-  festivalId: string;
+  festivalId?: string;
   title: string;
-  category: 'Dance' | 'Music' | 'Drama' | 'Literature' | 'Fine Arts' | 'Quiz' | 'Cultural';
+  category: string;
+  section?: 'LP' | 'UP' | 'HS' | 'HSS' | 'All' | string;
+  cbseCategory?: 'CAT-I' | 'CAT-II' | 'CAT-III' | 'CAT-IV';
   stageId: string;
-  stageName: string;
-  status: EventStatus;
-  startTime: string;
-  endTime: string;
-  rules: string[];
-  judges: string[];
+  stageName?: string;
+  scheduledTime?: string;
+  startTime?: string;
+  endTime?: string;
+  status: string;
   participantsCount: number;
+  rules?: any;
+  judges?: any[];
   featured?: boolean;
 }
 
 export interface EventResultModel {
   id: string;
-  festivalId?: string;
   eventId: string;
+  festivalId?: string;
   eventTitle: string;
   category: string;
-  position: '1st' | '2nd' | '3rd' | 'Participation';
-  points: number;
-  score?: number;
+  participantName: string;
+  studentClass: string;
   houseId: HouseId;
   houseName?: string;
-  participantName: string;
-  studentId?: string;
-  studentClass: string;
-  status: ResultStatus;
+  position: '1st' | '2nd' | '3rd' | 'Participation' | string;
+  score?: number;
+  points: number;
   createdAt: string;
-  certificateUrl?: string;
+  status: 'Pending Review' | 'Verified' | 'Published' | string;
   judgeNotes?: string;
 }
 
-export interface LeaderboardSnapshotModel {
-  id: string;
-  festivalId: string;
-  houseId: HouseId;
-  day: LeaderboardDay;
-  competitionPoints: number;
-  bonusPoints: number;
-  penaltyPoints: number;
-  totalPoints: number;
-  rank: number;
-}
+export type AnnouncementType = 'General Notice' | 'Announcement' | 'Result' | 'Stage Update' | 'Schedule Change' | 'Emergency';
+export type PriorityLevel = 'Normal' | 'Low' | 'Important' | 'Critical';
 
 export interface LiveActivityFeedItem {
   id: string;
@@ -127,41 +129,26 @@ export interface AuditLogItem {
   id: string;
   timestamp: string;
   user: string;
-  userRole: 'Developer' | 'Admin' | 'User';
+  userRole: UserRole;
   action: string;
   entity: string;
   details: string;
 }
 
-export interface UserModel {
-  id: string;
-  name: string;
-  email: string;
-  role: 'Developer' | 'Admin' | 'User';
-  permissions: string[];
-  status: 'Active' | 'Inactive';
-  avatarUrl?: string;
-}
-
 export interface GalleryItemModel {
   id: string;
-  festivalId: string;
+  festivalId?: string;
   title: string;
-  mediaUrl: string;
-  type: 'image' | 'video';
-  category: 'Opening Ceremony' | 'Dance' | 'Music' | 'Drama' | 'Prize Distribution' | 'Behind The Scenes' | 'Audience';
+  category: string;
+  imageUrl?: string;
+  mediaUrl?: string;
+  type?: string;
+  photographer: string;
+  houseTag?: HouseId;
   houseId?: HouseId;
-  eventId?: string;
-  day: string;
-  photographer?: string;
-  tags: string[];
-  caption?: string;
+  day?: string;
+  tags?: string[];
+  likes?: number;
 }
 
-export interface SponsorModel {
-  id: string;
-  name: string;
-  logo: string;
-  tier: 'Title Sponsor' | 'Gold Sponsor' | 'Silver Sponsor' | 'Partner';
-  websiteUrl?: string;
-}
+export type LeaderboardDay = 'Overall' | 'Day 1' | 'Day 2' | 'Day 3' | 'Live' | 'Final';

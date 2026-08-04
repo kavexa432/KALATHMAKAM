@@ -89,7 +89,7 @@ export const LiveEventsSection: React.FC = () => {
                   {evt.title}
                 </h3>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 line-clamp-2">
-                  {evt.rules[0]}
+                  {Array.isArray(evt.rules) ? evt.rules[0] : (evt.rules || 'Official CBSE festival rules apply.')}
                 </p>
               </div>
 
