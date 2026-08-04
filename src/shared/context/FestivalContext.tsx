@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -117,6 +119,32 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  // Catch mobile redirect authentication results on initial page load
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((res) => {
+        if (res?.user) {
+          const email = res.user.email || '';
+          const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
+          const loggedUser: UserModel = {
+            id: res.user.uid,
+            name: res.user.displayName || email.split('@')[0].toUpperCase(),
+            email,
+            role: isDev ? 'developer' : 'user',
+            approved: isDev ? true : false,
+            permissions: isDev ? ['All'] : [],
+            status: 'Active',
+            avatarUrl: res.user.photoURL || undefined,
+            createdAt: new Date().toISOString(),
+          };
+          persistUser(loggedUser);
+        }
+      })
+      .catch(() => {
+        // Handle redirect errors silently
+      });
+  }, []);
+
   // Sync Firebase Auth state strictly with Firestore users/{uid}
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
@@ -216,29 +244,36 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return index !== -1 ? index + 1 : 4;
   };
 
-  // Auth Actions
+  // Hybrid Desktop Popup / Mobile Redirect Auth Strategy
   const loginWithGoogle = async () => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const email = result.user.email || '';
-      const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
-      
-      const loggedUser: UserModel = {
-        id: result.user.uid,
-        name: result.user.displayName || email.split('@')[0].toUpperCase(),
-        email,
-        role: isDev ? 'developer' : 'user',
-        approved: isDev ? true : false,
-        permissions: isDev ? ['All'] : [],
-        status: 'Active',
-        avatarUrl: result.user.photoURL || undefined,
-        createdAt: new Date().toISOString(),
-      };
-      
-      persistUser(loggedUser);
+      if (isMobile) {
+        // Mobile & In-App Browsers: Use Redirect
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        // Desktop Browsers: Use Popup
+        const result = await signInWithPopup(auth, googleProvider);
+        const email = result.user.email || '';
+        const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
+        
+        const loggedUser: UserModel = {
+          id: result.user.uid,
+          name: result.user.displayName || email.split('@')[0].toUpperCase(),
+          email,
+          role: isDev ? 'developer' : 'user',
+          approved: isDev ? true : false,
+          permissions: isDev ? ['All'] : [],
+          status: 'Active',
+          avatarUrl: result.user.photoURL || undefined,
+          createdAt: new Date().toISOString(),
+        };
+        
+        persistUser(loggedUser);
+      }
     } catch (err: any) {
       console.warn('Google Sign-In Notice:', err);
-      // Fallback for unauthorized domains or popup blocks
       loginCustomUser('vaishnavil4433@gmail.com');
     }
   };
