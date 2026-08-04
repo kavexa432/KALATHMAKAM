@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Send, CheckCircle2, Clock } from 'lucide-react';
+import { MapPin, Phone, Mail, Send, CheckCircle2, Clock, ExternalLink, Navigation } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const ContactSection: React.FC = () => {
@@ -11,6 +11,8 @@ export const ContactSection: React.FC = () => {
     subject: 'General Query',
     message: '',
   });
+
+  const mapsUrl = "https://maps.app.goo.gl/fJkmvJHUMZLejBc77";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,13 +31,13 @@ export const ContactSection: React.FC = () => {
         {/* Title Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
           <span className="text-xs font-sans-manrope font-extrabold tracking-[0.25em] text-[#FF5E84] uppercase">
-            GET IN TOUCH
+            GET IN TOUCH & VENUE MAP
           </span>
           <h2 className="font-serif-cormorant text-4xl sm:text-5xl md:text-6xl font-bold text-[#111111]">
-            Contact & Venue Details
+            Campus Location & Contact
           </h2>
           <p className="font-sans-manrope text-base sm:text-lg text-[#5F5F5F]">
-            Reach out to our festival helpdesk or visit MGM Model School, Ayiroor, Varkala.
+            Visit MGM Model School, Ayiroor, Varkala or reach out to our festival helpdesk.
           </p>
         </div>
 
@@ -43,10 +45,10 @@ export const ContactSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
           {/* Left Column: School Address & Map */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="glass-card p-8 rounded-[28px] space-y-6">
+          <div className="lg:col-span-5 space-y-8 text-left">
+            <div className="glass-card p-8 rounded-[28px] space-y-6 shadow-xl border border-white/90">
               <h3 className="font-serif-cormorant text-3xl font-bold text-[#111111]">
-                Festival Helpdesk & Campus
+                MGM Model School Campus
               </h3>
 
               <div className="space-y-5 text-sm font-sans-manrope text-[#5F5F5F]">
@@ -92,22 +94,46 @@ export const ContactSection: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Direct Open in Google Maps Button */}
+              <div className="pt-2">
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-5 rounded-2xl bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all group"
+                >
+                  <Navigation className="w-4 h-4 text-[#FF5E84] group-hover:rotate-45 transition-transform" />
+                  <span>Get Driving Directions on Google Maps</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                </a>
+              </div>
             </div>
 
             {/* Embedded Google Map */}
-            <div className="glass-card rounded-[28px] overflow-hidden p-2 shadow-lg h-64">
+            <div className="glass-card rounded-[28px] overflow-hidden p-2 shadow-lg h-72 relative group">
               <iframe
-                title="MGM Model School Ayiroor Varkala Location Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15777.654862451996!2d76.7123!3d8.7345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05eb4a5d3f8a91%3A0x8e8749a5b9b1d9c0!2sVarkala%2C%20Kerala!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+                title="MGM Model School Ayiroor Varkala Google Location Map"
+                src="https://maps.google.com/maps?q=MGM%20Model%20School%20Ayiroor%20Varkala%20Kerala&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full rounded-[22px] border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
+              
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md text-[#111111] hover:text-[#FF5E84] font-sans-manrope font-extrabold text-[11px] px-3.5 py-1.5 rounded-full border border-black/10 shadow-md flex items-center gap-1.5 transition-all"
+              >
+                <span>Open Pin</span>
+                <ExternalLink className="w-3 h-3 text-[#FF5E84]" />
+              </a>
             </div>
           </div>
 
-          {/* Right Column: Contact & Registration Inquiry Form */}
-          <div className="lg:col-span-7">
+          {/* Right Column: Contact Inquiry Form */}
+          <div className="lg:col-span-7 text-left">
             <div className="glass-card p-8 sm:p-10 rounded-[32px] shadow-xl border border-white/90 relative">
               
               {formSubmitted ? (
