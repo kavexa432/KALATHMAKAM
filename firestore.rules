@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isDeveloper() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'vaishnavil4433@gmail.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer'
+      );
+    }
+    
+    function isAdminOrDeveloper() {
+      return isAuthenticated() && (
+        isDeveloper() ||
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.approved == true
+        )
+      );
+    }
+
+    // Users Collection - Managed strictly by Developer
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update, delete: if isDeveloper();
+    }
+
+    // Public Festival Content - Read by everyone, Write by Admin / Developer
+    match /events/{document=**} {
+      allow read: if true;
+      allow write: if isAdminOrDeveloper();
+    }
+
+    match /results/{document=**} {
+      allow read: if true;
+      allow write: if isAdminOrDeveloper();
+    }
+
+    match /gallery/{document=**} {
+      allow read: if true;
+      allow write: if isAdminOrDeveloper();
+    }
+
+    match /announcements/{document=**} {
+      allow read: if true;
+      allow write: if isAdminOrDeveloper();
+    }
+
+    match /leaderboard/{document=**} {
+      allow read: if true;
+      allow write: if isAdminOrDeveloper();
+    }
+
+    match /houses/{document=**} {
+      allow read: if true;
+      allow write: if isAdminOrDeveloper();
+    }
+
+    match /activityLogs/{document=**} {
+      allow read: if isDeveloper();
+      allow write: if isAdminOrDeveloper();
+    }
+
+    match /settings/{document=**} {
+      allow read: if true;
+      allow write: if isDeveloper();
+    }
+
+  }
+}
