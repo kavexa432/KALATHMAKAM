@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Lock, ShieldCheck } from 'lucide-react';
 import { useFestival } from '../context/FestivalContext';
 
@@ -11,6 +11,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { loginWithGoogle } = useFestival();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [accessDeniedMsg, setAccessDeniedMsg] = useState<string | null>(null);
+
+  // Press ESC to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -29,8 +41,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-      <div className="bg-[#FAF8F5] rounded-[32px] max-w-md w-full overflow-hidden shadow-2xl border border-black/10 relative text-left my-auto">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#FAF8F5] rounded-[32px] max-w-md w-full overflow-hidden shadow-2xl border border-black/10 relative text-left my-auto cursor-default"
+      >
         
         {/* Header */}
         <div className="p-7 bg-gradient-to-r from-[#111111] to-[#2B2B2B] text-white relative">

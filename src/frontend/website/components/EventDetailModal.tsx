@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Calendar, MapPin, Users, Award, FileText, CheckCircle2 } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import type { EventModel } from '../../../shared/types/festivalTypes';
@@ -11,6 +11,17 @@ interface EventDetailModalProps {
 
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClose }) => {
   const { results } = useFestival();
+
+  // Press ESC to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   if (!event) return null;
 
@@ -31,8 +42,14 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in">
-      <div className="bg-[#FAF8F5] rounded-[32px] max-w-3xl w-full overflow-hidden shadow-2xl border border-black/10 relative my-8 text-left">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#FAF8F5] rounded-[32px] max-w-3xl w-full overflow-hidden shadow-2xl border border-black/10 relative my-8 text-left cursor-default"
+      >
         
         {/* Header Banner */}
         <div className="p-8 bg-gradient-to-r from-[#111111] via-[#1A1A1A] to-[#2B2B2B] text-white relative">
@@ -99,7 +116,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
 
           {/* Judges Panel */}
           <div className="bg-white rounded-2xl p-5 border border-black/5 shadow-2xs space-y-3">
-            <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111] uppercase tracking-wider flex items-center gap-2">
+            <h4 className="font-sans-manrope font-[#111111] uppercase tracking-wider flex items-center gap-2 text-sm font-extrabold">
               <Award className="w-4 h-4 text-[#F59E0B]" />
               <span>HONORABLE JUDGING PANEL</span>
             </h4>

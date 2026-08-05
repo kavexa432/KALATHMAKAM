@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Sparkles, Volume2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -8,15 +8,31 @@ interface PromoModalProps {
 }
 
 export const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
+  // Press ESC to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl cursor-pointer animate-in fade-in"
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="glass-panel bg-[#FAF8F5] rounded-[32px] max-w-3xl w-full overflow-hidden shadow-2xl relative border border-white/90"
+        onClick={(e) => e.stopPropagation()}
+        className="glass-panel bg-[#FAF8F5] rounded-[32px] max-w-3xl w-full overflow-hidden shadow-2xl relative border border-white/90 cursor-default"
       >
         {/* Top Header */}
         <div className="p-6 border-b border-[#111111]/10 flex items-center justify-between">
@@ -36,7 +52,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-[#111111] hover:text-[#FF5E84] transition-colors"
+            className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-[#111111] hover:text-[#FF5E84] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

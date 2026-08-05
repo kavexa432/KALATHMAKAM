@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Trophy, Award, Users, Star, Shield, Flag } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
@@ -11,6 +11,17 @@ interface HouseDetailModalProps {
 
 export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onClose }) => {
   const { houses, getHousePoints, getHouseRank, getHouseMedals, results } = useFestival();
+
+  // Press ESC to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   if (!houseId) return null;
 
@@ -28,9 +39,14 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
   const rankBadge = rank === 1 ? '🥇 1st Rank' : rank === 2 ? '🥈 2nd Rank' : rank === 3 ? '🥉 3rd Rank' : '⭐ 4th Rank';
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in">
-      <div className="bg-[#FAF8F5] rounded-[32px] max-w-3xl w-full overflow-hidden shadow-2xl border border-black/10 relative my-8">
-        
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#FAF8F5] rounded-[32px] max-w-3xl w-full overflow-hidden shadow-2xl border border-black/10 relative my-8 cursor-default"
+      >
         {/* Banner Header with House Color */}
         <div
           className="p-8 text-white relative overflow-hidden flex flex-col justify-between min-h-[200px]"
