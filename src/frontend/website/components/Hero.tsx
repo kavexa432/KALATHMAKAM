@@ -13,38 +13,38 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-32 sm:pt-36 lg:pt-40 pb-8 flex flex-col justify-center min-h-[88vh] lg:min-h-[92vh] overflow-x-hidden bg-[#FAF8F5]"
+      className="relative pt-22 sm:pt-24 lg:pt-26 pb-6 flex flex-col justify-start min-h-[85vh] lg:min-h-[88vh] overflow-x-hidden bg-[#FAF8F5]"
     >
       {/* Warm Ambient Cream Glow Backdrop */}
       <div
-        className="absolute top-1/4 left-1/12 w-[750px] h-[650px] pointer-events-none -z-10 blur-3xl opacity-40"
+        className="absolute top-1/6 left-1/12 w-[750px] h-[650px] pointer-events-none -z-10 blur-3xl opacity-40"
         style={{
           background: 'radial-gradient(ellipse at 35% 45%, rgba(255, 245, 230, 0.95) 0%, rgba(255, 235, 220, 0.35) 55%, transparent 80%)',
         }}
       />
 
       {/* Decorative Floating Petals */}
-      <div className="absolute top-36 right-[36%] text-[#FF5E84]/25 pointer-events-none animate-petal-float">
+      <div className="absolute top-24 right-[36%] text-[#FF5E84]/25 pointer-events-none animate-petal-float">
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
-      <div className="absolute top-28 right-[12%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
+      <div className="absolute top-20 right-[12%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
-      <div className="absolute top-56 left-[18%] text-[#F59E0B]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '6s' }}>
+      <div className="absolute top-44 left-[18%] text-[#F59E0B]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '6s' }}>
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
 
       {/* Expanded 1480px Content Grid Container */}
-      <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10 w-full relative z-10 my-auto">
+      <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10 w-full relative z-10">
         
-        {/* Main 45% / 55% Grid: Vertically Centered with align-items: center */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        {/* Main 45% / 55% Grid: Vertically Centered */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-2">
           
           {/* Left Social Circles Bar */}
           <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-4 text-[#5F5F5F]">
@@ -83,8 +83,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </span>
           </div>
 
-          {/* Left Text Column (Grand & Commanding Text) */}
-          <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-5">
+          {/* Left Text Column */}
+          <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4">
             
             {/* Sub-Badge */}
             <motion.div
@@ -97,7 +97,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               <span>KALATHMAKAM 2K26</span>
             </motion.div>
 
-            {/* Dominant Large Headline (88px) */}
+            {/* Dominant Large Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -119,7 +119,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </motion.h1>
 
             {/* Decorative Separator Motif */}
-            <div className="flex items-center gap-3 w-56 text-[#FF5E84]/35 my-2">
+            <div className="flex items-center gap-3 w-56 text-[#FF5E84]/35 my-1.5">
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
               <span className="text-[#FF5E84] text-xs">❖</span>
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
@@ -142,12 +142,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-5 sm:gap-6 pt-3"
+              className="flex flex-wrap items-center gap-5 sm:gap-6 pt-2"
             >
               {/* Primary Pill: Explore Events → */}
               <button
                 onClick={onExploreEvents}
-                className="gradient-btn-primary text-white font-sans-manrope font-bold text-sm sm:text-base px-7.5 py-4 rounded-full flex items-center gap-3 cursor-pointer group shadow-md hover:scale-[1.02] transition-all"
+                className="gradient-btn-primary text-white font-sans-manrope font-bold text-sm sm:text-base px-7.5 py-3.5 rounded-full flex items-center gap-3 cursor-pointer group shadow-md hover:scale-[1.02] transition-all"
               >
                 <span>Explore Events</span>
                 <svg className="w-4.5 h-4.5 fill-white transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -156,7 +156,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               {/* Secondary Pill: Watch Promo */}
               <button
                 onClick={onOpenPromo}
-                className="bg-white/90 backdrop-blur-md text-[#111111] font-sans-manrope font-bold text-sm sm:text-[15px] px-6 py-4 rounded-full flex items-center gap-2.5 cursor-pointer border border-black/10 shadow-xs hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all group"
+                className="bg-white/90 backdrop-blur-md text-[#111111] font-sans-manrope font-bold text-sm sm:text-[15px] px-6 py-3.5 rounded-full flex items-center gap-2.5 cursor-pointer border border-black/10 shadow-xs hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all group"
               >
                 <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg className="w-3 h-3 fill-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -167,7 +167,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               {/* Tertiary Lighter Pill: Leaderboard */}
               <button
                 onClick={onViewLeaderboard}
-                className="bg-transparent hover:bg-white/60 text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-sm sm:text-[15px] px-5 py-4 rounded-full flex items-center gap-2 cursor-pointer border border-black/8 hover:border-black/15 shadow-2xs hover:scale-[1.02] transition-all"
+                className="bg-transparent hover:bg-white/60 text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-sm sm:text-[15px] px-5 py-3.5 rounded-full flex items-center gap-2 cursor-pointer border border-black/8 hover:border-black/15 shadow-2xs hover:scale-[1.02] transition-all"
               >
                 <svg className="w-4.5 h-4.5 stroke-[#FF5E84]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
                 <span>Leaderboard</span>
@@ -176,8 +176,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
           </div>
 
-          {/* Right Column: Prominent Large Hero Illustration (660px max width) */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center items-center relative lg:-translate-y-4 lg:-ml-6">
+          {/* Right Column: Hero Illustration */}
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center items-center relative lg:-ml-6">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -197,7 +197,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
         </div>
 
         {/* Bottom Editorial 4-Stats Box */}
-        <div className="glass-card bg-white/94 backdrop-blur-2xl rounded-[26px] px-6 py-4 shadow-sm border border-white/95 mt-12 mb-4">
+        <div className="glass-card bg-white/94 backdrop-blur-2xl rounded-[26px] px-6 py-4 shadow-sm border border-white/95 mt-8 mb-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-black/6">
             
             <div className="p-3 flex items-center gap-4 text-left">
@@ -262,7 +262,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
       </div>
 
       {/* Extended Soft Watercolor Bottom Transition Splash */}
-      <div className="h-28 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/85 to-[#FAF8F5] pointer-events-none mt-2" />
+      <div className="h-24 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/85 to-[#FAF8F5] pointer-events-none mt-2" />
 
     </section>
   );
