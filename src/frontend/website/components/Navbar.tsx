@@ -76,29 +76,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'glass-nav py-2 shadow-xs' : 'bg-transparent py-3'
+          scrolled ? 'glass-nav py-1 shadow-xs' : 'bg-transparent py-2'
         }`}
       >
-        <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10">
-          <div className="flex items-center justify-between h-[80px] lg:h-[88px]">
+        {/* Exact 32px left margin container aligned with Editorial Hero Grid */}
+        <div className="max-w-[1480px] mx-auto px-8">
+          {/* Exact 80px Navbar Height */}
+          <div className="flex items-center justify-between h-[80px]">
             
             {/* Logo + Desktop Nav Container */}
             <div className="flex items-center">
-              {/* Calligraphy Logo */}
+              {/* Crisp 180x70px Calligraphy Logo */}
               <a
                 href="#home"
                 onClick={(e) => handleNavClick(e, 'home')}
-                className="flex items-center gap-2 group shrink-0 py-1"
+                className="flex items-center shrink-0 my-auto"
               >
                 <img
                   src={logoImage}
                   alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                  className="h-16 sm:h-18 lg:h-[76px] xl:h-[82px] w-auto max-w-[220px] object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="w-[180px] h-[70px] object-contain transition-transform duration-300 hover:scale-[1.02]"
                 />
               </a>
 
-              {/* Desktop Navigation Links matching exact Reference order & styling */}
-              <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-10 lg:ml-14">
+              {/* Desktop Navigation Links with exact 45px Gap from Logo */}
+              <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-[45px]">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;
                   return (
@@ -128,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
             </div>
 
             {/* Right Header Controls (Pink Bordered Login Pill + Circular Menu Button) */}
-            <div className="flex items-center gap-3 sm:gap-4 pr-2 sm:pr-4">
+            <div className="flex items-center gap-3.5">
               
               {/* Desktop Auth Controls */}
               <div className="hidden lg:flex items-center gap-3">
