@@ -49,7 +49,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Instant redirect / view jump handler without long smooth-scrolling delay
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
     setMobileMenuOpen(false);
@@ -84,9 +83,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10">
           <div className="flex items-center justify-between h-[76px] lg:h-[82px]">
             
-            {/* Logo + Desktop Nav Container (Grand & Prominent Logo) */}
+            {/* Logo + Desktop Nav Container */}
             <div className="flex items-center">
-              {/* Prominent Logo */}
+              {/* Calligraphy Logo */}
               <a
                 href="#home"
                 onClick={(e) => handleNavClick(e, 'home')}
@@ -115,7 +114,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       }`}
                     >
                       {link.name}
-                      {/* Active Link Underline Indicator */}
+                      {/* Reference Underline Motif: ──•── */}
                       {isActive && (
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-[2px]">
                           <div className="w-3.5 h-[1px] bg-[#FF5E84]" />
@@ -129,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               </nav>
             </div>
 
-            {/* Right Controls */}
+            {/* Right Header Controls (Login Pill + Circular Menu Button) */}
             <div className="flex items-center gap-3 sm:gap-4 pr-2 sm:pr-4">
               
               {/* Desktop Auth Controls */}
@@ -138,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   <div className="relative">
                     <button
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="bg-white/95 hover:bg-white text-[#111111] font-sans-manrope font-bold text-xs px-4.5 py-2 rounded-full flex items-center gap-2.5 border border-black/10 shadow-xs hover:shadow-md transition-all cursor-pointer"
+                      className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs px-4.5 py-2 rounded-full flex items-center gap-2.5 border border-black/10 shadow-xs hover:shadow-md transition-all cursor-pointer"
                     >
                       {currentUser.avatarUrl ? (
                         <img src={currentUser.avatarUrl} alt="Avatar" className="w-6.5 h-6.5 rounded-full border border-black/10" />
@@ -188,10 +187,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     )}
                   </div>
                 ) : (
-                  /* Visitor Desktop Login Button */
+                  /* Visitor Pink Bordered Login Button (Exact Reference Match) */
                   <button
                     onClick={onOpenLogin}
-                    className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[14px] px-6.5 py-2.5 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
+                    className="bg-white hover:bg-[#FF5E84]/5 text-[#111111] font-sans-manrope font-bold text-[14px] px-6 py-2 rounded-full flex items-center gap-2 cursor-pointer shadow-2xs border border-[#FF5E84] transition-all"
                   >
                     <User className="w-4 h-4 text-[#FF5E84]" />
                     <span>Login</span>
@@ -199,10 +198,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                 )}
               </div>
 
-              {/* Hamburger Toggle Button (Always visible on Mobile) */}
+              {/* Circular Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="w-10 h-10 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors lg:hidden"
+                className="w-10 h-10 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-2xs cursor-pointer transition-colors"
                 aria-label="Toggle Navigation Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -213,10 +212,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
           </div>
         </div>
 
-        {/* Clean Integrated Mobile Navigation Drawer */}
+        {/* Clean Integrated Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[65px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
-            <nav className="flex flex-col gap-2 text-left">
+          <div className="fixed inset-x-0 top-[65px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
+            <nav className="flex flex-col gap-2 text-left max-w-[1480px] mx-auto">
               {navLinks.map((link) => (
                 <a
                   key={link.id}
@@ -234,7 +233,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
               <div className="h-[1px] bg-black/10 my-3" />
 
-              {/* Mobile Account Profile & Dashboard Actions */}
+              {/* Account Profile & Actions */}
               {currentUser ? (
                 <div className="p-4 rounded-2xl bg-white border border-black/10 space-y-3">
                   <div className="flex items-center gap-3">
@@ -266,7 +265,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     </span>
                   </div>
 
-                  {/* Mobile Dashboard Quick Action */}
                   {(isDev || isAdmin) && (
                     <a
                       href="#control-center"

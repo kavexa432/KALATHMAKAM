@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Users, Award, MapPin, Globe } from 'lucide-react';
 import heroArt from '../../../assets/hero_kerala_art_transparent.png';
 
 interface HeroProps {
@@ -13,7 +12,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-22 sm:pt-24 lg:pt-26 pb-6 flex flex-col justify-start min-h-[85vh] lg:min-h-[88vh] overflow-x-hidden bg-[#FAF8F5]"
+      className="relative pt-20 sm:pt-22 lg:pt-24 pb-4 flex flex-col justify-between min-h-[85vh] lg:min-h-[88vh] overflow-x-hidden bg-[#FAF8F5]"
     >
       {/* Warm Ambient Cream Glow Backdrop */}
       <div
@@ -40,23 +39,25 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
         </svg>
       </div>
 
-      {/* Expanded 1480px Content Grid Container */}
-      <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10 w-full relative z-10">
+      {/* Main 1480px Grid Container */}
+      <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10 w-full relative z-10 my-auto">
         
         {/* Main 45% / 55% Grid: Vertically Centered */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-2">
           
-          {/* Left Social Circles Bar */}
+          {/* Left Social Icons Column */}
           <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-4 text-[#5F5F5F]">
+            {/* Instagram */}
             <a
-              href="https://mgmmodelschool.edu.in"
+              href="https://www.instagram.com"
               target="_blank"
               rel="noreferrer"
-              aria-label="Official Website"
-              className="w-10.5 h-10.5 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#10B981] hover:scale-110 transition-all duration-300"
+              aria-label="Instagram"
+              className="w-10.5 h-10.5 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#E4405F] hover:scale-110 transition-all duration-300"
             >
-              <Globe className="w-4.5 h-4.5" />
+              <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
             </a>
+            {/* Facebook */}
             <a
               href="https://www.facebook.com/MGMModelSchoolAyiroorVarkala/"
               target="_blank"
@@ -66,6 +67,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             >
               <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.374 14.5 5 15.5 5H18V0h-3.808C10.592 0 9 1.583 9 4.615V8z"/></svg>
             </a>
+            {/* YouTube */}
             <a
               href="https://www.youtube.com/@mgmmodelschoolvarkala2839"
               target="_blank"
@@ -76,33 +78,33 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
             </a>
 
-            <div className="w-[1px] h-10 bg-black/12 my-1" />
+            <div className="w-[2px] h-6 bg-black/15 my-1" />
 
             <span className="[writing-mode:vertical-lr] rotate-180 text-[9.5px] font-sans-manrope font-extrabold tracking-[0.26em] text-[#5F5F5F] uppercase">
               FOLLOW US
             </span>
           </div>
 
-          {/* Left Text Column */}
+          {/* Left Text Column (Matching Reference Layout) */}
           <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4">
             
-            {/* Sub-Badge */}
+            {/* Sub-Badge with Feather Icon */}
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
               className="inline-flex items-center gap-2 text-xs font-sans-manrope font-extrabold tracking-[0.26em] text-[#FF5E84] uppercase"
             >
-              <span>🌸</span>
+              <svg className="w-4 h-4 fill-current text-[#FF5E84]" viewBox="0 0 24 24"><path d="M20.9 2.5c-4.4 0-9.6 4.3-12.7 8.5C6.7 13 5.4 15.3 4.5 17c-.7 1.3-1.6 2.9-2.5 4.5 2.1-.9 4.1-1.8 5.7-2.6 1.8-.9 4.1-2.2 6-3.7 4.2-3.1 8.5-8.3 8.5-12.7 0-.5-.6-1.1-1.3-1.1z"/></svg>
               <span>KALATHMAKAM 2K26</span>
             </motion.div>
 
-            {/* Dominant Large Headline */}
+            {/* Exact 3-Line Headline matching Reference image */}
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[88px] font-bold leading-[1.03] tracking-tight text-[#111111]"
+              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[84px] font-bold leading-[1.05] tracking-tight text-[#111111]"
             >
               Where{' '}
               <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent inline-flex items-baseline">
@@ -110,6 +112,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
                 <span className="text-[#F59E0B] text-3xl sm:text-4xl lg:text-5xl font-normal ml-0.5 translate-y-1">✦</span>
               </span>
               ,<br />
+              <span className="font-serif-cormorant text-[#111111]">Breathes,</span><br />
               <span className="whitespace-nowrap">
                 <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent">
                   Talent
@@ -118,23 +121,25 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               </span>
             </motion.h1>
 
-            {/* Decorative Separator Motif */}
+            {/* Separator Line with Central Diamond Motif (❖) */}
             <div className="flex items-center gap-3 w-56 text-[#FF5E84]/35 my-1.5">
-              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
-              <span className="text-[#FF5E84] text-xs">❖</span>
-              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
+              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/35 to-transparent w-full" />
+              <span className="text-[#FF5E84] text-xs font-bold">❖</span>
+              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/35 to-transparent w-full" />
             </div>
 
-            {/* Subtitle Description */}
+            {/* Exact Paragraph Description matching Reference */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="font-sans-manrope text-sm sm:text-base lg:text-lg text-[#5F5F5F] max-w-[520px] leading-relaxed font-medium"
+              className="font-sans-manrope text-sm sm:text-base text-[#5F5F5F] max-w-[500px] leading-relaxed font-medium"
             >
-              The Grand Arts Festival of
+              The Grand Arts Fest of
               <br />
-              <strong className="text-[#111111] font-bold">MGM Model School, Ayiroor.</strong>
+              <strong className="text-[#111111] font-semibold">MGM Model School, Ayiroor, Varkala.</strong>
+              <br />
+              A celebration of creativity, culture and expression.
             </motion.p>
 
             {/* Action Buttons Row */}
@@ -142,41 +147,41 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-5 sm:gap-6 pt-2"
+              className="flex flex-wrap items-center gap-4 sm:gap-5 pt-2"
             >
-              {/* Primary Pill: Explore Events → */}
+              {/* Button 1: Pink Gradient Pill */}
               <button
                 onClick={onExploreEvents}
-                className="gradient-btn-primary text-white font-sans-manrope font-bold text-sm sm:text-base px-7.5 py-3.5 rounded-full flex items-center gap-3 cursor-pointer group shadow-md hover:scale-[1.02] transition-all"
+                className="gradient-btn-primary text-white font-sans-manrope font-bold text-xs sm:text-sm px-6.5 py-3.5 rounded-full flex items-center gap-2.5 cursor-pointer group shadow-md hover:scale-[1.02] transition-all"
               >
                 <span>Explore Events</span>
-                <svg className="w-4.5 h-4.5 fill-white transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <svg className="w-4 h-4 fill-white transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
 
-              {/* Secondary Pill: Watch Promo */}
+              {/* Button 2: White Pill with Black Circle Play Icon */}
               <button
                 onClick={onOpenPromo}
-                className="bg-white/90 backdrop-blur-md text-[#111111] font-sans-manrope font-bold text-sm sm:text-[15px] px-6 py-3.5 rounded-full flex items-center gap-2.5 cursor-pointer border border-black/10 shadow-xs hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all group"
+                className="bg-white text-[#111111] font-sans-manrope font-bold text-xs sm:text-[13px] px-5 py-3.5 rounded-full flex items-center gap-2.5 cursor-pointer border border-black/10 shadow-2xs hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all group"
               >
-                <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg className="w-3 h-3 fill-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <div className="w-5 h-5 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-2.5 h-2.5 fill-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 </div>
                 <span>Watch Promo</span>
               </button>
 
-              {/* Tertiary Lighter Pill: Leaderboard */}
+              {/* Button 3: Light Pill with Trophy Icon */}
               <button
                 onClick={onViewLeaderboard}
-                className="bg-transparent hover:bg-white/60 text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-sm sm:text-[15px] px-5 py-3.5 rounded-full flex items-center gap-2 cursor-pointer border border-black/8 hover:border-black/15 shadow-2xs hover:scale-[1.02] transition-all"
+                className="bg-transparent hover:bg-white/60 text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-xs sm:text-[13px] px-4.5 py-3.5 rounded-full flex items-center gap-2 cursor-pointer border border-black/8 hover:border-black/15 shadow-2xs hover:scale-[1.02] transition-all"
               >
-                <svg className="w-4.5 h-4.5 stroke-[#FF5E84]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                <svg className="w-4 h-4 stroke-[#FF5E84]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
                 <span>Leaderboard</span>
               </button>
             </motion.div>
 
           </div>
 
-          {/* Right Column: Hero Illustration */}
+          {/* Right Column: Hero Illustration Emblem with Grounded Shadow */}
           <div className="lg:col-span-6 xl:col-span-6 flex justify-center items-center relative lg:-ml-6">
             
             <motion.div
@@ -188,7 +193,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_22px_50px_rgba(255,94,132,0.16)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_25px_45px_rgba(0,0,0,0.18)]"
               />
             </motion.div>
 
@@ -196,73 +201,16 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
         </div>
 
-        {/* Bottom Editorial 4-Stats Box */}
-        <div className="glass-card bg-white/94 backdrop-blur-2xl rounded-[26px] px-6 py-4 shadow-sm border border-white/95 mt-8 mb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-black/6">
-            
-            <div className="p-3 flex items-center gap-4 text-left">
-              <div className="w-9 h-9 rounded-xl bg-[#FF5E84]/12 text-[#FF5E84] flex items-center justify-center shrink-0">
-                <Calendar className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
-                  3 Days of Celebration
-                </h4>
-                <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                  Jan 22 – 24, 2026
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3 flex items-center gap-4 text-left">
-              <div className="w-9 h-9 rounded-xl bg-[#F59E0B]/12 text-[#F59E0B] flex items-center justify-center shrink-0">
-                <Users className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
-                  20+ Events & Competitions
-                </h4>
-                <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                  Showcase Your Talent
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3 flex items-center gap-4 text-left">
-              <div className="w-9 h-9 rounded-xl bg-[#10B981]/12 text-[#10B981] flex items-center justify-center shrink-0">
-                <Award className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
-                  Exciting Prizes & Recognition
-                </h4>
-                <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                  Win & Shine
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3 flex items-center gap-4 text-left">
-              <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/12 text-[#3B82F6] flex items-center justify-center shrink-0">
-                <MapPin className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-sm text-[#10B981] font-bold">
-                  MGM Model School
-                </h4>
-                <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                  Ayiroor, Varkala, Kerala, India
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
       </div>
 
-      {/* Extended Soft Watercolor Bottom Transition Splash */}
-      <div className="h-24 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/85 to-[#FAF8F5] pointer-events-none mt-2" />
+      {/* Pill Mouse Scroll Indicator centered at bottom matching reference */}
+      <div className="flex flex-col items-center justify-center pt-2 pb-2 z-10">
+        <a href="#about" aria-label="Scroll to Discover" className="flex items-center justify-center text-[#111111] hover:text-[#FF5E84] transition-colors">
+          <div className="w-5 h-8 rounded-full border-2 border-black/40 hover:border-[#FF5E84] p-1 flex justify-center transition-colors">
+            <div className="w-1 h-2 bg-[#111111] rounded-full animate-bounce" />
+          </div>
+        </a>
+      </div>
 
     </section>
   );
