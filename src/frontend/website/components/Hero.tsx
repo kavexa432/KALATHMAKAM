@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Users, Award, MapPin, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import heroArt from '../../../assets/hero_kerala_art_transparent.png';
 
 interface HeroProps {
@@ -13,11 +13,11 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-20 sm:pt-22 lg:pt-24 pb-4 min-h-[85vh] lg:min-h-[90vh] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
+      className="relative pt-20 sm:pt-22 lg:pt-24 pb-8 min-h-[85vh] lg:min-h-[88vh] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
     >
       {/* Warm Golden Cream Ambient Backdrop Glow */}
       <div
-        className="absolute top-1/4 right-1/4 w-[600px] h-[500px] pointer-events-none -z-10 blur-3xl opacity-35"
+        className="absolute top-1/4 right-1/4 w-[650px] h-[550px] pointer-events-none -z-10 blur-3xl opacity-35"
         style={{
           background: 'radial-gradient(ellipse at 50% 50%, rgba(255, 235, 215, 0.9) 0%, rgba(255, 220, 200, 0.3) 60%, transparent 80%)',
         }}
@@ -29,8 +29,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
-      <div className="absolute top-24 right-[8%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
-        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+      <div className="absolute top-24 right-[5%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
@@ -43,8 +43,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
       {/* Main Container max-width: 1500px */}
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
         
-        {/* Main Grid: 50% / 50% Perfect Balanced Ratio with Vertically Centered Grid Items */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
+        {/* Main Grid: 48% / 52% Balanced Ratio with Vertically Centered Grid Items */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-center">
           
           {/* Left Social Bar */}
           <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-2.5 text-[#5F5F5F]">
@@ -83,7 +83,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </span>
           </div>
 
-          {/* Left Content Column (50% Proportion) */}
+          {/* Left Content Column */}
           <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4">
             
             {/* Sub-Badge */}
@@ -102,7 +102,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[80px] font-bold leading-[1.05] tracking-tight text-[#111111]"
+              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[78px] xl:text-[82px] font-bold leading-[1.05] tracking-tight text-[#111111]"
             >
               Where{' '}
               <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent inline-flex items-baseline">
@@ -118,7 +118,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               </span>
             </motion.h1>
 
-            {/* Decorative Separator Motif (With 8px Breathing Room) */}
+            {/* Decorative Separator Motif */}
             <div className="flex items-center gap-2.5 w-48 text-[#FF5E84]/35 my-2">
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
               <span className="text-[#FF5E84] text-xs">❖</span>
@@ -166,7 +166,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
                 <span>Watch Promo</span>
               </button>
 
-              {/* Tertiary Lighter Pill: Leaderboard (Reduced Shadow) */}
+              {/* Tertiary Lighter Pill: Leaderboard */}
               <button
                 onClick={onViewLeaderboard}
                 className="bg-white/50 hover:bg-white text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-xs sm:text-[13px] px-4.5 py-3 rounded-full flex items-center gap-2 cursor-pointer border border-black/8 hover:border-black/15 shadow-none hover:scale-[1.02] transition-all"
@@ -178,19 +178,19 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
           </div>
 
-          {/* Right Column: Hero Illustration (50% Proportion, Raised 180-220px UP to Center Vertically with Text, Scaled down 6%, 40px Left) */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-center items-center relative lg:-ml-6 lg:-mt-12 xl:-mt-16">
+          {/* Right Column: Larger Hero Illustration Emblem (Max Width 600-660px, Extended to Screen Edge) */}
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-end items-center relative lg:-mr-4 xl:-mr-8">
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1.05 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="relative w-full max-w-[440px] lg:max-w-[490px] xl:max-w-[520px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
+              className="relative w-full max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
             >
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_16px_35px_rgba(255,94,132,0.12)] scale-100"
+                className="w-full h-full object-contain filter drop-shadow-[0_20px_45px_rgba(255,94,132,0.15)] scale-105"
               />
             </motion.div>
 
@@ -200,73 +200,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
       </div>
 
-      {/* Bottom Editorial 4-Stats Box & Smooth Watercolor Transition */}
-      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 mt-4 mb-2">
-        <div className="glass-card bg-white/92 backdrop-blur-2xl rounded-[22px] px-4 py-2.5 shadow-sm border border-white/95">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-black/6">
-            
-            <div className="p-2 sm:p-2.5 flex items-center gap-3 text-left">
-              <div className="w-7.5 h-7.5 rounded-xl bg-[#FF5E84]/12 text-[#FF5E84] flex items-center justify-center shrink-0">
-                <Calendar className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-xs text-[#111111]">
-                  3 Days of Celebration
-                </h4>
-                <p className="font-sans-manrope text-[10px] text-[#5F5F5F]">
-                  Jan 22 – 24, 2026
-                </p>
-              </div>
-            </div>
-
-            <div className="p-2 sm:p-2.5 flex items-center gap-3 text-left">
-              <div className="w-7.5 h-7.5 rounded-xl bg-[#F59E0B]/12 text-[#F59E0B] flex items-center justify-center shrink-0">
-                <Users className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-xs text-[#111111]">
-                  20+ Events & Competitions
-                </h4>
-                <p className="font-sans-manrope text-[10px] text-[#5F5F5F]">
-                  Showcase Your Talent
-                </p>
-              </div>
-            </div>
-
-            <div className="p-2 sm:p-2.5 flex items-center gap-3 text-left">
-              <div className="w-7.5 h-7.5 rounded-xl bg-[#10B981]/12 text-[#10B981] flex items-center justify-center shrink-0">
-                <Award className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-xs text-[#111111]">
-                  Exciting Prizes & Recognition
-                </h4>
-                <p className="font-sans-manrope text-[10px] text-[#5F5F5F]">
-                  Win & Shine
-                </p>
-              </div>
-            </div>
-
-            <div className="p-2 sm:p-2.5 flex items-center gap-3 text-left">
-              <div className="w-7.5 h-7.5 rounded-xl bg-[#3B82F6]/12 text-[#3B82F6] flex items-center justify-center shrink-0">
-                <MapPin className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-xs text-[#10B981] font-bold">
-                  MGM Model School
-                </h4>
-                <p className="font-sans-manrope text-[10px] text-[#5F5F5F]">
-                  Ayiroor, Varkala, Kerala, India
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
       {/* Seamless Soft Watercolor Bottom Transition Gradient Overlay */}
-      <div className="h-16 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/80 to-[#FAF8F5] pointer-events-none -mt-8 relative z-20" />
+      <div className="h-16 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/80 to-[#FAF8F5] pointer-events-none relative z-20" />
 
     </section>
   );
