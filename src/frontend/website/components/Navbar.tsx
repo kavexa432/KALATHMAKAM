@@ -21,10 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     { name: 'About', href: '#about', id: 'about' },
     { name: 'Events', href: '#events', id: 'events' },
     { name: 'Schedule', href: '#schedule', id: 'schedule' },
-    { name: 'Results', href: '#results', id: 'results' },
-    { name: 'Leaderboard', href: '#leaderboard', id: 'leaderboard' },
     { name: 'Gallery', href: '#gallery', id: 'gallery' },
     { name: 'Committee', href: '#committee', id: 'committee' },
+    { name: 'Sponsors', href: '#sponsors', id: 'sponsors' },
     { name: 'Contact', href: '#contact', id: 'contact' },
   ];
 
@@ -83,7 +82,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10">
           <div className="flex items-center justify-between h-[76px] lg:h-[82px]">
             
-            {/* Logo + Desktop Nav Container */}
+            {/* Logo + Desktop Nav Container (Grand & Crisp Logo) */}
             <div className="flex items-center">
               {/* Calligraphy Logo */}
               <a
@@ -94,12 +93,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                 <img
                   src={logoImage}
                   alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                  className="h-14 sm:h-16 lg:h-[72px] xl:h-[76px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="h-13 sm:h-15 lg:h-[66px] xl:h-[70px] w-auto max-w-[210px] object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </a>
 
-              {/* Desktop Navigation Links */}
-              <nav className="hidden lg:flex items-center gap-7 xl:gap-9 ml-12 lg:ml-16">
+              {/* Desktop Navigation Links matching exact Reference order */}
+              <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-10 lg:ml-14">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;
                   return (
@@ -107,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       key={link.id}
                       href={link.href}
                       onClick={(e) => handleNavClick(e, link.id)}
-                      className={`relative font-sans-manrope text-[14px] font-semibold transition-colors duration-300 ${
+                      className={`relative font-sans-manrope text-[13.5px] font-semibold transition-colors duration-300 ${
                         isActive
                           ? 'text-[#FF5E84] font-bold'
                           : 'text-[#333333] hover:text-[#111111]'
