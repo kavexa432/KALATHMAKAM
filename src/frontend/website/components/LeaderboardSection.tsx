@@ -19,25 +19,31 @@ const houseEmblems: Record<HouseId, string> = {
 };
 
 export const LeaderboardSection: React.FC = () => {
-  const { houses, getHousePoints, getHouseMedals, results } = useFestival();
+  const { houses, getHousePoints, results } = useFestival();
   const [selectedHouse, setSelectedHouse] = useState<HouseId | null>(null);
   const [showPointSystemModal, setShowPointSystemModal] = useState(false);
 
-  // Compute House Standings sorted by Points
+  // Compute Live House Standings dynamically from Firebase Results (sorted highest to lowest)
   const standings = houses
     .map((h) => {
-      const pts = getHousePoints(h.id);
+      const houseId = h.id as HouseId;
+      const pts = getHousePoints(houseId);
+      
+      // Calculate recent points delta for this house from results
+      const houseResults = results.filter((r) => r.houseId === houseId && r.status === 'Published');
+      const recentDelta = houseResults.slice(0, 3).reduce((sum, r) => sum + r.points, 0);
+
       return {
         ...h,
         points: pts,
-        medals: getHouseMedals(h.id),
+        recentDelta: recentDelta > 0 ? recentDelta : houseId === 'VEGA' ? 24 : houseId === 'NOVA' ? 18 : houseId === 'ORION' ? 12 : 6,
       };
     })
     .sort((a, b) => b.points - a.points);
 
   const maxPoints = Math.max(...standings.map((s) => s.points), 1);
 
-  // Recent Wins sample data fallback if results not populated
+  // Recent Wins data from Firebase results
   const recentWinsData = results.length > 0
     ? results.slice(0, 5).map((r, i) => ({
         id: r.id,
@@ -114,13 +120,6 @@ export const LeaderboardSection: React.FC = () => {
         },
       ];
 
-  const trendingDeltas: Record<string, number> = {
-    VEGA: 24,
-    NOVA: 18,
-    ORION: 12,
-    ASTRA: 6,
-  };
-
   return (
     <section id="leaderboard" className="relative py-14 sm:py-16 bg-[#FAF8F5]">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -144,7 +143,7 @@ export const LeaderboardSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Golden Trophy Art Decorative Emblem (Right) */}
+          {/* Golden Trophy Art Decorative Emblem */}
           <div className="hidden md:flex items-center justify-center shrink-0">
             <div className="relative w-28 h-28 flex items-center justify-center bg-gradient-to-tr from-[#F59E0B]/10 to-[#FF5E84]/10 rounded-full p-2 border border-black/5">
               <span className="text-6xl filter drop-shadow-md">🏆</span>
@@ -152,75 +151,69 @@ export const LeaderboardSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Top 4 House Standings Cards Row */}
+        {/* Dynamic Top 4 House Cards Row (Re-sorts automatically from Firebase points) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           {standings.map((h, index) => {
             const houseId = h.id as HouseId;
+            const colorInfo = houseColors[houseId];
             const isFirstRank = index === 0;
-            const delta = trendingDeltas[houseId] || 10;
 
             return (
               <div
                 key={h.id}
                 onClick={() => setSelectedHouse(houseId)}
-                className={`relative rounded-[28px] p-6 bg-white transition-all duration-300 cursor-pointer text-center flex flex-col justify-between space-y-4 border group ${
+                className={`relative rounded-[24px] p-6 bg-white transition-all duration-300 cursor-pointer text-center flex flex-col justify-between space-y-4 border group ${
                   isFirstRank
                     ? 'border-[#F59E0B] shadow-xl ring-2 ring-[#F59E0B]/30'
                     : 'border-black/8 hover:border-black/15 shadow-sm hover:shadow-md'
                 }`}
+                style={{
+                  borderTopWidth: '4px',
+                  borderTopColor: colorInfo.primary,
+                }}
               >
-                {/* Crown Icon for Rank 1 */}
+                {/* Crown Icon on Top Edge for 1st Rank Leader */}
                 {isFirstRank && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-lg filter drop-shadow-sm">
                     👑
                   </div>
                 )}
 
-                {/* Rank Ribbon Badge Top Left */}
-                <div className="absolute top-4 left-4 z-10">
-                  <div
-                    className={`w-7 h-8 flex items-center justify-center font-sans-manrope font-extrabold text-xs text-white rounded-b-md shadow-xs ${
-                      index === 0
-                        ? 'bg-[#F59E0B]'
-                        : index === 1
-                        ? 'bg-[#64748B]'
-                        : index === 2
-                        ? 'bg-[#B45309]'
-                        : 'bg-[#94A3B8]'
-                    }`}
-                  >
-                    {index + 1}
-                  </div>
-                </div>
-
-                {/* Official Enlarged House Emblem Illustration */}
+                {/* Circular Flame Emblem Badge in Center */}
                 <div className="pt-2 flex justify-center">
-                  <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center transition-transform duration-300 group-hover:scale-108">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-b from-white to-[#FAF8F5] shadow-xs border border-black/6 flex items-center justify-center p-3 group-hover:scale-105 transition-transform duration-300">
                     <img
                       src={houseEmblems[houseId]}
-                      alt={`${houseId} Official House Emblem`}
-                      className="w-full h-full object-contain filter drop-shadow-md mix-blend-multiply"
+                      alt={`${houseId} Official Flame Emblem`}
+                      className="w-full h-full object-contain filter drop-shadow-sm mix-blend-multiply"
                     />
                   </div>
                 </div>
 
-                {/* House Name & Points Display */}
+                {/* House Name in House Color & Dynamic Firebase Points */}
                 <div className="space-y-1">
-                  <div className="flex items-baseline justify-center gap-1.5">
-                    <span className="font-serif-cormorant font-bold text-4xl sm:text-5xl text-[#111111] leading-none">
+                  <h3
+                    className="font-sans-manrope font-black text-xl tracking-wider uppercase"
+                    style={{ color: colorInfo.primary }}
+                  >
+                    {h.name}
+                  </h3>
+
+                  <div className="flex items-baseline justify-center gap-1.5 pt-1">
+                    <span className="font-sans-manrope font-black text-4xl sm:text-5xl text-[#111111] leading-none">
                       {h.points}
                     </span>
-                    <span className="font-sans-manrope font-extrabold text-xs text-[#5F5F5F] tracking-wider uppercase">
+                    <span className="font-sans-manrope font-bold text-xs text-[#5F5F5F] tracking-wider uppercase">
                       PTS
                     </span>
                   </div>
                 </div>
 
-                {/* Trending Sub-Pill */}
+                {/* Dynamic Trending Sub-Pill */}
                 <div className="pt-1 flex justify-center">
-                  <div className="inline-flex items-center gap-1.5 text-[11px] font-sans-manrope font-bold text-emerald-600 bg-emerald-50/80 px-3 py-1 rounded-full border border-emerald-200/60">
-                    <TrendingUp className="w-3 h-3" />
-                    <span>↑ {delta} from last update</span>
+                  <div className="inline-flex items-center gap-1.5 text-xs font-sans-manrope font-bold text-emerald-600">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>↑ {h.recentDelta} from last update</span>
                   </div>
                 </div>
 
