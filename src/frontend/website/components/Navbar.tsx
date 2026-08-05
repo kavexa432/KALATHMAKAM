@@ -80,9 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         }`}
       >
         <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10">
-          <div className="flex items-center justify-between h-[76px] lg:h-[82px]">
+          <div className="flex items-center justify-between h-[80px] lg:h-[88px]">
             
-            {/* Logo + Desktop Nav Container (Grand & Crisp Logo) */}
+            {/* Logo + Desktop Nav Container */}
             <div className="flex items-center">
               {/* Calligraphy Logo */}
               <a
@@ -93,11 +93,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                 <img
                   src={logoImage}
                   alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                  className="h-13 sm:h-15 lg:h-[66px] xl:h-[70px] w-auto max-w-[210px] object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="h-16 sm:h-18 lg:h-[76px] xl:h-[82px] w-auto max-w-[220px] object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </a>
 
-              {/* Desktop Navigation Links matching exact Reference order */}
+              {/* Desktop Navigation Links matching exact Reference order & styling */}
               <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-10 lg:ml-14">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;
@@ -106,19 +106,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       key={link.id}
                       href={link.href}
                       onClick={(e) => handleNavClick(e, link.id)}
-                      className={`relative font-sans-manrope text-[13.5px] font-semibold transition-colors duration-300 ${
+                      className={`relative font-sans-manrope text-[13.5px] font-bold transition-colors duration-300 ${
                         isActive
-                          ? 'text-[#FF5E84] font-bold'
-                          : 'text-[#333333] hover:text-[#111111]'
+                          ? 'text-[#FF5E84]'
+                          : 'text-[#222222] hover:text-[#111111]'
                       }`}
                     >
                       {link.name}
                       {/* Reference Underline Motif: ──•── */}
                       {isActive && (
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-[2px]">
-                          <div className="w-3.5 h-[1px] bg-[#FF5E84]" />
+                          <div className="w-3.5 h-[1.5px] bg-[#FF5E84]" />
                           <div className="w-1.5 h-1.5 rounded-full bg-[#FF5E84]" />
-                          <div className="w-3.5 h-[1px] bg-[#FF5E84]" />
+                          <div className="w-3.5 h-[1.5px] bg-[#FF5E84]" />
                         </div>
                       )}
                     </a>
@@ -127,7 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               </nav>
             </div>
 
-            {/* Right Header Controls (Login Pill + Circular Menu Button) */}
+            {/* Right Header Controls (Pink Bordered Login Pill + Circular Menu Button) */}
             <div className="flex items-center gap-3 sm:gap-4 pr-2 sm:pr-4">
               
               {/* Desktop Auth Controls */}
@@ -136,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   <div className="relative">
                     <button
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs px-4.5 py-2 rounded-full flex items-center gap-2.5 border border-black/10 shadow-xs hover:shadow-md transition-all cursor-pointer"
+                      className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs px-4.5 py-2.5 rounded-full flex items-center gap-2.5 border border-black/10 shadow-2xs hover:shadow-md transition-all cursor-pointer"
                     >
                       {currentUser.avatarUrl ? (
                         <img src={currentUser.avatarUrl} alt="Avatar" className="w-6.5 h-6.5 rounded-full border border-black/10" />
@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       </div>
                     </button>
 
-                    {/* Premium Floating User Dropdown Menu */}
+                    {/* Floating User Dropdown Menu */}
                     {userDropdownOpen && (
                       <div className="absolute right-0 top-[calc(100%+12px)] w-72 bg-white/98 backdrop-blur-2xl rounded-[20px] p-4 shadow-2xl border border-black/10 text-left space-y-3 z-[9999] animate-in fade-in">
                         <div className="px-2 py-1 border-b border-black/8 pb-3">
@@ -189,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   /* Visitor Pink Bordered Login Button (Exact Reference Match) */
                   <button
                     onClick={onOpenLogin}
-                    className="bg-white hover:bg-[#FF5E84]/5 text-[#111111] font-sans-manrope font-bold text-[14px] px-6 py-2 rounded-full flex items-center gap-2 cursor-pointer shadow-2xs border border-[#FF5E84] transition-all"
+                    className="bg-white hover:bg-[#FF5E84]/5 text-[#111111] font-sans-manrope font-bold text-[14px] px-6 py-2.5 rounded-full flex items-center gap-2 cursor-pointer shadow-2xs border border-[#FF5E84] transition-all"
                   >
                     <User className="w-4 h-4 text-[#FF5E84]" />
                     <span>Login</span>
@@ -211,9 +211,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
           </div>
         </div>
 
-        {/* Clean Integrated Navigation Drawer */}
+        {/* Integrated Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="fixed inset-x-0 top-[65px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
+          <div className="fixed inset-x-0 top-[75px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
             <nav className="flex flex-col gap-2 text-left max-w-[1480px] mx-auto">
               {navLinks.map((link) => (
                 <a
