@@ -25,7 +25,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     { name: 'Leaderboard', href: '#leaderboard', id: 'leaderboard' },
     { name: 'Gallery', href: '#gallery', id: 'gallery' },
     { name: 'Committee', href: '#committee', id: 'committee' },
-    { name: 'Sponsors', href: '#sponsors', id: 'sponsors' },
     { name: 'Contact', href: '#contact', id: 'contact' },
   ];
 
@@ -216,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
         {/* Clean Integrated Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[62px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
+          <div className="lg:hidden fixed inset-x-0 top-[60px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
             <nav className="flex flex-col gap-2 text-left">
               {navLinks.map((link) => (
                 <a

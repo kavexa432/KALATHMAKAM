@@ -10,7 +10,6 @@ import { ScheduleTimeline } from './components/ScheduleTimeline';
 import { About } from './components/About';
 import { GalleryMasonry } from './components/GalleryMasonry';
 import { CommitteeGrid } from './components/CommitteeGrid';
-import { SponsorsMarquee } from './components/SponsorsMarquee';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { Dashboard } from './frontend/dashboard/Dashboard';
@@ -47,7 +46,7 @@ export function AppContent() {
 
       {/* Main Homepage Flow */}
       <main>
-        {/* 1. Refined Hero Section with 30-Point Pixel Alignment & Parallax */}
+        {/* 1. Refined Hero Section */}
         <Hero
           onOpenPromo={() => setPromoModalOpen(true)}
           onExploreEvents={handleExploreEvents}
@@ -78,13 +77,10 @@ export function AppContent() {
         {/* 9. Committee Grid */}
         <CommitteeGrid />
 
-        {/* 10. Sponsors Marquee */}
-        <SponsorsMarquee />
-
-        {/* 11. Contact & Map Section */}
+        {/* 10. Contact & Map Section */}
         <ContactSection />
 
-        {/* 12. Mission Control CMS Dashboard (for Admins & Developers) */}
+        {/* 11. Mission Control CMS Dashboard (for Admins & Developers) */}
         <Dashboard />
       </main>
 
