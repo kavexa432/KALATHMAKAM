@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -26,6 +26,14 @@ export const analytics = typeof window !== 'undefined'
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Export Firestore Database & Storage
+// Export Firestore Database with IndexedDB Persistence
 export const db = getFirestore(app);
+
+if (typeof window !== 'undefined') {
+  enableIndexedDbPersistence(db).catch(() => {
+    // Persistence may fail if multiple tabs are open or not supported
+  });
+}
+
+// Export Storage
 export const storage = getStorage(app);
