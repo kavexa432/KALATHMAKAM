@@ -78,15 +78,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'glass-nav py-1.5 shadow-xs' : 'bg-transparent py-2.5'
+          scrolled ? 'glass-nav py-2 shadow-xs' : 'bg-transparent py-3'
         }`}
       >
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-10">
-          <div className="flex items-center justify-between h-[70px] lg:h-[72px]">
+        <div className="max-w-[1480px] mx-auto px-6 sm:px-8 lg:px-10">
+          <div className="flex items-center justify-between h-[76px] lg:h-[82px]">
             
-            {/* Logo + Desktop Nav Container (60px Gap) */}
+            {/* Logo + Desktop Nav Container (Grand & Prominent Logo) */}
             <div className="flex items-center">
-              {/* Logo */}
+              {/* Prominent Logo */}
               <a
                 href="#home"
                 onClick={(e) => handleNavClick(e, 'home')}
@@ -95,12 +95,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                 <img
                   src={logoImage}
                   alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                  className="h-12 sm:h-14 lg:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="h-14 sm:h-16 lg:h-[72px] xl:h-[76px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </a>
 
-              {/* Desktop Navigation Links with 60px Margin Left from Logo */}
-              <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-14 lg:ml-16">
+              {/* Desktop Navigation Links */}
+              <nav className="hidden lg:flex items-center gap-7 xl:gap-9 ml-12 lg:ml-16">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;
                   return (
@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       key={link.id}
                       href={link.href}
                       onClick={(e) => handleNavClick(e, link.id)}
-                      className={`relative font-sans-manrope text-[13px] font-semibold transition-colors duration-300 ${
+                      className={`relative font-sans-manrope text-[14px] font-semibold transition-colors duration-300 ${
                         isActive
                           ? 'text-[#FF5E84] font-bold'
                           : 'text-[#333333] hover:text-[#111111]'
@@ -118,9 +118,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       {/* Active Link Underline Indicator */}
                       {isActive && (
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-[2px]">
-                          <div className="w-3 h-[1px] bg-[#FF5E84]" />
-                          <div className="w-1 h-1 rounded-full bg-[#FF5E84]" />
-                          <div className="w-3 h-[1px] bg-[#FF5E84]" />
+                          <div className="w-3.5 h-[1px] bg-[#FF5E84]" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#FF5E84]" />
+                          <div className="w-3.5 h-[1px] bg-[#FF5E84]" />
                         </div>
                       )}
                     </a>
@@ -129,7 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               </nav>
             </div>
 
-            {/* Right Controls with 24px Margin Right */}
+            {/* Right Controls */}
             <div className="flex items-center gap-3 sm:gap-4 pr-2 sm:pr-4">
               
               {/* Desktop Auth Controls */}
@@ -138,12 +138,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   <div className="relative">
                     <button
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="bg-white/95 hover:bg-white text-[#111111] font-sans-manrope font-bold text-xs px-4 py-2 rounded-full flex items-center gap-2.5 border border-black/10 shadow-xs hover:shadow-md transition-all cursor-pointer"
+                      className="bg-white/95 hover:bg-white text-[#111111] font-sans-manrope font-bold text-xs px-4.5 py-2 rounded-full flex items-center gap-2.5 border border-black/10 shadow-xs hover:shadow-md transition-all cursor-pointer"
                     >
                       {currentUser.avatarUrl ? (
-                        <img src={currentUser.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full border border-black/10" />
+                        <img src={currentUser.avatarUrl} alt="Avatar" className="w-6.5 h-6.5 rounded-full border border-black/10" />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-[11px]">
+                        <div className="w-6.5 h-6.5 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-[11px]">
                           {currentUser.name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -155,7 +155,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       </div>
                     </button>
 
-                    {/* Premium Floating User Dropdown Menu with 12px Spacing & High z-index */}
+                    {/* Premium Floating User Dropdown Menu */}
                     {userDropdownOpen && (
                       <div className="absolute right-0 top-[calc(100%+12px)] w-72 bg-white/98 backdrop-blur-2xl rounded-[20px] p-4 shadow-2xl border border-black/10 text-left space-y-3 z-[9999] animate-in fade-in">
                         <div className="px-2 py-1 border-b border-black/8 pb-3">
@@ -191,9 +191,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   /* Visitor Desktop Login Button */
                   <button
                     onClick={onOpenLogin}
-                    className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[13px] px-6 py-2 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
+                    className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[14px] px-6.5 py-2.5 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
                   >
-                    <User className="w-3.5 h-3.5 text-[#FF5E84]" />
+                    <User className="w-4 h-4 text-[#FF5E84]" />
                     <span>Login</span>
                   </button>
                 )}
@@ -202,7 +202,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               {/* Hamburger Toggle Button (Always visible on Mobile) */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="w-9.5 h-9.5 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors lg:hidden"
+                className="w-10 h-10 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors lg:hidden"
                 aria-label="Toggle Navigation Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -215,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
         {/* Clean Integrated Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[60px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
+          <div className="lg:hidden fixed inset-x-0 top-[65px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
             <nav className="flex flex-col gap-2 text-left">
               {navLinks.map((link) => (
                 <a
