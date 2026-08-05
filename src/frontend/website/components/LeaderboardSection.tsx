@@ -133,7 +133,7 @@ export const LeaderboardSection: React.FC = () => {
                 Live points update from all events and competitions
               </p>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-extrabold font-sans-manrope">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span>Auto-updated</span>
               </span>
             </div>
