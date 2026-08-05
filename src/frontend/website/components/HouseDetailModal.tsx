@@ -4,11 +4,11 @@ import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 
-// High-Resolution Transparent House Emblem Graphics
-import vegaEmblem from '../../../assets/vega_house_emblem.png';
-import novaEmblem from '../../../assets/nova_house_emblem.png';
-import orionEmblem from '../../../assets/orion_house_emblem.png';
-import astraEmblem from '../../../assets/astra_house_emblem.png';
+// Official House Emblem Images
+import vegaEmblem from '../../../assets/houses/vega.png';
+import novaEmblem from '../../../assets/houses/nova.png';
+import orionEmblem from '../../../assets/houses/orion.png';
+import astraEmblem from '../../../assets/houses/astra.png';
 
 const houseEmblems: Record<HouseId, string> = {
   VEGA: vegaEmblem,
@@ -60,25 +60,32 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
         onClick={(e) => e.stopPropagation()}
         className="bg-[#FAF8F5] rounded-[32px] max-w-3xl w-full overflow-hidden shadow-2xl border border-black/10 relative my-8 cursor-default"
       >
-        {/* Banner Header with House Color */}
+        {/* Banner Header with House Color & Background Emblem Watermark */}
         <div
-          className="p-8 text-white relative overflow-hidden flex flex-col justify-between min-h-[200px]"
+          className="p-8 text-white relative overflow-hidden flex flex-col justify-between min-h-[220px]"
           style={{
             background: `linear-gradient(135deg, ${colorInfo.primary} 0%, ${colorInfo.secondary} 100%)`,
           }}
         >
+          {/* Background Emblem Watermark Image */}
+          <img
+            src={houseEmblems[houseId]}
+            alt={`${houseId} Emblem`}
+            className="absolute -right-6 -bottom-6 w-48 h-48 object-contain opacity-25 pointer-events-none mix-blend-overlay"
+          />
+
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors cursor-pointer z-10"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md p-2 flex items-center justify-center border border-white/30 shrink-0">
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md p-2 flex items-center justify-center border border-white/30 shrink-0">
               <img
                 src={houseEmblems[houseId]}
-                alt={`${house.name} Official Emblem`}
+                alt={houseId}
                 className="w-full h-full object-contain filter drop-shadow-md"
               />
             </div>
@@ -92,11 +99,11 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
             </div>
           </div>
 
-          <p className="font-sans-manrope italic text-sm text-white/90 font-medium max-w-lg mt-3">
+          <p className="font-sans-manrope italic text-sm text-white/90 font-medium max-w-lg mt-4 relative z-10">
             "{house.motto}"
           </p>
 
-          <div className="flex flex-wrap items-center gap-6 mt-4 pt-3 border-t border-white/20 text-xs font-sans-manrope">
+          <div className="flex flex-wrap items-center gap-6 mt-4 pt-3 border-t border-white/20 text-xs font-sans-manrope relative z-10">
             <div>
               <span className="opacity-75">Captain:</span>{' '}
               <strong className="font-extrabold">{house.captain}</strong>
