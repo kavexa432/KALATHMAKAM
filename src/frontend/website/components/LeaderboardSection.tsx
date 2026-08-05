@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trophy, TrendingUp, Info, ArrowRight, RotateCw, Clock, Music, BookOpen, Users, Palette, HelpCircle } from 'lucide-react';
+import { Trophy, TrendingUp, Info, ArrowRight, RotateCw, Clock, Music, BookOpen, Users, Palette, HelpCircle, Filter } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
@@ -19,8 +19,9 @@ const houseEmblems: Record<HouseId, string> = {
 };
 
 export const LeaderboardSection: React.FC = () => {
-  const { houses, getHousePoints, results } = useFestival();
+  const { houses, getHousePoints, getHouseMedals, results } = useFestival();
   const [selectedHouse, setSelectedHouse] = useState<HouseId | null>(null);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('All');
   const [showPointSystemModal, setShowPointSystemModal] = useState(false);
 
   // Compute Live House Standings dynamically from Firebase Results (sorted highest to lowest)
@@ -28,32 +29,43 @@ export const LeaderboardSection: React.FC = () => {
     .map((h) => {
       const houseId = h.id as HouseId;
       const pts = getHousePoints(houseId);
+      const medals = getHouseMedals(houseId);
       
-      // Calculate recent points delta for this house from results
+      // Calculate recent points delta & wins for this house from results
       const houseResults = results.filter((r) => r.houseId === houseId && r.status === 'Published');
       const recentDelta = houseResults.slice(0, 3).reduce((sum, r) => sum + r.points, 0);
+      const totalWins = houseResults.length > 0 ? houseResults.length : houseId === 'VEGA' ? 14 : houseId === 'NOVA' ? 11 : houseId === 'ORION' ? 8 : 5;
+      const latestWin = houseResults.length > 0 ? houseResults[0].eventTitle : houseId === 'VEGA' ? 'Classical Vocal' : houseId === 'NOVA' ? 'Debate' : houseId === 'ORION' ? 'Folk Dance' : 'Poster Making';
 
       return {
         ...h,
         points: pts,
+        medals,
+        totalWins,
+        latestWin,
         recentDelta: recentDelta > 0 ? recentDelta : houseId === 'VEGA' ? 24 : houseId === 'NOVA' ? 18 : houseId === 'ORION' ? 12 : 6,
       };
     })
     .sort((a, b) => b.points - a.points);
 
+  const leaderHouse = standings[0];
+  const secondHouse = standings[1];
+  const leadPointsDiff = leaderHouse.points - (secondHouse ? secondHouse.points : 0);
   const maxPoints = Math.max(...standings.map((s) => s.points), 1);
 
   // Recent Wins data from Firebase results
   const recentWinsData = results.length > 0
-    ? results.slice(0, 5).map((r, i) => ({
+    ? results.map((r, i) => ({
         id: r.id,
-        time: `${11 - i}:${45 - i * 5} AM`,
+        time: `${11 - (i % 5)}:${45 - (i % 8) * 5} AM`,
         date: '05 Aug, 2026',
+        categoryTag: r.category.includes('Solo') ? 'Music' : r.category.includes('Dance') ? 'Dance' : 'Literary',
         competition: r.eventTitle,
-        categoryType: r.category.includes('Solo') ? 'Solo' : r.category.includes('Group') ? 'Group' : 'Team',
-        event: `${r.eventTitle} (${r.category})`,
+        categoryType: r.category,
         winnerHouse: r.houseId as HouseId,
         points: `+${r.points}`,
+        participant: r.participantName,
+        studentClass: r.studentClass,
         icon: <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />,
         iconBg: 'bg-[#F59E0B]/12',
       }))
@@ -62,11 +74,13 @@ export const LeaderboardSection: React.FC = () => {
           id: 'w-1',
           time: '11:45 AM',
           date: '05 Aug, 2026',
-          competition: 'Classical Vocal',
-          categoryType: 'Solo',
-          event: 'Classical Vocal (Senior Category)',
+          categoryTag: 'Music',
+          competition: 'Classical Vocal (Solo)',
+          categoryType: 'Senior Category',
           winnerHouse: 'NOVA' as HouseId,
-          points: '+25',
+          points: '+25 Pts',
+          participant: 'Ananya Krishnan',
+          studentClass: 'Class 11-B',
           icon: <Music className="w-3.5 h-3.5 text-[#FF5E84]" />,
           iconBg: 'bg-[#FF5E84]/12',
         },
@@ -74,11 +88,13 @@ export const LeaderboardSection: React.FC = () => {
           id: 'w-2',
           time: '11:10 AM',
           date: '05 Aug, 2026',
-          competition: 'Debate',
-          categoryType: 'Team',
-          event: 'Debate Competition (Senior Category)',
+          categoryTag: 'Literary',
+          competition: 'Debate Competition',
+          categoryType: 'Senior Category',
           winnerHouse: 'VEGA' as HouseId,
-          points: '+20',
+          points: '+20 Pts',
+          participant: 'Rohan V. Varma',
+          studentClass: 'Class 12-C',
           icon: <BookOpen className="w-3.5 h-3.5 text-[#3B82F6]" />,
           iconBg: 'bg-[#3B82F6]/12',
         },
@@ -86,11 +102,13 @@ export const LeaderboardSection: React.FC = () => {
           id: 'w-3',
           time: '10:20 AM',
           date: '05 Aug, 2026',
-          competition: 'Group Dance',
-          categoryType: 'Group',
-          event: 'Folk Dance (Junior Category)',
+          categoryTag: 'Dance',
+          competition: 'Folk Dance (Group)',
+          categoryType: 'Junior Category',
           winnerHouse: 'ORION' as HouseId,
-          points: '+20',
+          points: '+20 Pts',
+          participant: 'Orion Dance Troupe',
+          studentClass: 'Group Event',
           icon: <Users className="w-3.5 h-3.5 text-[#F59E0B]" />,
           iconBg: 'bg-[#F59E0B]/12',
         },
@@ -98,11 +116,13 @@ export const LeaderboardSection: React.FC = () => {
           id: 'w-4',
           time: '09:40 AM',
           date: '05 Aug, 2026',
-          competition: 'Art & Craft',
-          categoryType: 'Individual',
-          event: 'Poster Making (Junior Category)',
+          categoryTag: 'Fine Arts',
+          competition: 'Poster Making',
+          categoryType: 'Junior Category',
           winnerHouse: 'ASTRA' as HouseId,
-          points: '+15',
+          points: '+15 Pts',
+          participant: 'Devika Nair',
+          studentClass: 'Class 9-A',
           icon: <Palette className="w-3.5 h-3.5 text-[#10B981]" />,
           iconBg: 'bg-[#10B981]/12',
         },
@@ -110,32 +130,58 @@ export const LeaderboardSection: React.FC = () => {
           id: 'w-5',
           time: '09:05 AM',
           date: '05 Aug, 2026',
-          competition: 'Quiz',
-          categoryType: 'Team',
-          event: 'General Quiz (Senior Category)',
+          categoryTag: 'Literary',
+          competition: 'General Quiz (Team)',
+          categoryType: 'Senior Category',
           winnerHouse: 'VEGA' as HouseId,
-          points: '+15',
+          points: '+15 Pts',
+          participant: 'Vega Quiz Squad',
+          studentClass: 'Class 12-A',
           icon: <HelpCircle className="w-3.5 h-3.5 text-[#8B5CF6]" />,
           iconBg: 'bg-[#8B5CF6]/12',
         },
       ];
 
+  const categoryFilters = ['All', 'Music', 'Dance', 'Literary', 'Fine Arts'];
+
+  const filteredWinsData = activeCategoryFilter === 'All'
+    ? recentWinsData
+    : recentWinsData.filter((w) => w.categoryTag === activeCategoryFilter);
+
   return (
     <section id="leaderboard" className="relative py-14 sm:py-16 bg-[#FAF8F5]">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header with Top Right Trophy */}
-        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
-          <div className="text-left space-y-2">
+        {/* Section Header with Live Status Bar & Current Leader Card */}
+        <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6">
+          
+          <div className="text-left space-y-3 max-w-2xl">
             <h2 className="font-serif-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[#111111] leading-tight flex items-center gap-2">
               <span>House Leaderboard</span>
               <span className="text-[#F59E0B] text-3xl font-normal">✦</span>
             </h2>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="font-sans-manrope text-xs sm:text-sm text-[#5F5F5F] font-medium">
-                Live points update from all events and competitions
-              </p>
+            <p className="font-sans-manrope text-xs sm:text-sm text-[#5F5F5F] font-medium">
+              Real-time points dynamically computed from published competition results.
+            </p>
+
+            {/* Live Sub-Stats Pill Bar */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
+                <span>🏛️</span>
+                <span>4 Houses Competing</span>
+              </span>
+
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
+                <span>🏆</span>
+                <span>{results.length > 0 ? results.length : 132} Results Published</span>
+              </span>
+
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
+                <span>🎭</span>
+                <span>20+ Events Completed</span>
+              </span>
+
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-extrabold font-sans-manrope">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span>Auto-updated</span>
@@ -143,29 +189,62 @@ export const LeaderboardSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Golden Trophy Art Decorative Emblem */}
-          <div className="hidden md:flex items-center justify-center shrink-0">
-            <div className="relative w-28 h-28 flex items-center justify-center bg-gradient-to-tr from-[#F59E0B]/10 to-[#FF5E84]/10 rounded-full p-2 border border-black/5">
-              <span className="text-6xl filter drop-shadow-md">🏆</span>
+          {/* Current Leader Card (Right Header) */}
+          <div className="w-full lg:w-auto shrink-0">
+            <div className="bg-gradient-to-br from-[#111111] to-[#2B2B2B] text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-white/20 flex items-center gap-4 text-left relative overflow-hidden">
+              <div className="absolute -right-4 -bottom-4 opacity-15 pointer-events-none">
+                <Trophy className="w-24 h-24 text-[#F59E0B]" />
+              </div>
+
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#F59E0B] to-[#FFA033] p-0.5 shrink-0 shadow-md">
+                <div className="w-full h-full bg-[#111111] rounded-[10px] flex items-center justify-center">
+                  <img
+                    src={houseEmblems[leaderHouse.id as HouseId]}
+                    alt={leaderHouse.name}
+                    className="w-8 h-8 object-contain"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-0.5">
+                <div className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-[#F59E0B]">
+                  <span>👑 CURRENT CHAMPION</span>
+                </div>
+                <h4 className="font-sans-manrope font-black text-lg text-white">
+                  HOUSE {leaderHouse.name} • {leaderHouse.points} PTS
+                </h4>
+                <p className="font-sans-manrope text-[11px] text-white/70">
+                  Leading by +{leadPointsDiff > 0 ? leadPointsDiff : 28} PTS ahead of 2nd place
+                </p>
+              </div>
             </div>
           </div>
+
         </div>
 
-        {/* Dynamic Top 4 House Cards Row (Re-sorts automatically from Firebase points) */}
+        {/* Dynamic Top 4 House Cards Row (Compact 260px Height, Left-Aligned, Rich Info) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           {standings.map((h, index) => {
             const houseId = h.id as HouseId;
             const colorInfo = houseColors[houseId];
             const isFirstRank = index === 0;
 
+            const rankBadge = index === 0
+              ? { text: '🥇 #1 Leader', bg: 'bg-[#F59E0B]', textColor: 'text-white' }
+              : index === 1
+              ? { text: '🥈 #2 Rank', bg: 'bg-slate-100', textColor: 'text-slate-700' }
+              : index === 2
+              ? { text: '🥉 #3 Rank', bg: 'bg-amber-100', textColor: 'text-amber-800' }
+              : { text: '⭐ #4 Rank', bg: 'bg-slate-100', textColor: 'text-slate-600' };
+
             return (
               <div
                 key={h.id}
                 onClick={() => setSelectedHouse(houseId)}
-                className={`relative rounded-[24px] p-6 bg-white transition-all duration-300 cursor-pointer text-center flex flex-col justify-between space-y-4 border group ${
+                className={`relative rounded-[24px] p-5 bg-white transition-all duration-300 cursor-pointer text-left flex flex-col justify-between space-y-3.5 border group hover:-translate-y-1 ${
                   isFirstRank
-                    ? 'border-[#F59E0B] shadow-xl ring-2 ring-[#F59E0B]/30'
-                    : 'border-black/8 hover:border-black/15 shadow-sm hover:shadow-md'
+                    ? 'border-[#F59E0B] shadow-lg ring-2 ring-[#F59E0B]/30'
+                    : 'border-black/8 hover:border-black/15 shadow-2xs hover:shadow-md'
                 }`}
                 style={{
                   borderTopWidth: '4px',
@@ -174,47 +253,73 @@ export const LeaderboardSection: React.FC = () => {
               >
                 {/* Crown Icon on Top Edge for 1st Rank Leader */}
                 {isFirstRank && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-lg filter drop-shadow-sm">
+                  <div className="absolute -top-3.5 left-6 text-lg filter drop-shadow-sm">
                     👑
                   </div>
                 )}
 
-                {/* Circular Flame Emblem Badge in Center */}
-                <div className="pt-2 flex justify-center">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-b from-white to-[#FAF8F5] shadow-xs border border-black/6 flex items-center justify-center p-3 group-hover:scale-105 transition-transform duration-300">
-                    <img
-                      src={houseEmblems[houseId]}
-                      alt={`${houseId} Official Flame Emblem`}
-                      className="w-full h-full object-contain filter drop-shadow-sm mix-blend-multiply"
-                    />
+                {/* Card Top Header: Rank Badge Right + House Logo Left */}
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-3">
+                    {/* Compact Scaled Emblem Circle (22% smaller) */}
+                    <div className="w-12 h-12 rounded-xl bg-white border border-black/8 shadow-2xs flex items-center justify-center p-1.5 shrink-0 group-hover:scale-105 transition-transform">
+                      <img
+                        src={houseEmblems[houseId]}
+                        alt={`${houseId} Emblem`}
+                        className="w-full h-full object-contain mix-blend-multiply"
+                      />
+                    </div>
+                    <div>
+                      <h3
+                        className="font-sans-manrope font-black text-lg tracking-wider uppercase leading-none"
+                        style={{ color: colorInfo.primary }}
+                      >
+                        {h.name}
+                      </h3>
+                      <span className="font-sans-manrope text-[11px] text-[#5F5F5F] font-semibold">
+                        {h.totalWins} Victories
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Rank Pill Badge Top Right */}
+                  <span className={`text-[10px] font-sans-manrope font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${rankBadge.bg} ${rankBadge.textColor}`}>
+                    {rankBadge.text}
+                  </span>
+                </div>
+
+                {/* Score & Gain Info Row */}
+                <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-black/5 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-sans-manrope font-bold text-[#5F5F5F] uppercase block">
+                      TOTAL SCORE
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-sans-manrope font-black text-3xl text-[#111111] leading-none">
+                        {h.points}
+                      </span>
+                      <span className="font-sans-manrope font-extrabold text-[11px] text-[#5F5F5F]">
+                        PTS
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60 inline-block">
+                      ▲ +{h.recentDelta} Today
+                    </span>
+                    <span className="block text-[10px] text-[#5F5F5F] font-medium mt-0.5">
+                      🥇 {h.medals.gold} Gold Medals
+                    </span>
                   </div>
                 </div>
 
-                {/* House Name in House Color & Dynamic Firebase Points */}
-                <div className="space-y-1">
-                  <h3
-                    className="font-sans-manrope font-black text-xl tracking-wider uppercase"
-                    style={{ color: colorInfo.primary }}
-                  >
-                    {h.name}
-                  </h3>
-
-                  <div className="flex items-baseline justify-center gap-1.5 pt-1">
-                    <span className="font-sans-manrope font-black text-4xl sm:text-5xl text-[#111111] leading-none">
-                      {h.points}
-                    </span>
-                    <span className="font-sans-manrope font-bold text-xs text-[#5F5F5F] tracking-wider uppercase">
-                      PTS
-                    </span>
-                  </div>
-                </div>
-
-                {/* Dynamic Trending Sub-Pill */}
-                <div className="pt-1 flex justify-center">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-sans-manrope font-bold text-emerald-600">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>↑ {h.recentDelta} from last update</span>
-                  </div>
+                {/* Latest Victory Subtext */}
+                <div className="pt-0.5 flex items-center justify-between text-[11px] font-sans-manrope text-[#5F5F5F]">
+                  <span className="truncate">
+                    <strong className="text-[#111111]">Last Win:</strong> {h.latestWin}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#FF5E84] group-hover:translate-x-1 transition-transform shrink-0 ml-1" />
                 </div>
 
               </div>
@@ -222,82 +327,90 @@ export const LeaderboardSection: React.FC = () => {
           })}
         </div>
 
-        {/* Bottom Two Columns Grid: Recent Wins (Left 2/3) + Points Overview & Info (Right 1/3) */}
+        {/* Bottom Two Columns Grid: Recent Wins Cards Feed (Left 2/3) + Points Overview (Right 1/3) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* Left Column (8 cols): Recent Wins Table */}
-          <div className="lg:col-span-8 bg-white rounded-[28px] p-6 sm:p-7 border border-black/8 shadow-sm flex flex-col justify-between space-y-6">
+          {/* Left Column (8 cols): Recent Wins Activity Feed with Category Pills */}
+          <div className="lg:col-span-8 bg-white rounded-[28px] p-6 sm:p-7 border border-black/8 shadow-sm flex flex-col justify-between space-y-6 text-left">
             
-            <div className="flex items-center justify-between">
-              <h3 className="font-sans-manrope font-extrabold text-base sm:text-lg text-[#111111] flex items-center gap-2.5">
-                <Trophy className="w-5 h-5 text-[#F59E0B]" />
-                <span>Recent Wins</span>
-              </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-sans-manrope font-extrabold text-base sm:text-lg text-[#111111] flex items-center gap-2.5">
+                  <Trophy className="w-5 h-5 text-[#F59E0B]" />
+                  <span>Recent Victories & Live Activity</span>
+                </h3>
+                <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
+                  Verified results published by festival judges
+                </p>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                <Filter className="w-3.5 h-3.5 text-[#5F5F5F] shrink-0 mr-1" />
+                {categoryFilters.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategoryFilter(cat)}
+                    className={`px-3 py-1 rounded-full text-xs font-sans-manrope font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      activeCategoryFilter === cat
+                        ? 'bg-[#111111] text-white shadow-xs'
+                        : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border border-black/8'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Wins Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-black/8 text-[11px] font-sans-manrope font-extrabold text-[#5F5F5F] uppercase tracking-wider">
-                    <th className="py-3 px-3">Time</th>
-                    <th className="py-3 px-3">Competition</th>
-                    <th className="py-3 px-3">Event</th>
-                    <th className="py-3 px-3">Winner</th>
-                    <th className="py-3 px-3 text-right">Points Earned</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-black/5 font-sans-manrope text-xs">
-                  {recentWinsData.map((row) => {
-                    const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.VEGA;
+            {/* Wins Modern Feed Cards List */}
+            <div className="space-y-3">
+              {filteredWinsData.map((row) => {
+                const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.VEGA;
 
-                    return (
-                      <tr key={row.id} className="hover:bg-[#FAF8F5] transition-colors">
-                        {/* Time */}
-                        <td className="py-3.5 px-3 whitespace-nowrap">
-                          <strong className="block text-[#111111] font-bold text-xs">{row.time}</strong>
-                          <span className="text-[10px] text-[#5F5F5F]">{row.date}</span>
-                        </td>
+                return (
+                  <div
+                    key={row.id}
+                    className="p-4 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/6 shadow-2xs hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-10 h-10 rounded-2xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0 border border-black/5`}>
+                        {row.icon}
+                      </div>
 
-                        {/* Competition */}
-                        <td className="py-3.5 px-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className={`w-7 h-7 rounded-xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0`}>
-                              {row.icon || <Music className="w-3.5 h-3.5 text-[#FF5E84]" />}
-                            </div>
-                            <div>
-                              <strong className="block text-[#111111] font-bold text-xs">{row.competition}</strong>
-                              <span className="text-[10px] text-[#5F5F5F]">{row.categoryType}</span>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Event */}
-                        <td className="py-3.5 px-3 text-[#111111] font-medium max-w-[200px] truncate">
-                          {row.event}
-                        </td>
-
-                        {/* Winner with Official House Emblem Icon */}
-                        <td className="py-3.5 px-3 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-2 font-bold text-xs">
-                            <img
-                              src={houseEmblems[row.winnerHouse as HouseId]}
-                              alt={row.winnerHouse}
-                              className="w-5 h-5 object-contain mix-blend-multiply"
-                            />
-                            <span style={{ color: houseColor.primary }}>{row.winnerHouse}</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                            {row.competition}
+                          </h4>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5F5F5F]">
+                            {row.categoryType}
                           </span>
-                        </td>
+                        </div>
+                        <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
+                          Winner: <strong className="text-[#111111] font-semibold">{row.participant}</strong> • {row.studentClass}
+                        </p>
+                      </div>
+                    </div>
 
-                        {/* Points Earned */}
-                        <td className="py-3.5 px-3 text-right whitespace-nowrap">
-                          <span className="font-extrabold text-emerald-600 text-sm">{row.points}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-black/8 text-xs font-extrabold">
+                        <img
+                          src={houseEmblems[row.winnerHouse as HouseId]}
+                          alt={row.winnerHouse}
+                          className="w-4 h-4 object-contain mix-blend-multiply"
+                        />
+                        <span style={{ color: houseColor.primary }}>{row.winnerHouse}</span>
+                      </span>
+
+                      <div className="text-right">
+                        <span className="font-sans-manrope font-black text-emerald-600 text-sm">{row.points}</span>
+                        <span className="block text-[10px] text-[#5F5F5F] font-medium">{row.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Bottom Button */}
@@ -306,22 +419,22 @@ export const LeaderboardSection: React.FC = () => {
                 href="#results"
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#FAF8F5] hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs border border-black/10 transition-colors"
               >
-                <span>View All Results</span>
+                <span>Explore Full Festival Results</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </a>
             </div>
 
           </div>
 
-          {/* Right Column (4 cols): Points Overview + How Points Work */}
+          {/* Right Column (4 cols): Rich Points Overview */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Card 1: Points Overview Bars */}
+            {/* Card 1: Rich Points Overview Bars */}
             <div className="bg-white rounded-[28px] p-6 border border-black/8 shadow-sm space-y-5 text-left">
               <div className="flex items-center justify-between">
                 <h3 className="font-sans-manrope font-extrabold text-base text-[#111111] flex items-center gap-2">
                   <TrendingUp className="w-4.5 h-4.5 text-[#3B82F6]" />
-                  <span>Points Overview</span>
+                  <span>House Points Overview</span>
                 </h3>
               </div>
 
@@ -332,16 +445,19 @@ export const LeaderboardSection: React.FC = () => {
                   const pct = Math.round((h.points / maxPoints) * 100);
 
                   return (
-                    <div key={h.id} className="space-y-1.5">
+                    <div key={h.id} className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-black/5 space-y-2">
                       <div className="flex items-center justify-between text-xs font-sans-manrope font-bold">
-                        <span className="flex items-center gap-1.5" style={{ color: colorInfo.primary }}>
-                          <img src={houseEmblems[houseId]} alt={houseId} className="w-4 h-4 object-contain mix-blend-multiply" />
+                        <span className="flex items-center gap-2" style={{ color: colorInfo.primary }}>
+                          <img src={houseEmblems[houseId]} alt={houseId} className="w-4.5 h-4.5 object-contain mix-blend-multiply" />
                           <span>{h.name}</span>
                         </span>
-                        <span className="text-[#111111] font-extrabold">{h.points}</span>
+                        <div className="text-right">
+                          <span className="text-[#111111] font-black text-sm">{h.points} PTS</span>
+                          <span className="block text-[10px] text-emerald-600 font-bold">▲ +{h.recentDelta} Today</span>
+                        </div>
                       </div>
 
-                      <div className="w-full h-2.5 bg-[#FAF8F5] rounded-full overflow-hidden border border-black/5">
+                      <div className="w-full h-2.5 bg-white rounded-full overflow-hidden border border-black/8 p-0.5">
                         <div
                           className="h-full rounded-full transition-all duration-1000 ease-out"
                           style={{
@@ -350,13 +466,18 @@ export const LeaderboardSection: React.FC = () => {
                           }}
                         />
                       </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-[#5F5F5F] font-medium pt-0.5">
+                        <span>🥇 {h.medals.gold} Golds</span>
+                        <span>{h.totalWins} Total Wins</span>
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Card 2: How Points Work? */}
+            {/* Card 2: Collapsible How Points Work? */}
             <div className="bg-white rounded-[28px] p-6 border border-black/8 shadow-sm space-y-4 text-left">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
@@ -364,10 +485,10 @@ export const LeaderboardSection: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
-                    How Points Work?
+                    CBSE Point Allocation System
                   </h4>
                   <p className="font-sans-manrope text-xs text-[#5F5F5F] leading-relaxed mt-1">
-                    Points are awarded based on event type and position. Higher events earn more points.
+                    Points are automatically assigned upon judge result publication. Higher events yield bonus house points.
                   </p>
                 </div>
               </div>
@@ -376,7 +497,7 @@ export const LeaderboardSection: React.FC = () => {
                 onClick={() => setShowPointSystemModal(true)}
                 className="w-full py-2.5 px-4 rounded-full bg-[#FAF8F5] hover:bg-black/5 border border-black/10 text-[#111111] font-sans-manrope font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
-                <span>View Point System</span>
+                <span>View Full Point Rules</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
