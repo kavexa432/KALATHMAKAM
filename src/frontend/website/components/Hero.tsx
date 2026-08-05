@@ -13,7 +13,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-20 sm:pt-24 lg:pt-26 pb-6 flex flex-col justify-center min-h-[85vh] lg:min-h-[90vh] overflow-x-hidden bg-[#FAF8F5]"
+      className="relative pt-28 sm:pt-32 lg:pt-36 pb-6 flex flex-col justify-center min-h-[85vh] lg:min-h-[90vh] overflow-x-hidden bg-[#FAF8F5]"
     >
       {/* Warm Ambient Cream Glow Backdrop */}
       <div
@@ -24,56 +24,56 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
       />
 
       {/* Decorative Floating Petals */}
-      <div className="absolute top-28 right-[36%] text-[#FF5E84]/25 pointer-events-none animate-petal-float">
+      <div className="absolute top-36 right-[36%] text-[#FF5E84]/25 pointer-events-none animate-petal-float">
         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
-      <div className="absolute top-24 right-[12%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
+      <div className="absolute top-28 right-[12%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
-      <div className="absolute top-48 left-[18%] text-[#F59E0B]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '6s' }}>
+      <div className="absolute top-52 left-[18%] text-[#F59E0B]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '6s' }}>
         <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
 
-      {/* Main Container 1440px Centered */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
+      {/* Unified 1400px Content Grid Container */}
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-10 w-full relative z-10 my-auto">
         
-        {/* Main 45% / 55% Grid: Vertically Centered with Heading */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+        {/* Main 45% / 55% Grid: Vertically Centered with align-items: center */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           
-          {/* Left Social Bar */}
-          <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-3 text-[#5F5F5F]">
+          {/* Left 40px Social Circles Bar */}
+          <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-3.5 text-[#5F5F5F]">
             <a
               href="https://mgmmodelschool.edu.in"
               target="_blank"
               rel="noreferrer"
               aria-label="Official Website"
-              className="w-8.5 h-8.5 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#10B981] hover:scale-110 transition-all duration-300"
+              className="w-10 h-10 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#10B981] hover:scale-110 transition-all duration-300"
             >
-              <Globe className="w-3.5 h-3.5" />
+              <Globe className="w-4 h-4" />
             </a>
             <a
               href="https://www.facebook.com/MGMModelSchoolAyiroorVarkala/"
               target="_blank"
               rel="noreferrer"
               aria-label="Facebook"
-              className="w-8.5 h-8.5 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#3B82F6] hover:scale-110 transition-all duration-300"
+              className="w-10 h-10 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#3B82F6] hover:scale-110 transition-all duration-300"
             >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.374 14.5 5 15.5 5H18V0h-3.808C10.592 0 9 1.583 9 4.615V8z"/></svg>
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.374 14.5 5 15.5 5H18V0h-3.808C10.592 0 9 1.583 9 4.615V8z"/></svg>
             </a>
             <a
               href="https://www.youtube.com/@mgmmodelschoolvarkala2839"
               target="_blank"
               rel="noreferrer"
               aria-label="YouTube"
-              className="w-8.5 h-8.5 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#EF4444] hover:scale-110 transition-all duration-300"
+              className="w-10 h-10 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#EF4444] hover:scale-110 transition-all duration-300"
             >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
             </a>
 
             <div className="w-[1px] h-8 bg-black/12 my-1" />
@@ -83,7 +83,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </span>
           </div>
 
-          {/* Left Text Column (45% Balance) */}
+          {/* Left Text Column (45% Balance, Max Width 480px) */}
           <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4">
             
             {/* Sub-Badge */}
@@ -102,7 +102,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[80px] font-bold leading-[1.04] tracking-tight text-[#111111]"
+              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[78px] font-bold leading-[1.04] tracking-tight text-[#111111]"
             >
               Where{' '}
               <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent inline-flex items-baseline">
@@ -125,26 +125,24 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
             </div>
 
-            {/* Description Text */}
+            {/* Subtitle Description */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="font-sans-manrope text-xs sm:text-sm lg:text-base text-[#5F5F5F] max-w-[420px] lg:max-w-[450px] leading-relaxed font-medium"
+              className="font-sans-manrope text-xs sm:text-sm lg:text-base text-[#5F5F5F] max-w-[480px] leading-relaxed font-medium"
             >
-              The Grand Arts Fest of
+              The Grand Arts Festival of
               <br />
-              <strong className="text-[#111111] font-semibold">MGM Model School, Ayiroor, Varkala.</strong>
-              <br />
-              A celebration of creativity, culture and expression.
+              <strong className="text-[#111111] font-semibold">MGM Model School, Ayiroor.</strong>
             </motion.p>
 
-            {/* Action Buttons Row */}
+            {/* Action Buttons Row with 20px Spacing */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-4 sm:gap-5 pt-2"
+              className="flex flex-wrap items-center gap-5 sm:gap-6 pt-2"
             >
               {/* Primary Pill: Explore Events → */}
               <button
@@ -178,19 +176,19 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
           </div>
 
-          {/* Right Column: Commanding Hero Illustration (55% Proportion, Scaled +16%, Moved 50px Left & 12px Down for Perfect Balance) */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-center items-center relative lg:mt-3 xl:mt-4 lg:-ml-12 xl:-ml-14">
+          {/* Right Column: Hero Illustration (55% Proportion, Vertically Centered & Translated 20px Up) */}
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center items-center relative lg:-translate-y-5 lg:-ml-8">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="relative w-full max-w-[540px] lg:max-w-[600px] xl:max-w-[640px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
+              className="relative w-full max-w-[500px] lg:max-w-[540px] xl:max-w-[570px] aspect-square flex items-center justify-center gpu-render"
             >
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_18px_40px_rgba(255,94,132,0.15)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_20px_45px_rgba(255,94,132,0.12)]"
               />
             </motion.div>
 
@@ -199,7 +197,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
         </div>
 
         {/* Bottom Editorial 4-Stats Box */}
-        <div className="glass-card bg-white/94 backdrop-blur-2xl rounded-[24px] px-5 py-3 shadow-sm border border-white/95 mt-8 mb-4">
+        <div className="glass-card bg-white/94 backdrop-blur-2xl rounded-[24px] px-5 py-3 shadow-sm border border-white/95 mt-10 mb-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-black/6">
             
             <div className="p-2.5 flex items-center gap-3.5 text-left">
@@ -252,7 +250,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
                 <h4 className="font-sans-manrope font-extrabold text-xs text-[#10B981] font-bold">
                   MGM Model School
                 </h4>
-                <p className="font-sans-manrope text-[10px] text-[#5F5F5F]">
+                <p className="font-sans-manrope text-[11px] text-[#5F5F5F]">
                   Ayiroor, Varkala, Kerala, India
                 </p>
               </div>

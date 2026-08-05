@@ -78,15 +78,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          scrolled ? 'glass-nav py-2 shadow-xs' : 'bg-transparent py-3'
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? 'glass-nav py-1.5 shadow-xs' : 'bg-transparent py-2.5'
         }`}
       >
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden">
-          <div className="flex items-center justify-between h-[65px] sm:h-[70px] lg:h-[75px]">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-10">
+          <div className="flex items-center justify-between h-[70px] lg:h-[72px]">
             
-            {/* Logo + Desktop Nav Container */}
-            <div className="flex items-center gap-6 lg:gap-8">
+            {/* Logo + Desktop Nav Container (60px Gap) */}
+            <div className="flex items-center">
               {/* Logo */}
               <a
                 href="#home"
@@ -100,8 +100,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                 />
               </a>
 
-              {/* Desktop Navigation Links */}
-              <nav className="hidden lg:flex items-center gap-5 xl:gap-7">
+              {/* Desktop Navigation Links with 60px Margin Left from Logo */}
+              <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-14 lg:ml-16">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;
                   return (
@@ -130,8 +130,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               </nav>
             </div>
 
-            {/* Right Controls */}
-            <div className="flex items-center gap-3 sm:gap-4">
+            {/* Right Controls with 24px Margin Right */}
+            <div className="flex items-center gap-3 sm:gap-4 pr-2 sm:pr-4">
               
               {/* Desktop Auth Controls */}
               <div className="hidden lg:flex items-center gap-3">
@@ -139,25 +139,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                   <div className="relative">
                     <button
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs px-3.5 py-1.5 rounded-full flex items-center gap-2 border border-black/10 shadow-2xs transition-all cursor-pointer"
+                      className="bg-white/95 hover:bg-white text-[#111111] font-sans-manrope font-bold text-xs px-4 py-2 rounded-full flex items-center gap-2.5 border border-black/10 shadow-xs hover:shadow-md transition-all cursor-pointer"
                     >
                       {currentUser.avatarUrl ? (
-                        <img src={currentUser.avatarUrl} alt="Avatar" className="w-5 h-5 rounded-full" />
+                        <img src={currentUser.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full border border-black/10" />
                       ) : (
-                        <div className="w-5 h-5 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-[10px]">
+                        <div className="w-6 h-6 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-[11px]">
                           {currentUser.name.charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <span>{currentUser.name.split(' ')[0]}</span>
-                      <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-slate-100 rounded text-slate-700 uppercase">
-                        {isDev ? 'DEV' : isAdmin ? 'ADMIN' : 'USER'}
-                      </span>
+                      <div className="text-left leading-tight">
+                        <span className="block font-bold text-xs text-[#111111]">{currentUser.name.split(' ')[0]}</span>
+                        <span className="block text-[10px] text-[#5F5F5F] font-semibold">
+                          {isDev ? '🛡️ Developer' : isAdmin ? '🔒 Admin' : '👤 Member'}
+                        </span>
+                      </div>
                     </button>
 
-                    {/* User Dropdown Menu */}
+                    {/* Premium Floating User Dropdown Menu with 12px Spacing & High z-index */}
                     {userDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl p-3 shadow-xl border border-black/10 text-left space-y-2 z-50 animate-in fade-in">
-                        <div className="px-2 py-1 border-b border-black/8 pb-2">
+                      <div className="absolute right-0 top-[calc(100%+12px)] w-72 bg-white/98 backdrop-blur-2xl rounded-[20px] p-4 shadow-2xl border border-black/10 text-left space-y-3 z-[9999] animate-in fade-in">
+                        <div className="px-2 py-1 border-b border-black/8 pb-3">
                           <p className="font-bold text-xs text-[#111111] truncate">{currentUser.name}</p>
                           <p className="text-[11px] text-[#5F5F5F] truncate">{currentUser.email}</p>
                         </div>
@@ -166,9 +168,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                           <a
                             href="#control-center"
                             onClick={(e) => handleNavClick(e, 'control-center')}
-                            className="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold flex items-center gap-2 transition-colors"
+                            className="w-full py-2.5 px-3.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold flex items-center gap-2 transition-colors"
                           >
-                            <Shield className="w-3.5 h-3.5 text-blue-600" />
+                            <Shield className="w-4 h-4 text-blue-600" />
                             <span>{isDev ? 'Dashboard' : 'Festival Admin'}</span>
                           </a>
                         )}
@@ -178,9 +180,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                             setUserDropdownOpen(false);
                             logout();
                           }}
-                          className="w-full py-2 px-3 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                          className="w-full py-2.5 px-3.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                         >
-                          <LogOut className="w-3.5 h-3.5" />
+                          <LogOut className="w-4 h-4" />
                           <span>Logout</span>
                         </button>
                       </div>
@@ -214,7 +216,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
         {/* Clean Integrated Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[60px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto">
+          <div className="lg:hidden fixed inset-x-0 top-[62px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto z-[9999]">
             <nav className="flex flex-col gap-2 text-left">
               {navLinks.map((link) => (
                 <a
