@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, User, Shield, Lock, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Menu, X, User, Shield, Lock, ChevronDown, LogOut, Settings } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { NotificationDrawer } from './NotificationDrawer';
 import logoImage from '../../../assets/kalathmakam_2k26_logo.png';
@@ -12,8 +12,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notifDrawerOpen, setNotifDrawerOpen] = useState(false);
   const { currentUser, logout } = useFestival();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
     { name: 'Home', href: '#home', id: 'home' },
@@ -49,10 +51,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Instant redirect / view jump handler without long smooth-scrolling delay
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
     setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
 
     if (targetId === 'home') {
       window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
@@ -63,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
     const el = document.getElementById(targetId);
     if (el) {
-      const topOffset = el.getBoundingClientRect().top + window.pageYOffset - 75;
+      const topOffset = el.getBoundingClientRect().top + window.pageYOffset - 68;
       window.scrollTo({ top: topOffset, behavior: 'instant' as ScrollBehavior });
       window.location.hash = `#${targetId}`;
       setActiveSection(targetId);
@@ -72,19 +86,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
   const isDev = currentUser?.role === 'developer' || currentUser?.role === 'Developer';
   const isAdmin = (currentUser?.role === 'admin' || currentUser?.role === 'Admin') && currentUser?.approved;
-  const isNormalUser = currentUser && !isDev && !isAdmin;
 
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          scrolled ? 'glass-nav py-1.5 shadow-xs' : 'bg-transparent py-2 sm:py-2.5'
+          scrolled ? 'glass-nav py-1 shadow-xs' : 'bg-transparent py-1.5'
         }`}
       >
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[65px] sm:h-[70px] lg:h-[75px]">
+          <div className="flex items-center justify-between h-[60px] sm:h-[64px] lg:h-[66px]">
             
-            {/* Official Custom Malayalam Calligraphy Logo Image */}
+            {/* Official Custom Malayalam Calligraphy Logo Image (Calibrated Height ~76px) */}
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, 'home')}
@@ -93,12 +106,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                className="h-16 sm:h-20 lg:h-[100px] absolute top-1 sm:top-2 lg:-top-1 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-105 origin-top-left"
+                className="h-14 sm:h-16 lg:h-[76px] absolute top-1 sm:top-1.5 lg:-top-1 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-[1.03] origin-top-left"
               />
             </a>
 
-            {/* Desktop Navigation Links (Hidden on Mobile) */}
-            <nav className="hidden lg:flex items-center gap-5 xl:gap-7">
+            {/* Desktop Navigation Links (Increased Gap 36px) */}
+            <nav className="hidden lg:flex items-center gap-7 xl:gap-9">
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
@@ -115,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     {link.name}
                     {/* Active Link Underline Indicator */}
                     {isActive && (
-                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-[2px]">
+                      <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 flex items-center justify-center gap-[2px]">
                         <div className="w-3 h-[1px] bg-[#FF5E84]" />
                         <div className="w-1 h-1 rounded-full bg-[#FF5E84]" />
                         <div className="w-3 h-[1px] bg-[#FF5E84]" />
@@ -129,54 +142,119 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
             {/* Right Controls */}
             <div className="flex items-center gap-3 sm:gap-4">
               
-              {/* Desktop Auth Pills (Hidden on Phone) */}
+              {/* Desktop Auth Pills */}
               <div className="hidden lg:flex items-center gap-3">
                 {currentUser ? (
-                  <div className="flex items-center gap-2">
-                    {/* Developer Role: Control Center Button */}
-                    {isDev && (
-                      <a
-                        href="#control-center"
-                        onClick={(e) => handleNavClick(e, 'control-center')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
-                      >
-                        <Shield className="w-3.5 h-3.5 text-white" />
-                        <span>Control Center</span>
-                      </a>
-                    )}
+                  <div className="relative" ref={dropdownRef}>
+                    
+                    {/* Role Button + Profile Trigger Pill */}
+                    <div className="flex items-center gap-2">
+                      {isDev && (
+                        <a
+                          href="#control-center"
+                          onClick={(e) => handleNavClick(e, 'control-center')}
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-sans-manrope font-bold text-xs px-4 py-1.5 rounded-full shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:scale-[1.02] border border-white/20"
+                        >
+                          <Shield className="w-3.5 h-3.5 text-white" />
+                          <span>⚡ Control Center</span>
+                        </a>
+                      )}
 
-                    {/* Approved Admin Role: Festival Management Button */}
-                    {isAdmin && (
-                      <a
-                        href="#control-center"
-                        onClick={(e) => handleNavClick(e, 'control-center')}
-                        className="bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all"
-                      >
-                        <Lock className="w-3.5 h-3.5 text-[#FF5E84]" />
-                        <span>Festival Management</span>
-                      </a>
-                    )}
+                      {isAdmin && (
+                        <a
+                          href="#control-center"
+                          onClick={(e) => handleNavClick(e, 'control-center')}
+                          className="bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs px-4 py-1.5 rounded-full shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:scale-[1.02] border border-white/10"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-[#FF5E84]" />
+                          <span>Festival Management</span>
+                        </a>
+                      )}
 
-                    {/* Normal User: Display Name Badge */}
-                    {isNormalUser && (
-                      <span className="text-xs font-bold text-[#111111] bg-white border border-black/10 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs">
+                      {/* Dropdown Profile Trigger Pill */}
+                      <button
+                        onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                        className="bg-white hover:bg-black/5 text-[#111111] border border-black/10 px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold font-sans-manrope shadow-2xs cursor-pointer transition-all"
+                      >
                         <User className="w-3.5 h-3.5 text-[#FF5E84]" />
                         <span>{currentUser.name}</span>
-                      </span>
+                        <ChevronDown className={`w-3 h-3 text-[#5F5F5F] transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+
+                    {/* Glassmorphism User Profile Dropdown Menu */}
+                    {userDropdownOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-2xl rounded-2xl p-4 shadow-xl border border-black/10 text-left z-50 animate-in fade-in space-y-3">
+                        <div className="flex items-center gap-3 pb-3 border-b border-black/8">
+                          {currentUser.avatarUrl ? (
+                            <img src={currentUser.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full border border-black/10" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-xs">
+                              {currentUser.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-sans-manrope font-extrabold text-xs text-[#111111] truncate">
+                              {currentUser.name}
+                            </h4>
+                            <p className="font-sans-manrope text-[11px] text-[#5F5F5F] truncate">
+                              {currentUser.email}
+                            </p>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase shrink-0 ${
+                              isDev
+                                ? 'bg-blue-100 text-blue-800'
+                                : isAdmin
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-slate-100 text-slate-700'
+                            }`}
+                          >
+                            {currentUser.role}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          {(isDev || isAdmin) && (
+                            <a
+                              href="#control-center"
+                              onClick={(e) => handleNavClick(e, 'control-center')}
+                              className="w-full py-2 px-3 rounded-xl hover:bg-black/5 text-xs font-bold text-[#111111] flex items-center gap-2 transition-colors"
+                            >
+                              <Shield className="w-3.5 h-3.5 text-blue-600" />
+                              <span>{isDev ? 'Control Center' : 'Festival Management'}</span>
+                            </a>
+                          )}
+                          <button
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="w-full py-2 px-3 rounded-xl hover:bg-black/5 text-xs font-bold text-[#5F5F5F] flex items-center gap-2 transition-colors cursor-pointer"
+                          >
+                            <Settings className="w-3.5 h-3.5" />
+                            <span>Account Settings</span>
+                          </button>
+                        </div>
+
+                        <div className="pt-2 border-t border-black/8">
+                          <button
+                            onClick={() => {
+                              setUserDropdownOpen(false);
+                              logout();
+                            }}
+                            className="w-full py-2 px-3 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      </div>
                     )}
 
-                    <button
-                      onClick={logout}
-                      className="text-xs text-[#5F5F5F] hover:text-[#EF4444] font-bold underline cursor-pointer px-1"
-                    >
-                      Logout
-                    </button>
                   </div>
                 ) : (
                   /* Visitor Desktop Login Button */
                   <button
                     onClick={onOpenLogin}
-                    className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[13px] px-6 py-2 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
+                    className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[13px] px-6 py-1.5 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
                   >
                     <User className="w-3.5 h-3.5 text-[#FF5E84]" />
                     <span>Login</span>
@@ -187,7 +265,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               {/* Hamburger Toggle Button (Always visible on Mobile) */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="w-10 h-10 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors lg:hidden"
+                className="w-9 h-9 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors lg:hidden"
                 aria-label="Toggle Navigation Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -200,7 +278,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
         {/* Clean Integrated Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[62px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto">
+          <div className="lg:hidden fixed inset-x-0 top-[60px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto">
             <nav className="flex flex-col gap-2 text-left">
               {navLinks.map((link) => (
                 <a
@@ -259,7 +337,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       className="w-full py-2.5 px-4 rounded-xl bg-blue-600 text-white font-sans-manrope font-bold text-xs flex items-center justify-center gap-2 shadow-xs"
                     >
                       <Shield className="w-4 h-4" />
-                      <span>Developer Control Center</span>
+                      <span>⚡ Developer Control Center</span>
                     </a>
                   )}
 
