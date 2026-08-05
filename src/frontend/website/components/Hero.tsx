@@ -13,11 +13,11 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-20 sm:pt-22 lg:pt-24 pb-8 min-h-[85vh] lg:min-h-[88vh] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
+      className="relative pt-20 sm:pt-22 lg:pt-24 pb-8 min-h-[85vh] lg:min-h-[88vh] max-h-[950px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
     >
       {/* Warm Golden Cream Ambient Backdrop Glow */}
       <div
-        className="absolute top-1/4 right-1/4 w-[650px] h-[550px] pointer-events-none -z-10 blur-3xl opacity-35"
+        className="absolute top-1/4 right-1/4 w-[700px] h-[600px] pointer-events-none -z-10 blur-3xl opacity-35"
         style={{
           background: 'radial-gradient(ellipse at 50% 50%, rgba(255, 235, 215, 0.9) 0%, rgba(255, 220, 200, 0.3) 60%, transparent 80%)',
         }}
@@ -29,7 +29,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
       </div>
-      <div className="absolute top-24 right-[5%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
+      <div className="absolute top-24 right-[3%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
         </svg>
@@ -43,7 +43,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
       {/* Main Container max-width: 1500px */}
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
         
-        {/* Main Grid: 48% / 52% Balanced Ratio with Vertically Centered Grid Items */}
+        {/* Main Grid: 48% / 52% Ratio with Vertically Centered Grid Items */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-center">
           
           {/* Left Social Bar */}
@@ -83,7 +83,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </span>
           </div>
 
-          {/* Left Content Column */}
+          {/* Left Content Column (Enlarged Typography) */}
           <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4">
             
             {/* Sub-Badge */}
@@ -91,18 +91,18 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-1.5 text-[11px] font-sans-manrope font-extrabold tracking-[0.22em] text-[#FF5E84] uppercase"
+              className="inline-flex items-center gap-1.5 text-[11.5px] font-sans-manrope font-extrabold tracking-[0.24em] text-[#FF5E84] uppercase"
             >
               <span>🌸</span>
               <span>KALATHMAKAM 2K26</span>
             </motion.div>
 
-            {/* Dominant Headline */}
+            {/* Dominant Large Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[78px] xl:text-[82px] font-bold leading-[1.05] tracking-tight text-[#111111]"
+              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[88px] font-bold leading-[1.04] tracking-tight text-[#111111]"
             >
               Where{' '}
               <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent inline-flex items-baseline">
@@ -119,18 +119,18 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </motion.h1>
 
             {/* Decorative Separator Motif */}
-            <div className="flex items-center gap-2.5 w-48 text-[#FF5E84]/35 my-2">
+            <div className="flex items-center gap-2.5 w-52 text-[#FF5E84]/35 my-2">
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
               <span className="text-[#FF5E84] text-xs">❖</span>
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
             </div>
 
-            {/* Description Text */}
+            {/* Slightly Larger Description Text */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="font-sans-manrope text-xs sm:text-sm lg:text-base text-[#5F5F5F] max-w-[420px] lg:max-w-[450px] leading-relaxed font-medium"
+              className="font-sans-manrope text-sm sm:text-base lg:text-lg text-[#5F5F5F] max-w-[440px] lg:max-w-[480px] leading-relaxed font-medium"
             >
               The Grand Arts Fest of
               <br />
@@ -178,19 +178,19 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
           </div>
 
-          {/* Right Column: Larger Hero Illustration Emblem (Max Width 600-660px, Extended to Screen Edge) */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-end items-center relative lg:-mr-4 xl:-mr-8">
+          {/* Right Column: Prominent Larger Hero Emblem (Max Width 580-720px, Extended to Screen Edge) */}
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-end items-center relative lg:-mr-6 xl:-mr-12 lg:-mt-4">
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1.05 }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1.08 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="relative w-full max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
+              className="relative w-full max-w-[580px] lg:max-w-[660px] xl:max-w-[720px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
             >
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_20px_45px_rgba(255,94,132,0.15)] scale-105"
+                className="w-full h-full object-contain filter drop-shadow-[0_22px_50px_rgba(255,94,132,0.18)] scale-108"
               />
             </motion.div>
 

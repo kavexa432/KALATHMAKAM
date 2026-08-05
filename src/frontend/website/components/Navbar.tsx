@@ -95,9 +95,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         }`}
       >
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[60px] sm:h-[64px] lg:h-[66px]">
+          <div className="flex items-center justify-between h-[62px] sm:h-[66px] lg:h-[70px]">
             
-            {/* Official Custom Malayalam Calligraphy Logo Image (10% Smaller ~68px Height) */}
+            {/* Official Custom Malayalam Calligraphy Logo Image (Prominent Height ~78px) */}
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, 'home')}
@@ -106,12 +106,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                className="h-12 sm:h-14 lg:h-[68px] absolute top-1 sm:top-1.5 lg:-top-0.5 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-[1.03] origin-top-left"
+                className="h-14 sm:h-16 lg:h-[78px] absolute top-1 sm:top-1.5 lg:-top-0.5 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-[1.03] origin-top-left"
               />
             </a>
 
-            {/* Desktop Navigation Links (Increased Left Space 30px & Menu Spacing) */}
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-32 xl:ml-40">
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-36 xl:ml-44">
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
@@ -119,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     key={link.id}
                     href={link.href}
                     onClick={(e) => handleNavClick(e, link.id)}
-                    className={`relative font-sans-manrope text-[13px] font-semibold transition-colors duration-300 ${
+                    className={`relative font-sans-manrope text-[13.5px] font-semibold transition-colors duration-300 ${
                       isActive
                         ? 'text-[#FF5E84] font-bold'
                         : 'text-[#333333] hover:text-[#111111]'
