@@ -13,13 +13,13 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-20 sm:pt-24 lg:pt-28 pb-6 flex flex-col justify-center min-h-[85vh] lg:min-h-[90vh] overflow-hidden bg-[#FAF8F5]"
+      className="relative pt-20 sm:pt-24 lg:pt-26 pb-6 flex flex-col justify-center min-h-[85vh] lg:min-h-[90vh] overflow-x-hidden bg-[#FAF8F5]"
     >
       {/* Warm Ambient Cream Glow Backdrop */}
       <div
-        className="absolute top-1/4 left-1/12 w-[600px] h-[500px] pointer-events-none -z-10 blur-3xl opacity-35"
+        className="absolute top-1/4 left-1/12 w-[650px] h-[550px] pointer-events-none -z-10 blur-3xl opacity-35"
         style={{
-          background: 'radial-gradient(ellipse at 35% 45%, rgba(255, 245, 230, 0.9) 0%, rgba(255, 235, 220, 0.3) 55%, transparent 80%)',
+          background: 'radial-gradient(ellipse at 35% 45%, rgba(255, 245, 230, 0.95) 0%, rgba(255, 235, 220, 0.35) 55%, transparent 80%)',
         }}
       />
 
@@ -40,11 +40,11 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
         </svg>
       </div>
 
-      {/* Main Container */}
-      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
+      {/* Main Container 1440px Centered */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
         
-        {/* Main 50/50 Grid: Vertically Centered with align-items: center */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+        {/* Main 45% / 55% Grid: Vertically Centered with Heading */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
           
           {/* Left Social Bar */}
           <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-3 text-[#5F5F5F]">
@@ -83,7 +83,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </span>
           </div>
 
-          {/* Left Text Column (50% Balance) */}
+          {/* Left Text Column (45% Balance) */}
           <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4">
             
             {/* Sub-Badge */}
@@ -118,7 +118,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               </span>
             </motion.h1>
 
-            {/* Decorative Separator Motif with 8px Added Space */}
+            {/* Decorative Separator Motif */}
             <div className="flex items-center gap-2.5 w-48 text-[#FF5E84]/35 my-2">
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
               <span className="text-[#FF5E84] text-xs">❖</span>
@@ -178,19 +178,19 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
           </div>
 
-          {/* Right Column: Hero Illustration Raised Up by 200px & Shifted 40px Left for 50/50 Balance */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-center items-center relative lg:-mt-16 xl:-mt-20 lg:-ml-10">
+          {/* Right Column: Commanding Hero Illustration (55% Proportion, Scaled +16%, Moved 50px Left & 12px Down for Perfect Balance) */}
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-center items-center relative lg:mt-3 xl:mt-4 lg:-ml-12 xl:-ml-14">
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="relative w-full max-w-[460px] lg:max-w-[500px] xl:max-w-[530px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
+              className="relative w-full max-w-[540px] lg:max-w-[600px] xl:max-w-[640px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
             >
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_16px_35px_rgba(255,94,132,0.12)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_18px_40px_rgba(255,94,132,0.15)]"
               />
             </motion.div>
 
@@ -252,7 +252,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
                 <h4 className="font-sans-manrope font-extrabold text-xs text-[#10B981] font-bold">
                   MGM Model School
                 </h4>
-                <p className="font-sans-manrope text-[11px] text-[#5F5F5F]">
+                <p className="font-sans-manrope text-[10px] text-[#5F5F5F]">
                   Ayiroor, Varkala, Kerala, India
                 </p>
               </div>
@@ -263,8 +263,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
       </div>
 
-      {/* Restored Soft Watercolor Bottom Transition Splash */}
-      <div className="h-20 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/80 to-[#FAF8F5] pointer-events-none mt-2" />
+      {/* Extended Soft Watercolor Bottom Transition Splash */}
+      <div className="h-24 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/85 to-[#FAF8F5] pointer-events-none mt-2" />
 
     </section>
   );

@@ -79,29 +79,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          scrolled ? 'glass-nav py-1.5 shadow-xs' : 'bg-transparent py-2.5 sm:py-3'
+          scrolled ? 'glass-nav py-2 shadow-xs' : 'bg-transparent py-3'
         }`}
       >
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <div className="flex items-center justify-between h-[65px] sm:h-[70px] lg:h-[75px]">
             
-            {/* Logo + Desktop Nav Container with 30px Added Margin */}
-            <div className="flex items-center">
-              {/* Logo (10% smaller to prevent stretch) */}
+            {/* Logo + Desktop Nav Container */}
+            <div className="flex items-center gap-6 lg:gap-8">
+              {/* Logo */}
               <a
                 href="#home"
                 onClick={(e) => handleNavClick(e, 'home')}
-                className="flex items-center gap-2 group shrink-0 py-0.5"
+                className="flex items-center gap-2 group shrink-0 py-1"
               >
                 <img
                   src={logoImage}
                   alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                  className="h-14 sm:h-16 lg:h-[78px] absolute top-1 sm:top-2 lg:top-0 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-105 origin-top-left"
+                  className="h-12 sm:h-14 lg:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </a>
 
-              {/* Desktop Navigation Links with 30px Margin Left from Logo */}
-              <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-40 lg:ml-44 xl:ml-48">
+              {/* Desktop Navigation Links */}
+              <nav className="hidden lg:flex items-center gap-5 xl:gap-7">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;
                   return (
