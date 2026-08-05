@@ -77,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
     const el = document.getElementById(targetId);
     if (el) {
-      const topOffset = el.getBoundingClientRect().top + window.pageYOffset - 68;
+      const topOffset = el.getBoundingClientRect().top + window.pageYOffset - 76;
       window.scrollTo({ top: topOffset, behavior: 'instant' as ScrollBehavior });
       window.location.hash = `#${targetId}`;
       setActiveSection(targetId);
@@ -91,13 +91,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          scrolled ? 'glass-nav py-1 shadow-xs' : 'bg-transparent py-1.5'
+          scrolled ? 'glass-nav py-1 shadow-xs' : 'bg-transparent py-2'
         }`}
       >
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[62px] sm:h-[66px] lg:h-[70px]">
+          <div className="flex items-center justify-between h-[70px] sm:h-[76px] lg:h-[84px]">
             
-            {/* Official Custom Malayalam Calligraphy Logo Image (Prominent Height ~78px) */}
+            {/* Prominent Brand Anchor Logo Image (Increased 18% ~88px Height / 180px Width) */}
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, 'home')}
@@ -106,12 +106,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                className="h-14 sm:h-16 lg:h-[78px] absolute top-1 sm:top-1.5 lg:-top-0.5 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-[1.03] origin-top-left"
+                className="h-16 sm:h-20 lg:h-[88px] absolute top-1 sm:top-1.5 lg:-top-1 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-[1.03] origin-top-left"
               />
             </a>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-36 xl:ml-44">
+            {/* Desktop Navigation Links (Consistent 40px Spacing & 180px Left Space) */}
+            <nav className="hidden lg:flex items-center gap-8 xl:gap-10 ml-44 xl:ml-52">
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     {link.name}
                     {/* Active Link Underline Indicator */}
                     {isActive && (
-                      <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 flex items-center justify-center gap-[2px]">
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-[2px]">
                         <div className="w-3 h-[1px] bg-[#FF5E84]" />
                         <div className="w-1 h-1 rounded-full bg-[#FF5E84]" />
                         <div className="w-3 h-[1px] bg-[#FF5E84]" />
@@ -139,8 +139,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               })}
             </nav>
 
-            {/* Right Controls */}
-            <div className="flex items-center gap-3 sm:gap-4">
+            {/* Right Controls (Nudged 2px Down to Align with Baseline) */}
+            <div className="flex items-center gap-3 sm:gap-4 translate-y-[2px]">
               
               {/* Desktop Auth Pills */}
               <div className="hidden lg:flex items-center gap-3">
@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                         <a
                           href="#control-center"
                           onClick={(e) => handleNavClick(e, 'control-center')}
-                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-sans-manrope font-bold text-xs px-4 py-1.5 rounded-full shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:scale-[1.02] border border-white/20"
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:scale-[1.02] border border-white/20"
                         >
                           <Shield className="w-3.5 h-3.5 text-white" />
                           <span>Dashboard</span>
@@ -164,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                         <a
                           href="#control-center"
                           onClick={(e) => handleNavClick(e, 'control-center')}
-                          className="bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs px-4 py-1.5 rounded-full shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:scale-[1.02] border border-white/20"
+                          className="bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs px-4 py-2 rounded-full shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:scale-[1.02] border border-white/20"
                         >
                           <Lock className="w-3.5 h-3.5 text-[#FF5E84]" />
                           <span>Admin</span>
@@ -174,20 +174,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                       {/* User Profile Avatar Pill Button */}
                       <button
                         onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                        className="bg-white hover:bg-black/5 border border-black/10 rounded-full px-2.5 py-1 flex items-center gap-2 shadow-2xs transition-all cursor-pointer"
+                        className="bg-white hover:bg-black/5 border border-black/10 rounded-full px-3 py-1.5 flex items-center gap-2 shadow-2xs transition-all cursor-pointer"
                       >
                         {currentUser.avatarUrl ? (
                           <img
                             src={currentUser.avatarUrl}
                             alt={currentUser.name}
-                            className="w-6 h-6 rounded-full object-cover border border-black/10"
+                            className="w-6.5 h-6.5 rounded-full object-cover border border-black/10"
                           />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#FF5E84] to-[#F59E0B] text-white flex items-center justify-center font-bold text-[10px]">
+                          <div className="w-6.5 h-6.5 rounded-full bg-gradient-to-tr from-[#FF5E84] to-[#F59E0B] text-white flex items-center justify-center font-bold text-[11px]">
                             {currentUser.name.charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <span className="text-xs font-bold text-[#111111] max-w-[100px] truncate">
+                        <span className="text-xs font-bold text-[#111111] max-w-[110px] truncate">
                           {currentUser.name}
                         </span>
                         <svg className="w-3 h-3 text-[#5F5F5F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
@@ -196,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
                     {/* Clean Desktop User Dropdown Panel */}
                     {userDropdownOpen && (
-                      <div className="absolute right-0 top-11 w-64 bg-white/98 backdrop-blur-2xl rounded-2xl p-3 shadow-2xl border border-black/10 z-50 text-left animate-in fade-in space-y-2">
+                      <div className="absolute right-0 top-12 w-64 bg-white/98 backdrop-blur-2xl rounded-2xl p-3 shadow-2xl border border-black/10 z-50 text-left animate-in fade-in space-y-2">
                         <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-black/6 flex items-center gap-2.5">
                           {currentUser.avatarUrl ? (
                             <img src={currentUser.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full border border-black/10" />
@@ -263,10 +263,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
                   </div>
                 ) : (
-                  /* Visitor Desktop Login Button */
+                  /* Visitor Desktop Login Button (Aligned to Baseline) */
                   <button
                     onClick={onOpenLogin}
-                    className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[13px] px-6 py-1.5 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
+                    className="bg-white hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-[13px] px-6 py-2 rounded-full flex items-center gap-2 cursor-pointer shadow-sm border border-[#FF5E84] transition-all"
                   >
                     <User className="w-3.5 h-3.5 text-[#FF5E84]" />
                     <span>Login</span>
@@ -277,7 +277,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               {/* Hamburger Toggle Button (Always visible on Mobile) */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="w-9 h-9 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors lg:hidden"
+                className="w-9.5 h-9.5 rounded-full bg-white border border-black/10 flex items-center justify-center text-[#111111] hover:text-[#FF5E84] shadow-sm cursor-pointer transition-colors lg:hidden"
                 aria-label="Toggle Navigation Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -290,7 +290,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
         {/* Clean Integrated Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[60px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto">
+          <div className="lg:hidden fixed inset-x-0 top-[66px] bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-black/10 p-6 shadow-2xl animate-in fade-in max-h-[85vh] overflow-y-auto">
             <nav className="flex flex-col gap-2 text-left">
               {navLinks.map((link) => (
                 <a
