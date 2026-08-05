@@ -4,6 +4,19 @@ import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 
+// High-Resolution Transparent House Emblem Graphics
+import vegaEmblem from '../../../assets/vega_house_emblem.png';
+import novaEmblem from '../../../assets/nova_house_emblem.png';
+import orionEmblem from '../../../assets/orion_house_emblem.png';
+import astraEmblem from '../../../assets/astra_house_emblem.png';
+
+const houseEmblems: Record<HouseId, string> = {
+  VEGA: vegaEmblem,
+  NOVA: novaEmblem,
+  ORION: orionEmblem,
+  ASTRA: astraEmblem,
+};
+
 interface HouseDetailModalProps {
   houseId: HouseId | null;
   onClose: () => void;
@@ -61,8 +74,14 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{house.flagSymbol}</span>
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md p-2 flex items-center justify-center border border-white/30 shrink-0">
+              <img
+                src={houseEmblems[houseId]}
+                alt={`${house.name} Official Emblem`}
+                className="w-full h-full object-contain filter drop-shadow-md"
+              />
+            </div>
             <div>
               <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
                 {rankBadge}

@@ -5,12 +5,11 @@ import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 import { HouseDetailModal } from './HouseDetailModal';
 
-// Official House Emblem Assets
+// High-Resolution Transparent House Emblem Graphics
 import vegaEmblem from '../../../assets/vega_house_emblem.png';
 import novaEmblem from '../../../assets/nova_house_emblem.png';
 import orionEmblem from '../../../assets/orion_house_emblem.png';
 import astraEmblem from '../../../assets/astra_house_emblem.png';
-import goldenTrophyArt from '../../../assets/golden_trophy.png';
 
 const houseEmblems: Record<HouseId, string> = {
   VEGA: vegaEmblem,
@@ -115,6 +114,14 @@ export const LeaderboardSection: React.FC = () => {
         },
       ];
 
+  // Map House Flame / Emblem Color Styles
+  const houseFlameStyles: Record<string, { bg: string }> = {
+    VEGA: { bg: 'bg-[#F59E0B]/12' },
+    NOVA: { bg: 'bg-[#EF4444]/12' },
+    ORION: { bg: 'bg-[#3B82F6]/12' },
+    ASTRA: { bg: 'bg-[#10B981]/12' },
+  };
+
   const trendingDeltas: Record<string, number> = {
     VEGA: 24,
     NOVA: 18,
@@ -126,7 +133,7 @@ export const LeaderboardSection: React.FC = () => {
     <section id="leaderboard" className="relative py-14 sm:py-16 bg-[#FAF8F5]">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header with Official Golden Trophy Artwork */}
+        {/* Section Header with Top Right Trophy */}
         <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
           <div className="text-left space-y-2">
             <h2 className="font-serif-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[#111111] leading-tight flex items-center gap-2">
@@ -145,23 +152,22 @@ export const LeaderboardSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Official Golden Winner Trophy Artwork */}
+          {/* Golden Trophy Art Decorative Emblem (Right) */}
           <div className="hidden md:flex items-center justify-center shrink-0">
-            <img
-              src={goldenTrophyArt}
-              alt="Official Winner Golden Trophy with Wreath"
-              className="w-32 h-32 object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
-            />
+            <div className="relative w-28 h-28 flex items-center justify-center bg-gradient-to-tr from-[#F59E0B]/10 to-[#FF5E84]/10 rounded-full p-2 border border-black/5">
+              <span className="text-6xl filter drop-shadow-md">🏆</span>
+            </div>
           </div>
         </div>
 
-        {/* Top 4 House Standings Cards Row using Official House Emblem Images */}
+        {/* Top 4 House Standings Cards Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           {standings.map((h, index) => {
             const houseId = h.id as HouseId;
+            const colorInfo = houseColors[houseId];
             const isFirstRank = index === 0;
             const delta = trendingDeltas[houseId] || 10;
-            const emblemSrc = houseEmblems[houseId];
+            const flameStyle = houseFlameStyles[houseId] || { bg: 'bg-slate-100' };
 
             return (
               <div
@@ -181,7 +187,7 @@ export const LeaderboardSection: React.FC = () => {
                 )}
 
                 {/* Rank Ribbon Badge Top Left */}
-                <div className="absolute top-4 left-4">
+                <div className="absolute top-4 left-4 z-10">
                   <div
                     className={`w-7 h-8 flex items-center justify-center font-sans-manrope font-extrabold text-xs text-white rounded-b-md shadow-xs ${
                       index === 0
@@ -197,18 +203,29 @@ export const LeaderboardSection: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Official House Emblem Image Display */}
-                <div className="pt-2 flex justify-center items-center h-28">
-                  <img
-                    src={emblemSrc}
-                    alt={`House ${h.name} Official Emblem Logo`}
-                    className="h-24 w-auto object-contain filter drop-shadow-xs transition-transform duration-300 group-hover:scale-105"
-                  />
+                {/* High-Res Transparent Background House Emblem Graphic */}
+                <div className="pt-2 flex justify-center">
+                  <div
+                    className={`w-20 h-20 rounded-full ${flameStyle.bg} flex items-center justify-center border border-black/5 shadow-2xs group-hover:scale-105 transition-transform p-3`}
+                  >
+                    <img
+                      src={houseEmblems[houseId]}
+                      alt={`${h.name} House Official Emblem`}
+                      className="w-full h-full object-contain filter drop-shadow-xs"
+                    />
+                  </div>
                 </div>
 
-                {/* House Score Display */}
+                {/* House Name & Points */}
                 <div className="space-y-1">
-                  <div className="flex items-baseline justify-center gap-1.5">
+                  <h3
+                    className="font-sans-manrope font-black text-xl tracking-wider uppercase"
+                    style={{ color: colorInfo.primary }}
+                  >
+                    {h.name}
+                  </h3>
+
+                  <div className="flex items-baseline justify-center gap-1.5 pt-1">
                     <span className="font-serif-cormorant font-bold text-4xl sm:text-5xl text-[#111111] leading-none">
                       {h.points}
                     </span>
@@ -231,7 +248,7 @@ export const LeaderboardSection: React.FC = () => {
           })}
         </div>
 
-        {/* Bottom Two Columns Grid */}
+        {/* Bottom Two Columns Grid: Recent Wins (Left 2/3) + Points Overview & Info (Right 1/3) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Left Column (8 cols): Recent Wins Table */}
@@ -259,7 +276,6 @@ export const LeaderboardSection: React.FC = () => {
                 <tbody className="divide-y divide-black/5 font-sans-manrope text-xs">
                   {recentWinsData.map((row) => {
                     const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.VEGA;
-                    const emblemSrc = houseEmblems[row.winnerHouse as HouseId];
 
                     return (
                       <tr key={row.id} className="hover:bg-[#FAF8F5] transition-colors">
@@ -273,7 +289,7 @@ export const LeaderboardSection: React.FC = () => {
                         <td className="py-3.5 px-3">
                           <div className="flex items-center gap-2.5">
                             <div className={`w-7 h-7 rounded-xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0`}>
-                              {row.icon || <Music className="w-3.5 h-3.5 text-[#FF5E84]" />}
+                              {row.icon || <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />}
                             </div>
                             <div>
                               <strong className="block text-[#111111] font-bold text-xs">{row.competition}</strong>
@@ -287,10 +303,14 @@ export const LeaderboardSection: React.FC = () => {
                           {row.event}
                         </td>
 
-                        {/* Winner with Official House Emblem */}
+                        {/* Winner */}
                         <td className="py-3.5 px-3 whitespace-nowrap">
                           <span className="inline-flex items-center gap-2 font-bold text-xs">
-                            <img src={emblemSrc} alt={row.winnerHouse} className="h-5 w-auto object-contain" />
+                            <img
+                              src={houseEmblems[row.winnerHouse as HouseId]}
+                              alt={row.winnerHouse}
+                              className="w-5 h-5 object-contain shrink-0"
+                            />
                             <span style={{ color: houseColor.primary }}>{row.winnerHouse}</span>
                           </span>
                         </td>
@@ -340,7 +360,10 @@ export const LeaderboardSection: React.FC = () => {
                   return (
                     <div key={h.id} className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs font-sans-manrope font-bold">
-                        <span style={{ color: colorInfo.primary }}>{h.name}</span>
+                        <span className="flex items-center gap-1.5" style={{ color: colorInfo.primary }}>
+                          <img src={houseEmblems[houseId]} alt={houseId} className="w-4 h-4 object-contain" />
+                          <span>{h.name}</span>
+                        </span>
                         <span className="text-[#111111] font-extrabold">{h.points}</span>
                       </div>
 
