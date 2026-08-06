@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
+import { X, Lock, ShieldCheck } from 'lucide-react';
 import { useFestival } from '../context/FestivalContext';
 
 interface LoginModalProps {
@@ -8,7 +8,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const { loginWithGoogle, loginCustomUser } = useFestival();
+  const { loginWithGoogle } = useFestival();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [accessDeniedMsg, setAccessDeniedMsg] = useState<string | null>(null);
 
@@ -34,15 +34,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       await loginWithGoogle();
       onClose();
     } catch {
-      setAccessDeniedMsg('Google Sign-In was cancelled or blocked. You can use the Quick Login presets below.');
+      setAccessDeniedMsg('Google Sign-In was cancelled or blocked. Please try again.');
     } finally {
       setGoogleLoading(false);
     }
-  };
-
-  const handleQuickLogin = (email: string) => {
-    loginCustomUser(email);
-    onClose();
   };
 
   return (
@@ -72,10 +67,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             </div>
             <div>
               <h3 className="font-serif-cormorant font-bold text-xl sm:text-2xl text-white leading-tight">
-                Kalathmakam Portal Login
+                Control Portal Access
               </h3>
               <p className="font-sans-manrope text-[11px] sm:text-xs text-white/70 mt-0.5">
-                Sign in with Google or select your account preset.
+                Sign in with Google for admin & developer management.
               </p>
             </div>
           </div>
@@ -121,46 +116,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
           </button>
 
-          {/* Divider */}
-          <div className="relative flex items-center justify-center my-2">
-            <div className="border-t border-black/10 w-full" />
-            <span className="bg-[#FAF8F5] px-3 font-sans-manrope text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider whitespace-nowrap">
-              Or Mobile Quick Access
-            </span>
-          </div>
-
-          {/* Quick Mobile Role Presets */}
-          <div className="grid grid-cols-2 gap-2 font-sans-manrope">
-            <button
-              onClick={() => handleQuickLogin('vaishnavil4433@gmail.com')}
-              className="p-3 rounded-2xl bg-white hover:bg-emerald-50 border border-black/8 hover:border-emerald-300 text-left transition-all cursor-pointer group shadow-2xs"
-            >
-              <div className="flex items-center gap-1.5 text-emerald-600 font-extrabold text-xs">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Developer</span>
-              </div>
-              <p className="text-[10px] text-[#5F5F5F] font-semibold mt-0.5">Vaishnavi (Full Access)</p>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin('teacher@gmail.com')}
-              className="p-3 rounded-2xl bg-white hover:bg-pink-50 border border-black/8 hover:border-pink-300 text-left transition-all cursor-pointer group shadow-2xs"
-            >
-              <div className="flex items-center gap-1.5 text-[#FF5E84] font-extrabold text-xs">
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>Stage Admin</span>
-              </div>
-              <p className="text-[10px] text-[#5F5F5F] font-semibold mt-0.5">Liju Teacher (Admin)</p>
-            </button>
-          </div>
-
-          {/* Footer Security Badge */}
+          {/* Footer Security Note */}
           <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-white border border-black/8 text-[#5F5F5F]">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div className="text-xs font-sans-manrope space-y-0.5">
-              <h5 className="font-extrabold text-[#111111]">Mobile Optimized Authentication</h5>
+              <h5 className="font-extrabold text-[#111111]">Public Festival Access</h5>
               <p className="text-[11px] text-[#5F5F5F] leading-relaxed">
-                Supports single-tap Google popup & mobile browser fallback.
+                All results, leaderboards, and schedules are publicly accessible to everyone. Login is restricted to authorized festival administrators.
               </p>
             </div>
           </div>
