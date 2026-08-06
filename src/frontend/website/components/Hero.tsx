@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Play, ArrowRight, Radio, Sparkles, MapPin, Mic, Music, BookOpen, Drama } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import heroArt from '../../../assets/hero_kerala_art_transparent.png';
 
 interface HeroProps {
@@ -9,58 +9,11 @@ interface HeroProps {
   onViewLeaderboard: () => void;
 }
 
-const TODAY_EVENTS = [
-  {
-    id: 'evt-1',
-    time: '09:00 AM',
-    title: 'Inauguration',
-    subtitle: 'Lamp Lighting Ceremony',
-    venue: 'Main Auditorium',
-    isLive: true,
-  },
-  {
-    id: 'evt-2',
-    time: '09:15 AM',
-    title: 'Bharathanatyam (Cat 4)',
-    subtitle: 'Classical Dance Competition',
-    venue: 'Stage 1: Main Auditorium',
-    isLive: true,
-  },
-  {
-    id: 'evt-3',
-    time: '09:00 AM',
-    title: 'Light Music Vocal',
-    subtitle: 'Category 1 (Common)',
-    venue: 'Stage 3: KG Auditorium',
-    isLive: true,
-  },
-  {
-    id: 'evt-4',
-    time: '09:00 AM',
-    title: 'Mappilappattu & Recitation',
-    subtitle: 'Category 2 Boys & Girls',
-    venue: 'Stage 6: Kids Auditorium',
-    isLive: true,
-  },
-];
-
-const STAGES_LIST = [
-  { id: 'stage-1', label: 'Stage 1', name: 'Dance', color: 'bg-rose-50 text-[#FF5E84] border-rose-200', icon: <Sparkles className="w-5 h-5 text-[#FF5E84]" /> },
-  { id: 'stage-2', label: 'Stage 2', name: 'English', color: 'bg-purple-50 text-purple-600 border-purple-200', icon: <Mic className="w-5 h-5 text-purple-600" /> },
-  { id: 'stage-3', label: 'Stage 3', name: 'Music', color: 'bg-amber-50 text-amber-600 border-amber-200', icon: <Music className="w-5 h-5 text-amber-600" /> },
-  { id: 'stage-4', label: 'Stage 4', name: 'Malayalam', color: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: <BookOpen className="w-5 h-5 text-emerald-600" /> },
-  { id: 'stage-5', label: 'Stage 5', name: 'Hindi', color: 'bg-orange-50 text-orange-600 border-orange-200', icon: <span className="font-serif font-black text-lg text-orange-600">अ</span> },
-  { id: 'stage-6', label: 'Stage 6', name: 'Kids', color: 'bg-sky-50 text-sky-600 border-sky-200', icon: <Drama className="w-5 h-5 text-sky-600" /> },
-];
-
 export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onViewLeaderboard }) => {
-  const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
-  const activeEvent = TODAY_EVENTS[activeCarouselIdx];
-
   return (
     <section
       id="home"
-      className="relative pt-12 sm:pt-16 pb-12 overflow-hidden bg-[#FAF8F5] text-center sm:text-left"
+      className="relative pt-14 sm:pt-16 lg:pt-18 pb-8 min-h-[85vh] lg:min-h-[88vh] max-h-[950px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
     >
       {/* Warm Golden Cream Ambient Backdrop Glow */}
       <div
@@ -70,213 +23,187 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
         }}
       />
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+      {/* Intentionally Framed Decorative Petals & Swirls */}
+      <div className="absolute top-24 right-[42%] text-[#FF5E84]/25 pointer-events-none animate-petal-float">
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
+        </svg>
+      </div>
+      <div className="absolute top-20 right-[3%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
+        </svg>
+      </div>
+      <div className="absolute top-44 left-[18%] text-[#F59E0B]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '6s' }}>
+        <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
+        </svg>
+      </div>
+
+      {/* Main Container max-width: 1500px */}
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
         
-        {/* Top Header Tag */}
-        <div className="flex flex-col items-center text-center space-y-2 mb-4">
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-50 text-[#FF5E84] border border-rose-200/60 text-[11px] font-sans-manrope font-extrabold tracking-[0.2em] uppercase"
-          >
-            <span>ARTS FEST 2K26</span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-serif-cormorant text-4xl sm:text-6xl md:text-7xl font-bold leading-tight text-[#111111] max-w-3xl"
-          >
-            Where{' '}
-            <span className="text-[#FF5E84]">Art</span>{' '}
-            Meets Excellence.
-          </motion.h1>
-
-          <p className="font-sans-manrope text-xs sm:text-sm text-[#5F5F5F] font-bold tracking-wider uppercase flex items-center justify-center gap-2">
-            <span className="text-[#FF5E84]">⤁</span>
-            <span>MGM MODEL SCHOOL, AYIROOR, VARKALA</span>
-            <span className="text-[#FF5E84]">⤀</span>
-          </p>
-
-          {/* Date & Live Status Pill */}
-          <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white border border-black/8 shadow-2xs text-xs font-sans-manrope font-extrabold mt-1">
-            <span className="flex items-center gap-1.5 text-[#111111]">
-              <Calendar className="w-3.5 h-3.5 text-[#FF5E84]" />
-              <span>10 AUGUST 2026</span>
-            </span>
-            <span className="text-black/20">|</span>
-            <span className="flex items-center gap-1.5 text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200 text-[10px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
-              <span>LIVE NOW</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Action Buttons Row */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 py-4 max-w-lg mx-auto">
-          <button
-            onClick={onExploreEvents}
-            className="flex-1 min-w-[150px] py-3.5 px-5 rounded-full bg-gradient-to-r from-[#FF5E84] to-[#FF8A00] text-white font-sans-manrope font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] transition-all cursor-pointer"
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Explore Events</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={onOpenPromo}
-            className="py-3.5 px-4 rounded-full bg-white hover:bg-black/5 border border-black/12 text-[#111111] font-sans-manrope font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
-          >
-            <div className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center">
-              <Play className="w-2.5 h-2.5 fill-white ml-0.5" />
-            </div>
-            <span>Watch Promo</span>
-          </button>
-
-          <button
-            onClick={onViewLeaderboard}
-            className="py-3.5 px-4 rounded-full bg-white hover:bg-rose-50 border border-black/12 text-[#FF5E84] font-sans-manrope font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-[#FF5E84]" />
-            <span>Leaderboard</span>
-          </button>
-        </div>
-
-        {/* 4-Grid Compact Stats Cards (Matches Mobile Mockup Exactly) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6 max-w-3xl mx-auto text-center">
-          <div className="bg-white rounded-2xl p-4 border border-black/6 shadow-2xs flex flex-col items-center justify-center space-y-1">
-            <div className="w-8 h-8 rounded-full bg-rose-50 text-[#FF5E84] flex items-center justify-center">
-              <Calendar className="w-4 h-4" />
-            </div>
-            <span className="font-sans-manrope font-black text-lg text-[#111111]">10</span>
-            <span className="text-[10px] font-extrabold uppercase text-[#5F5F5F]">AUG 2026 • Date</span>
-          </div>
-
-          <div className="bg-white rounded-2xl p-4 border border-black/6 shadow-2xs flex flex-col items-center justify-center space-y-1">
-            <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-              <MapPin className="w-4 h-4" />
-            </div>
-            <span className="font-sans-manrope font-black text-lg text-[#111111]">6</span>
-            <span className="text-[10px] font-extrabold uppercase text-[#5F5F5F]">STAGES • Venues</span>
-          </div>
-
-          <div className="bg-white rounded-2xl p-4 border border-black/6 shadow-2xs flex flex-col items-center justify-center space-y-1">
-            <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <span className="font-sans-manrope font-black text-lg text-[#111111]">70+</span>
-            <span className="text-[10px] font-extrabold uppercase text-[#5F5F5F]">EVENTS • Competitions</span>
-          </div>
-
-          <div className="bg-white rounded-2xl p-4 border border-black/6 shadow-2xs flex flex-col items-center justify-center space-y-1">
-            <div className="w-8 h-8 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
-              <Radio className="w-4 h-4" />
-            </div>
-            <span className="font-sans-manrope font-black text-lg text-[#111111]">450+</span>
-            <span className="text-[10px] font-extrabold uppercase text-[#5F5F5F]">PARTICIPANTS • Expected</span>
-          </div>
-        </div>
-
-        {/* Center Kerala Traditional Performing Arts Illustration Banner */}
-        <div className="my-6 max-w-2xl mx-auto relative flex items-center justify-center">
-          <img
-            src={heroArt}
-            alt="Kerala Cultural Festival Artwork - Kathakali, Mohiniyattam, Chenda Drummer"
-            className="w-full max-h-[260px] sm:max-h-[340px] object-contain filter drop-shadow-[0_15px_30px_rgba(255,94,132,0.12)]"
-          />
-        </div>
-
-        {/* TODAY'S EVENTS Carousel Card (Matches Mockup) */}
-        <div className="max-w-xl mx-auto my-6 text-left">
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h3 className="font-sans-manrope font-extrabold text-xs text-[#111111] uppercase tracking-wider">
-              TODAY'S EVENTS
-            </h3>
-            <button
-              onClick={onExploreEvents}
-              className="text-xs font-bold text-[#FF5E84] hover:underline flex items-center gap-1 cursor-pointer"
+        {/* Main Grid: 48% / 52% Ratio with Vertically Centered Grid Items */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-center">
+          
+          {/* Left Social Bar */}
+          <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-2.5 text-[#5F5F5F] -mt-10">
+            <a
+              href="https://mgmmodelschool.edu.in"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Official Website"
+              className="w-8 h-8 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#10B981] hover:scale-110 transition-all duration-300"
             >
-              <span>View All</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+              <Globe className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://www.facebook.com/MGMModelSchoolAyiroorVarkala/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Facebook"
+              className="w-8 h-8 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#3B82F6] hover:scale-110 transition-all duration-300"
+            >
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.374 14.5 5 15.5 5H18V0h-3.808C10.592 0 9 1.583 9 4.615V8z"/></svg>
+            </a>
+            <a
+              href="https://www.youtube.com/@mgmmodelschoolvarkala2839"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="YouTube"
+              className="w-8 h-8 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#EF4444] hover:scale-110 transition-all duration-300"
+            >
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+            </a>
 
-          {/* Featured Event Card */}
-          <div className="bg-[#FFFDF9] rounded-2xl p-4 border border-amber-200/80 shadow-sm flex items-center justify-between gap-3 relative overflow-hidden">
-            <div className="flex items-center gap-3.5">
-              <div className="px-3 py-2.5 bg-rose-50 border border-rose-200/60 rounded-xl text-center shrink-0">
-                <span className="font-sans-manrope font-black text-sm text-[#FF5E84] block leading-tight">
-                  {activeEvent.time.split(' ')[0]}
-                </span>
-                <span className="text-[9px] font-extrabold text-[#FF5E84] block uppercase">
-                  {activeEvent.time.split(' ')[1]}
-                </span>
-              </div>
+            <div className="w-[1px] h-7 bg-black/12 my-0.5" />
 
-              <div>
-                <h4 className="font-sans-manrope font-extrabold text-sm sm:text-base text-[#111111] leading-snug">
-                  {activeEvent.title}
-                </h4>
-                <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
-                  {activeEvent.subtitle}
-                </p>
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#5F5F5F] mt-1">
-                  <MapPin className="w-3 h-3 text-[#FF8A00]" />
-                  <span>{activeEvent.venue}</span>
-                </div>
-              </div>
-            </div>
-
-            <span className="inline-flex items-center gap-1 bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
-              <span>LIVE</span>
+            <span className="[writing-mode:vertical-lr] rotate-180 text-[8.5px] font-sans-manrope font-extrabold tracking-[0.22em] text-[#5F5F5F] uppercase">
+              FOLLOW US
             </span>
           </div>
 
-          {/* Carousel Pagination Dots */}
-          <div className="flex items-center justify-center gap-1.5 mt-3">
-            {TODAY_EVENTS.map((_, i) => (
+          {/* Left Content Column (Shifted Upward by ~35px per user diagram) */}
+          <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4 -mt-6 lg:-mt-10 xl:-mt-12">
+            
+            {/* Sub-Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-1.5 text-[11.5px] font-sans-manrope font-extrabold tracking-[0.24em] text-[#FF5E84] uppercase"
+            >
+              <span>🌸</span>
+              <span>KALATHMAKAM 2K26</span>
+            </motion.div>
+
+            {/* Dominant Headline (Same Exact Font Size & Weight) */}
+            <motion.h1
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[88px] font-bold leading-[1.04] tracking-tight text-[#111111]"
+            >
+              Where{' '}
+              <span className="inline-flex items-baseline whitespace-nowrap">
+                <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent">
+                  Art
+                </span>
+              </span>
+              ,<br />
+              <span className="whitespace-nowrap">
+                <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent">
+                  Talent
+                </span>{' '}
+                Flourishes.
+              </span>
+            </motion.h1>
+
+            {/* Decorative Separator Motif */}
+            <div className="flex items-center gap-2.5 w-52 text-[#FF5E84]/35 my-2">
+              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
+              <span className="text-[#FF5E84] text-xs">❖</span>
+              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
+            </div>
+
+            {/* Description Text */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="font-sans-manrope text-sm sm:text-base lg:text-lg text-[#5F5F5F] max-w-[440px] lg:max-w-[480px] leading-relaxed font-medium"
+            >
+              The Grand Arts Fest of
+              <br />
+              <strong className="text-[#111111] font-semibold">MGM Model School, Ayiroor, Varkala.</strong>
+              <br />
+              A celebration of creativity, culture and expression.
+            </motion.p>
+
+            {/* Action Buttons Row */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 pt-2 w-full sm:w-auto"
+            >
+              {/* Primary Pill: Explore Events → */}
               <button
-                key={i}
-                onClick={() => setActiveCarouselIdx(i)}
-                className={`h-2 rounded-full transition-all cursor-pointer ${
-                  activeCarouselIdx === i ? 'w-5 bg-[#FF5E84]' : 'w-2 bg-black/15'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* EXPLORE STAGES Horizontal Scroll Row (Matches Mockup) */}
-        <div className="max-w-2xl mx-auto my-6 text-left">
-          <h3 className="font-sans-manrope font-extrabold text-xs text-[#111111] uppercase tracking-wider mb-3 px-1">
-            EXPLORE STAGES
-          </h3>
-
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
-            {STAGES_LIST.map((stg) => (
-              <div
-                key={stg.id}
                 onClick={onExploreEvents}
-                className={`p-3 rounded-2xl border text-center transition-all cursor-pointer hover:shadow-sm flex flex-col items-center justify-between space-y-1.5 bg-white ${stg.color}`}
+                className="gradient-btn-primary text-white font-sans-manrope font-bold text-xs sm:text-sm px-6 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2.5 cursor-pointer group shadow-md hover:scale-[1.02] transition-all w-full sm:w-auto"
               >
-                <div className="w-8 h-8 rounded-xl bg-white shadow-2xs flex items-center justify-center">
-                  {stg.icon}
+                <span>Explore Events</span>
+                <svg className="w-4 h-4 fill-white transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+
+              {/* Secondary Pill: Watch Promo */}
+              <button
+                onClick={onOpenPromo}
+                className="bg-white/90 backdrop-blur-md text-[#111111] font-sans-manrope font-bold text-xs sm:text-[13px] px-5 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2 cursor-pointer border border-black/10 shadow-xs hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all group w-full sm:w-auto"
+              >
+                <div className="w-5 h-5 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-2.5 h-2.5 fill-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 </div>
-                <div>
-                  <span className="text-[10px] font-sans-manrope font-extrabold block text-[#111111]">
-                    {stg.label}
-                  </span>
-                  <span className="text-[9.5px] font-sans-manrope font-bold text-[#5F5F5F] block">
-                    {stg.name}
-                  </span>
-                </div>
-              </div>
-            ))}
+                <span>Watch Promo</span>
+              </button>
+
+              {/* Tertiary Lighter Pill: Leaderboard */}
+              <button
+                onClick={onViewLeaderboard}
+                className="bg-white/50 hover:bg-white text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-xs sm:text-[13px] px-4.5 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2 cursor-pointer border border-black/8 hover:border-black/15 shadow-none hover:scale-[1.02] transition-all w-full sm:w-auto"
+              >
+                <svg className="w-4 h-4 stroke-[#FF5E84]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                <span>Leaderboard</span>
+              </button>
+            </motion.div>
+
           </div>
+
+          {/* Right Column: Prominent Hero Emblem */}
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-end items-center relative lg:-mr-6 xl:-mr-12 lg:-mt-4 lg:-translate-x-8 xl:-translate-x-16">
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1.08 }}
+              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
+              className="relative w-full max-w-[580px] lg:max-w-[660px] xl:max-w-[720px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
+            >
+              <img
+                src={heroArt}
+                alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
+                className="w-full h-full object-contain filter drop-shadow-[0_22px_50px_rgba(255,94,132,0.18)] scale-108"
+              />
+            </motion.div>
+
+          </div>
+
         </div>
 
       </div>
+
+      {/* Seamless Soft Watercolor Bottom Transition Gradient Overlay */}
+      <div className="h-16 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/80 to-[#FAF8F5] pointer-events-none relative z-20" />
+
     </section>
   );
 };

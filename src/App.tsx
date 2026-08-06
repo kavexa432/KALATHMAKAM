@@ -17,7 +17,6 @@ import { Dashboard } from './frontend/dashboard/Dashboard';
 import { LoginModal } from './shared/components/LoginModal';
 import { PromoModal } from './components/PromoModal';
 import { RegisterModal } from './components/RegisterModal';
-import { MobileBottomNav } from './frontend/website/components/MobileBottomNav';
 import type { EventItem } from './data/eventsData';
 
 export function AppContent() {
@@ -110,9 +109,6 @@ export function AppContent() {
         onClose={() => setRegisterModalOpen(false)}
         preselectedEvent={selectedRegisterEvent}
       />
-
-      {/* Mobile Bottom Navigation Dock */}
-      <MobileBottomNav onOpenMenu={() => setLoginModalOpen(true)} />
 
     </div>
   );
