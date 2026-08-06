@@ -110,10 +110,19 @@ export const ScheduleTimeline: React.FC = () => {
                       <MapPin className="w-3.5 h-3.5 text-[#FF8A00]" />
                       <span className="font-semibold">{item.stage}</span>
                     </div>
-                    <div>
-                      <span>Coordinator: </span>
-                      <strong className="text-[#111111]">{item.coordinator}</strong>
-                    </div>
+
+                    {item.participants && (
+                      <div className="font-semibold text-[#FF5E84]">
+                        <span>Participants: {item.participants}</span>
+                      </div>
+                    )}
+
+                    {item.coordinator && (
+                      <div>
+                        <span>Coordinator: </span>
+                        <strong className="text-[#111111]">{item.coordinator}</strong>
+                      </div>
+                    )}
                   </div>
                 </div>
 
