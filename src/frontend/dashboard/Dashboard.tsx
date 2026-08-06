@@ -40,6 +40,7 @@ export const Dashboard: React.FC = () => {
     addAnnouncement,
     setUserRole,
     submitResult,
+    delayEvent,
   } = useFestival();
 
   const [activeTab, setActiveTab] = useState<
@@ -135,7 +136,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleDelayEvent = (eventId: string) => {
-    useFestival().delayEvent(eventId, 15);
+    delayEvent(eventId, 15);
   };
 
   const totalEvents = events.length;

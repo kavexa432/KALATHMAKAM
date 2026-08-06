@@ -105,8 +105,10 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[88px] font-bold leading-[1.04] tracking-tight text-[#111111]"
             >
               Where{' '}
-              <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent inline-flex items-baseline">
-                Art
+              <span className="inline-flex items-baseline whitespace-nowrap">
+                <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent">
+                  Art
+                </span>
                 <span className="text-[#F59E0B] text-2xl sm:text-3xl lg:text-4xl font-normal ml-0.5 translate-y-1">✦</span>
               </span>
               ,<br />
@@ -179,7 +181,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
           </div>
 
           {/* Right Column: Prominent Hero Emblem */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-end items-center relative lg:-mr-6 xl:-mr-12 lg:-mt-4 lg:-translate-x-8 xl:-translate-x-16">
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-end items-center relative lg:-mr-6 xl:-mr-12 lg:-mt-4 lg:-translate-x-8 xl:-translate-x-16">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
