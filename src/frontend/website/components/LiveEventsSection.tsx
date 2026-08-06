@@ -129,8 +129,30 @@ export const LiveEventsSection: React.FC = () => {
 
     if (!matchesSearch) return false;
 
-    if (selectedCategoryTile && !evt.category.toLowerCase().includes(selectedCategoryTile.toLowerCase())) {
-      return false;
+    if (selectedCategoryTile) {
+      const catKey = selectedCategoryTile.toLowerCase();
+      const evtCat = evt.category.toLowerCase();
+      const evtName = evt.eventName.toLowerCase();
+
+      let isTileMatch = false;
+
+      if (catKey.includes('art') || catKey.includes('fine')) {
+        isTileMatch = evtCat.includes('art') || evtCat.includes('fine') || evtName.includes('drawing') || evtName.includes('painting') || evtName.includes('poster') || evtName.includes('cartoon') || evtName.includes('collage');
+      } else if (catKey.includes('music')) {
+        isTileMatch = evtCat.includes('music') || evtCat.includes('song') || evtName.includes('music') || evtName.includes('song') || evtName.includes('violin') || evtName.includes('mappila') || evtName.includes('western');
+      } else if (catKey.includes('dance')) {
+        isTileMatch = evtCat.includes('dance') || evtName.includes('dance') || evtName.includes('bharat') || evtName.includes('mohini') || evtName.includes('kuchi');
+      } else if (catKey.includes('literary')) {
+        isTileMatch = evtCat.includes('literary') || evtName.includes('essay') || evtName.includes('story') || evtName.includes('versification');
+      } else if (catKey.includes('language')) {
+        isTileMatch = evtCat.includes('language') || evtCat.includes('recitation') || evtName.includes('recitation') || evtName.includes('elocution') || evtName.includes('extempore') || evtName.includes('anchoring') || evtName.includes('declamation');
+      } else if (catKey.includes('drama')) {
+        isTileMatch = evtCat.includes('drama') || evtName.includes('mono') || evtName.includes('mimicry') || evtName.includes('drama') || evtName.includes('act');
+      } else {
+        isTileMatch = evtCat.includes(catKey) || evtName.includes(catKey);
+      }
+
+      if (!isTileMatch) return false;
     }
 
     if (statusFilter !== 'All') {
