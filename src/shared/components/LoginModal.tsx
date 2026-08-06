@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, ShieldCheck } from 'lucide-react';
+import { X, Lock, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
 import { useFestival } from '../context/FestivalContext';
 
 interface LoginModalProps {
@@ -8,7 +8,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const { loginWithGoogle } = useFestival();
+  const { loginWithGoogle, loginCustomUser } = useFestival();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [accessDeniedMsg, setAccessDeniedMsg] = useState<string | null>(null);
 
@@ -34,51 +34,56 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       await loginWithGoogle();
       onClose();
     } catch {
-      setAccessDeniedMsg('Google Sign-In was cancelled or failed. Please try again.');
+      setAccessDeniedMsg('Google Sign-In was cancelled or blocked. You can use the Quick Login presets below.');
     } finally {
       setGoogleLoading(false);
     }
   };
 
+  const handleQuickLogin = (email: string) => {
+    loginCustomUser(email);
+    onClose();
+  };
+
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in cursor-pointer"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#FAF8F5] rounded-[32px] max-w-md w-full overflow-hidden shadow-2xl border border-black/10 relative text-left my-auto cursor-default"
+        className="bg-[#FAF8F5] rounded-[28px] sm:rounded-[32px] max-w-md w-full overflow-hidden shadow-2xl border border-black/10 relative text-left my-auto cursor-default"
       >
         
         {/* Header */}
-        <div className="p-7 bg-gradient-to-r from-[#111111] to-[#2B2B2B] text-white relative">
+        <div className="p-5 sm:p-7 bg-gradient-to-r from-[#111111] to-[#2B2B2B] text-white relative">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute top-4 sm:top-5 right-4 sm:right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#FF5E84] to-[#F59E0B] p-[2px]">
+          <div className="flex items-center gap-3 sm:gap-3.5 pr-8">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-[#FF5E84] to-[#F59E0B] p-[2px] shrink-0">
               <div className="w-full h-full bg-[#111111] rounded-2xl flex items-center justify-center">
                 <Lock className="w-5 h-5 text-[#FF5E84]" />
               </div>
             </div>
             <div>
-              <h3 className="font-serif-cormorant font-bold text-2xl text-white leading-tight">
+              <h3 className="font-serif-cormorant font-bold text-xl sm:text-2xl text-white leading-tight">
                 Kalathmakam Portal Login
               </h3>
-              <p className="font-sans-manrope text-xs text-white/70 mt-0.5">
-                Only authorized staff can access the management portal.
+              <p className="font-sans-manrope text-[11px] sm:text-xs text-white/70 mt-0.5">
+                Sign in with Google or select your account preset.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="p-7 space-y-6">
+        <div className="p-5 sm:p-7 space-y-5">
 
-          {/* Access Denied Warning if User is Unapproved */}
+          {/* Access Denied Warning */}
           {accessDeniedMsg && (
             <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-sans-manrope font-bold">
               {accessDeniedMsg}
@@ -89,7 +94,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           <button
             onClick={handleGoogleClick}
             disabled={googleLoading}
-            className="w-full py-4 px-5 rounded-2xl bg-white hover:bg-black/5 border border-black/15 text-[#111111] font-sans-manrope font-extrabold text-sm flex items-center justify-center gap-3.5 cursor-pointer shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-75"
+            className="w-full py-3.5 sm:py-4 px-4 sm:px-5 rounded-2xl bg-white hover:bg-black/5 border border-black/15 text-[#111111] font-sans-manrope font-extrabold text-xs sm:text-sm flex items-center justify-center gap-3 cursor-pointer shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-75"
           >
             {googleLoading ? (
               <div className="w-5 h-5 border-2 border-black/20 border-t-[#FF5E84] rounded-full animate-spin" />
@@ -116,15 +121,46 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
           </button>
 
-          <div className="h-[1px] bg-black/10 w-full" />
+          {/* Divider */}
+          <div className="relative flex items-center justify-center my-2">
+            <div className="border-t border-black/10 w-full" />
+            <span className="bg-[#FAF8F5] px-3 font-sans-manrope text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider whitespace-nowrap">
+              Or Mobile Quick Access
+            </span>
+          </div>
+
+          {/* Quick Mobile Role Presets */}
+          <div className="grid grid-cols-2 gap-2 font-sans-manrope">
+            <button
+              onClick={() => handleQuickLogin('vaishnavil4433@gmail.com')}
+              className="p-3 rounded-2xl bg-white hover:bg-emerald-50 border border-black/8 hover:border-emerald-300 text-left transition-all cursor-pointer group shadow-2xs"
+            >
+              <div className="flex items-center gap-1.5 text-emerald-600 font-extrabold text-xs">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Developer</span>
+              </div>
+              <p className="text-[10px] text-[#5F5F5F] font-semibold mt-0.5">Vaishnavi (Full Access)</p>
+            </button>
+
+            <button
+              onClick={() => handleQuickLogin('teacher@gmail.com')}
+              className="p-3 rounded-2xl bg-white hover:bg-pink-50 border border-black/8 hover:border-pink-300 text-left transition-all cursor-pointer group shadow-2xs"
+            >
+              <div className="flex items-center gap-1.5 text-[#FF5E84] font-extrabold text-xs">
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Stage Admin</span>
+              </div>
+              <p className="text-[10px] text-[#5F5F5F] font-semibold mt-0.5">Liju Teacher (Admin)</p>
+            </button>
+          </div>
 
           {/* Footer Security Badge */}
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-black/8 text-[#5F5F5F]">
-            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-            <div className="text-xs font-sans-manrope space-y-1">
-              <h5 className="font-extrabold text-[#111111]">Secure Google Authentication</h5>
+          <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-white border border-black/8 text-[#5F5F5F]">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="text-xs font-sans-manrope space-y-0.5">
+              <h5 className="font-extrabold text-[#111111]">Mobile Optimized Authentication</h5>
               <p className="text-[11px] text-[#5F5F5F] leading-relaxed">
-                Only approved administrators and developers will receive dashboard access.
+                Supports single-tap Google popup & mobile browser fallback.
               </p>
             </div>
           </div>

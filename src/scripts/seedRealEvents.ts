@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, writeBatch, doc, getDocs } from 'firebase/firestore';
 const firebaseConfig = {

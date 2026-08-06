@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { X, Calendar, MapPin, Users, Award, FileText, CheckCircle2, Clock } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
-import type { EventModel, EventResultModel, HouseId } from '../../../shared/types/festivalTypes';
+import type { EventModel } from '../../../shared/types/festivalTypes';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import { formatTime12Hour } from '../../../utils/timeUtils';
 

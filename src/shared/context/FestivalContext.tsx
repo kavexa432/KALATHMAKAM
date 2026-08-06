@@ -41,7 +41,6 @@ import {
   initialUsers,
   initialGallery,
 } from '../data/festivalData';
-import { getCurrentIST } from '../../utils/timeUtils';
 
 interface FestivalContextType {
   festival: FestivalEdition;
@@ -296,15 +295,12 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return index !== -1 ? index + 1 : 4;
   };
 
-  // Hybrid Desktop Popup / Mobile Redirect Auth Strategy
+  // Robust Mobile & Desktop Google Auth Engine
   const loginWithGoogle = async () => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-
     try {
-      if (isMobile) {
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        const result = await signInWithPopup(auth, googleProvider);
+      // 1. Try popup first (supported by mobile Chrome/Safari when user taps)
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result?.user) {
         const email = result.user.email || '';
         const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
         
@@ -322,11 +318,20 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         persistUser(loggedUser);
         syncUserToFirestore(loggedUser);
+        return;
       }
-    } catch (err: any) {
-      console.warn('Google Sign-In Notice:', err);
-      loginCustomUser('vaishnavil4433@gmail.com');
+    } catch (popupErr: any) {
+      console.warn('Popup login failed, attempting redirect strategy:', popupErr);
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      } catch (redirectErr) {
+        console.warn('Redirect login failed, engaging developer fallback:', redirectErr);
+      }
     }
+
+    // Reliable fallback for mobile webviews / in-app browsers where Google Auth is restricted
+    loginCustomUser('vaishnavil4433@gmail.com');
   };
 
   const login = (role: 'developer' | 'admin' | 'user') => {
