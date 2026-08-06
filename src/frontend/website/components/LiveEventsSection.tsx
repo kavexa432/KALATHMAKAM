@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, ArrowRight, Sparkles, Clock, Search, ChevronRight, AlertCircle } from 'lucide-react';
+import { MapPin, ArrowRight, Sparkles, Clock, Search, ChevronRight, AlertCircle, Palette, Music, BookOpen, Mic, Theater, CheckCircle, Calendar } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import type { EventModel } from '../../../shared/types/festivalTypes';
 import { formatTime12Hour } from '../../../utils/timeUtils';
@@ -8,67 +8,60 @@ import { EventDetailModal } from './EventDetailModal';
 interface CategoryTile {
   id: string;
   title: string;
-  icon: string;
+  icon: React.ReactNode;
   countText: string;
   statusText: string;
   badgeBg: string;
-  gradient: string;
 }
 
 const CATEGORY_TILES: CategoryTile[] = [
   {
     id: 'Fine Arts',
     title: 'Fine Arts & Drawing',
-    icon: '🎨',
+    icon: <Palette className="w-6 h-6 text-[#F59E0B]" />,
     countText: '7 Competitions',
     statusText: '7 Completed (Pre-Fest)',
     badgeBg: 'bg-amber-100 text-amber-800 border-amber-200',
-    gradient: 'from-amber-500/10 to-orange-500/10',
   },
   {
     id: 'Music',
     title: 'Vocal & Instrumental Music',
-    icon: '🎼',
+    icon: <Music className="w-6 h-6 text-[#3B82F6]" />,
     countText: '13 Competitions',
     statusText: 'Upcoming on Stage 3 & 6',
     badgeBg: 'bg-sky-100 text-sky-800 border-sky-200',
-    gradient: 'from-sky-500/10 to-blue-500/10',
   },
   {
     id: 'Dance',
     title: 'Classical & Folk Dance',
-    icon: '💃',
+    icon: <Sparkles className="w-6 h-6 text-[#FF5E84]" />,
     countText: '8 Competitions',
     statusText: 'Stage 1 (Main Auditorium)',
     badgeBg: 'bg-rose-100 text-rose-800 border-rose-200',
-    gradient: 'from-rose-500/10 to-pink-500/10',
   },
   {
     id: 'Literary',
     title: 'Literary & Versification',
-    icon: '📖',
+    icon: <BookOpen className="w-6 h-6 text-[#8B5CF6]" />,
     countText: '6 Competitions',
     statusText: 'English & Malayalam Completed',
     badgeBg: 'bg-purple-100 text-purple-800 border-purple-200',
-    gradient: 'from-purple-500/10 to-indigo-500/10',
   },
   {
     id: 'Languages',
     title: 'Languages & Recitation',
-    icon: '🎤',
+    icon: <Mic className="w-6 h-6 text-[#10B981]" />,
     countText: '12 Competitions',
     statusText: 'Hindi, Sanskrit, Arabic',
     badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    gradient: 'from-emerald-500/10 to-teal-500/10',
   },
   {
     id: 'Drama',
     title: 'Mono Act & Mimicry',
-    icon: '🎭',
+    icon: <Theater className="w-6 h-6 text-[#F97316]" />,
     countText: '6 Competitions',
     statusText: 'Kids Auditorium (Stage 6)',
     badgeBg: 'bg-amber-100 text-amber-900 border-amber-200',
-    gradient: 'from-orange-500/10 to-yellow-500/10',
   },
 ];
 
@@ -94,34 +87,39 @@ export const LiveEventsSection: React.FC = () => {
     switch (status) {
       case 'Running':
         return (
-          <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase animate-pulse">
-            🔴 LIVE NOW
+          <span className="inline-flex items-center gap-1.5 bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
+            <span>LIVE NOW</span>
           </span>
         );
       case 'Completed':
         if (event.resultsPublished) {
           return (
-            <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-              ✔ Completed
+            <span className="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+              <CheckCircle className="w-3 h-3" />
+              <span>Completed</span>
             </span>
           );
         } else {
           return (
-            <span className="bg-amber-500/15 text-amber-700 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-              ⏳ Results Pending
+            <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-700 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+              <Clock className="w-3 h-3" />
+              <span>Results Pending</span>
             </span>
           );
         }
       case 'Delayed':
         return (
-          <span className="bg-orange-500/15 text-orange-600 border border-orange-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-            ⚠️ Delayed
+          <span className="inline-flex items-center gap-1 bg-orange-500/15 text-orange-600 border border-orange-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+            <AlertCircle className="w-3 h-3" />
+            <span>Delayed</span>
           </span>
         );
       default:
         return (
-          <span className="bg-blue-500/15 text-blue-600 border border-blue-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-            📅 Upcoming
+          <span className="inline-flex items-center gap-1 bg-blue-500/15 text-blue-600 border border-blue-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+            <Calendar className="w-3 h-3" />
+            <span>Upcoming</span>
           </span>
         );
     }
@@ -216,13 +214,13 @@ export const LiveEventsSection: React.FC = () => {
                     : 'bg-white text-[#5F5F5F] hover:text-[#111111] border border-black/8'
                 }`}
               >
-                {status === 'Running' ? '🔴 Live Now' : status === 'Completed' ? '✔ Completed' : status === 'Upcoming' ? '📅 Upcoming' : 'All Statuses'}
+                {status === 'Running' ? 'Live Now' : status === 'Completed' ? 'Completed' : status === 'Upcoming' ? 'Upcoming' : 'All Statuses'}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Category Tiles Navigation Grid (Shown when no category filter is active or for easy navigation) */}
+        {/* Category Tiles Navigation Grid */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-sans-manrope font-extrabold text-sm text-[#111111] uppercase tracking-wider flex items-center gap-2">
@@ -253,7 +251,7 @@ export const LiveEventsSection: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl">{tile.icon}</span>
+                    <span>{tile.icon}</span>
                     <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? 'rotate-90 text-[#FF5E84]' : 'text-[#5F5F5F] group-hover:translate-x-0.5'}`} />
                   </div>
 

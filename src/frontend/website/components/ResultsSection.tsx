@@ -121,9 +121,15 @@ export const ResultsSection: React.FC = () => {
                     </h3>
                     
                     <div className="flex items-center gap-3 mt-3 p-3 bg-[#FAF8F5] rounded-2xl border border-black/5">
-                      <span className="text-3xl shrink-0">
-                        {res.position === '1st' ? '🥇' : res.position === '2nd' ? '🥈' : '🥉'}
-                      </span>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border ${
+                        res.position === '1st'
+                          ? 'bg-amber-100 text-amber-800 border-amber-300'
+                          : res.position === '2nd'
+                          ? 'bg-slate-100 text-slate-700 border-slate-300'
+                          : 'bg-amber-50 text-amber-900 border-amber-200'
+                      }`}>
+                        <Medal className="w-4 h-4" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111] truncate">
                           {res.participantName}

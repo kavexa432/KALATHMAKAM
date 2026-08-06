@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trophy, TrendingUp, Info, ArrowRight, RotateCw, Clock, Filter } from 'lucide-react';
+import { Trophy, TrendingUp, Info, ArrowRight, RotateCw, Clock, Filter, Building2, Crown, Sparkles } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
@@ -100,18 +100,18 @@ export const LeaderboardSection: React.FC = () => {
             {/* Live Sub-Stats Pill Bar */}
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
-                <span>🏛️</span>
+                <Building2 className="w-3.5 h-3.5 text-[#FF5E84]" />
                 <span>4 Houses Competing</span>
               </span>
 
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
-                <span>🏆</span>
+                <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />
                 <span>{results.length} Results Published</span>
               </span>
 
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
-                <span>🎭</span>
-                <span>20+ Events Completed</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#3B82F6]" />
+                <span>20+ Events Scheduled</span>
               </span>
 
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-extrabold font-sans-manrope">
@@ -140,7 +140,8 @@ export const LeaderboardSection: React.FC = () => {
 
               <div className="space-y-0.5">
                 <div className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-[#F59E0B]">
-                  <span>👑 CURRENT CHAMPION</span>
+                  <Crown className="w-3.5 h-3.5" />
+                  <span>CURRENT CHAMPION</span>
                 </div>
                 <h4 className="font-sans-manrope font-black text-lg text-white">
                   HOUSE {leaderHouse.name} • {leaderHouse.points} PTS
@@ -162,12 +163,12 @@ export const LeaderboardSection: React.FC = () => {
             const isFirstRank = index === 0;
 
             const rankBadge = index === 0
-              ? { text: '🥇 #1 Leader', bg: 'bg-[#F59E0B]', textColor: 'text-white' }
+              ? { text: 'Rank #1', bg: 'bg-[#F59E0B]', textColor: 'text-white' }
               : index === 1
-              ? { text: '🥈 #2 Rank', bg: 'bg-slate-100', textColor: 'text-slate-700' }
+              ? { text: 'Rank #2', bg: 'bg-slate-100', textColor: 'text-slate-700' }
               : index === 2
-              ? { text: '🥉 #3 Rank', bg: 'bg-amber-100', textColor: 'text-amber-800' }
-              : { text: '⭐ #4 Rank', bg: 'bg-slate-100', textColor: 'text-slate-600' };
+              ? { text: 'Rank #3', bg: 'bg-amber-100', textColor: 'text-amber-800' }
+              : { text: 'Rank #4', bg: 'bg-slate-100', textColor: 'text-slate-600' };
 
             return (
               <div
@@ -185,8 +186,8 @@ export const LeaderboardSection: React.FC = () => {
               >
                 {/* Crown Icon on Top Edge for 1st Rank Leader */}
                 {isFirstRank && (
-                  <div className="absolute -top-3.5 left-6 text-lg filter drop-shadow-sm">
-                    👑
+                  <div className="absolute -top-3 left-6 bg-[#F59E0B] text-white p-1 rounded-full shadow-xs">
+                    <Crown className="w-3.5 h-3.5" />
                   </div>
                 )}
 
@@ -241,7 +242,7 @@ export const LeaderboardSection: React.FC = () => {
                       ▲ +{h.recentDelta} Today
                     </span>
                     <span className="block text-[10px] text-[#5F5F5F] font-medium mt-0.5">
-                      🥇 {h.medals.gold} Gold Medals
+                      {h.medals.gold} Gold Medals
                     </span>
                   </div>
                 </div>

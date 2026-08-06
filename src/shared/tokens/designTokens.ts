@@ -7,7 +7,7 @@ export const houseColors = {
     border: 'rgba(239, 68, 68, 0.25)',
     text: '#DC2626',
     motto: 'Igniting Passion, Commanding Glory',
-    symbol: '🔴',
+    symbol: 'Red Flame',
   },
   VEGA: {
     name: 'VEGA',
@@ -17,7 +17,7 @@ export const houseColors = {
     border: 'rgba(245, 158, 11, 0.25)',
     text: '#D97706',
     motto: 'Shining Brightest, Soaring Highest',
-    symbol: '🟡',
+    symbol: 'Gold Star',
   },
   ORION: {
     name: 'ORION',
@@ -27,7 +27,7 @@ export const houseColors = {
     border: 'rgba(59, 130, 246, 0.25)',
     text: '#2563EB',
     motto: 'Boundless Depth, Unstoppable Spirit',
-    symbol: '🔵',
+    symbol: 'Blue Comet',
   },
   ASTRA: {
     name: 'ASTRA',
@@ -37,7 +37,7 @@ export const houseColors = {
     border: 'rgba(16, 185, 129, 0.25)',
     text: '#059669',
     motto: 'Flourishing Virtues, Timeless Excellence',
-    symbol: '🟢',
+    symbol: 'Green Shield',
   },
 } as const;
 
