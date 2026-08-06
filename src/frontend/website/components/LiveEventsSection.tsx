@@ -1,28 +1,33 @@
 import React, { useState } from 'react';
 import { MapPin, ArrowRight, Sparkles, Filter, Clock } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
-import type { ComputedEventModel } from '../../../shared/types/festivalTypes';
+import type { EventModel } from '../../../shared/types/festivalTypes';
 import { formatTime12Hour } from '../../../utils/timeUtils';
 import { EventDetailModal } from './EventDetailModal';
 
 export const LiveEventsSection: React.FC = () => {
   const { events } = useFestival();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedEvent, setSelectedEvent] = useState<ComputedEventModel | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventModel | null>(null);
 
-  const uniqueCategories = Array.from(new Set(events.map((e) => e.category).filter(Boolean))).sort();
+  const publicEvents = events.filter(e => e.publishToWebsite);
+  const uniqueCategories = Array.from(new Set(publicEvents.map((e) => e.category).filter(Boolean))).sort();
   const categories = ['All', ...uniqueCategories];
 
   const filteredEvents = selectedCategory === 'All'
-    ? events
-    : events.filter((e) => e.category === selectedCategory);
+    ? publicEvents
+    : publicEvents.filter((e) => e.category === selectedCategory);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, event: EventModel) => {
     switch (status) {
       case 'Running':
         return <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase animate-pulse">● LIVE NOW</span>;
       case 'Completed':
-        return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Completed</span>;
+        if (event.resultsPublished) {
+          return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Completed</span>;
+        } else {
+          return <span className="bg-blue-500/15 text-blue-700 border border-blue-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Completed • Results Awaiting Publication</span>;
+        }
       case 'Results Pending':
         return <span className="bg-amber-500/15 text-amber-700 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Results Pending</span>;
       case 'Delayed':
@@ -87,7 +92,7 @@ export const LiveEventsSection: React.FC = () => {
                 <span className="text-[11px] font-sans-manrope font-extrabold text-[#FF5E84] uppercase tracking-wider">
                   {evt.category}
                 </span>
-                {getStatusBadge(evt.status)}
+                {getStatusBadge(evt.status, evt)}
               </div>
 
               <div>

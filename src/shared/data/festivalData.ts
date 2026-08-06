@@ -72,10 +72,12 @@ export const initialHouses: HouseModel[] = [
 ];
 
 export const initialStages: StageModel[] = [
-  { id: 'stage-1', name: 'Tagore Stage', code: 'ST-A', location: 'Main Auditorium Courtyard', capacity: 1200 },
-  { id: 'stage-2', name: 'Vallathol Stage', code: 'ST-B', location: 'Open Air Amphitheatre', capacity: 850 },
-  { id: 'stage-3', name: 'Asan Open Air Theatre', code: 'ST-C', location: 'Junior Wing Grounds', capacity: 600 },
-  { id: 'stage-4', name: 'Main Auditorium', code: 'ST-MAIN', location: 'Central Block 2nd Floor', capacity: 1500 },
+  { id: 'stage-1', name: 'Main Auditorium', code: 'ST-1', location: 'Main Auditorium', capacity: 1500 },
+  { id: 'stage-2', name: 'Mini Auditorium', code: 'ST-2', location: 'Mini Auditorium', capacity: 850 },
+  { id: 'stage-3', name: 'KG Auditorium', code: 'ST-3', location: 'KG Auditorium', capacity: 600 },
+  { id: 'stage-4', name: 'Class VI A', code: 'ST-4', location: 'Class VI A', capacity: 100 },
+  { id: 'stage-5', name: 'Class VI B', code: 'ST-5', location: 'Class VI B', capacity: 100 },
+  { id: 'stage-6', name: 'Kids Auditorium', code: 'ST-6', location: 'Kids Auditorium', capacity: 400 },
 ];
 
 export const initialEvents: EventModel[] = [];

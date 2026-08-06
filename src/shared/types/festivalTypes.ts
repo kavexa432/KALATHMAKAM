@@ -98,7 +98,11 @@ export interface EventModel {
   postponed: boolean;
   
   // Authoritative Flags
-  resultPublished: boolean;
+  status: string;
+  publishToWebsite: boolean;
+  resultsPublished: boolean;
+  winnerUploaded: boolean;
+  housePointsUpdated: boolean;
   participantsExpected?: number;
   participantsActual?: number;
   resultId?: string;
@@ -106,10 +110,6 @@ export interface EventModel {
 
   createdAt: string;
   updatedAt: string;
-}
-
-export interface ComputedEventModel extends EventModel {
-  status: EventStatus;
 }
 
 export interface EventResultModel {

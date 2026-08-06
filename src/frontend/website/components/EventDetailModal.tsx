@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { X, Calendar, MapPin, Users, Award, FileText, CheckCircle2, Clock } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
-import type { ComputedEventModel } from '../../../shared/types/festivalTypes';
+import type { EventModel, EventResultModel, HouseId } from '../../../shared/types/festivalTypes';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import { formatTime12Hour } from '../../../utils/timeUtils';
 
 interface EventDetailModalProps {
-  event: ComputedEventModel | null;
+  event: EventModel | null;
   onClose: () => void;
 }
 
@@ -28,13 +28,17 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
 
   const eventResults = results.filter((r) => r.eventId === event.id && r.status === 'Published');
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, evt: EventModel) => {
     switch (status) {
       case 'Ongoing':
       case 'LIVE NOW':
         return <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase animate-pulse">● LIVE NOW</span>;
       case 'Completed':
-        return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Completed</span>;
+        if (evt.resultsPublished) {
+          return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Completed</span>;
+        } else {
+          return <span className="bg-blue-500/15 text-blue-700 border border-blue-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Completed • Results Awaiting Publication</span>;
+        }
       case 'Judging':
         return <span className="bg-amber-500/15 text-amber-700 border border-amber-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Under Judging</span>;
       default:
@@ -62,7 +66,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
           </button>
 
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            {getStatusBadge(event.status)}
+            {getStatusBadge(event.status, event)}
             <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
               Category: {event.category}
             </span>

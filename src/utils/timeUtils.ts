@@ -40,7 +40,7 @@ export const parseEventDateTime = (date: string, time: string): Date => {
  */
 export const computeEventStatus = (event: EventModel): EventStatus => {
   if (event.cancelled) return 'Cancelled';
-  if (event.resultPublished) return 'Completed';
+  if (event.resultsPublished) return 'Completed';
 
   const nowIST = getCurrentIST();
   

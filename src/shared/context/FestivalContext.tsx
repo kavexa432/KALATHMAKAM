@@ -22,7 +22,6 @@ import type {
   HouseId,
   StageModel,
   EventModel,
-  ComputedEventModel,
   EventResultModel,
   LiveActivityFeedItem,
   AuditLogItem,
@@ -42,13 +41,13 @@ import {
   initialUsers,
   initialGallery,
 } from '../data/festivalData';
-import { computeEventStatus } from '../../utils/timeUtils';
+import { getCurrentIST } from '../../utils/timeUtils';
 
 interface FestivalContextType {
   festival: FestivalEdition;
   houses: HouseModel[];
   stages: StageModel[];
-  events: ComputedEventModel[];
+  events: EventModel[];
   results: EventResultModel[];
   liveFeed: LiveActivityFeedItem[];
   auditLogs: AuditLogItem[];
@@ -273,12 +272,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
-  // Dynamically compute statuses on the fly for all events
-  const computedEvents = events.map((e) => ({
-    ...e,
-    status: computeEventStatus(e),
-  }));
-
   // Dynamic Point Computation Engine
   const getHousePoints = (houseId: HouseId, _day?: LeaderboardDay): number => {
     const published = results.filter((r) => r.houseId === houseId && (r.status === 'Published' || r.status === 'Verified'));
@@ -451,11 +444,11 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setResults((prev) => [newResult, ...prev]);
 
     setEvents((prev) =>
-      prev.map((e) => (e.id === newResultData.eventId ? { ...e, resultPublished: true } : e))
+      prev.map((e) => (e.id === newResultData.eventId ? { ...e, resultsPublished: true, winnerUploaded: true, housePointsUpdated: true } : e))
     );
     
     // Also update in firestore immediately
-    setDoc(doc(db, 'events', newResultData.eventId), { resultPublished: true }, { merge: true }).catch(console.error);
+    setDoc(doc(db, 'events', newResultData.eventId), { resultsPublished: true, winnerUploaded: true, housePointsUpdated: true }, { merge: true }).catch(console.error);
 
     logAuditAction(
       currentUser?.name || 'Admin',
@@ -488,10 +481,10 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
 
     setEvents((prev) =>
-      prev.map((e) => (e.id === target.eventId ? { ...e, resultPublished: true } : e))
+      prev.map((e) => (e.id === target.eventId ? { ...e, resultsPublished: true, winnerUploaded: true, housePointsUpdated: true } : e))
     );
     
-    setDoc(doc(db, 'events', target.eventId), { resultPublished: true }, { merge: true }).catch(console.error);
+    setDoc(doc(db, 'events', target.eventId), { resultsPublished: true, winnerUploaded: true, housePointsUpdated: true }, { merge: true }).catch(console.error);
 
     const newFeedItem: LiveActivityFeedItem = {
       id: `feed-${Date.now()}`,
@@ -662,7 +655,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         festival,
         houses,
         stages,
-        events: computedEvents,
+        events,
         results,
         liveFeed,
         auditLogs,
