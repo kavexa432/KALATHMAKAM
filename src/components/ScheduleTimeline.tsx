@@ -4,7 +4,7 @@ import { Clock, MapPin, CheckCircle, Radio, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScheduleTimeline: React.FC = () => {
-  const [activeDay, setActiveDay] = useState<string>('Day 1');
+  const [activeDay, setActiveDay] = useState<string>(DAYS_LIST[1] || DAYS_LIST[0]);
 
   const filteredSchedule = SCHEDULE_DATA.filter((item) => item.day === activeDay);
 
@@ -49,86 +49,92 @@ export const ScheduleTimeline: React.FC = () => {
         {/* Vertical Timeline Container */}
         <div className="relative pl-6 sm:pl-10 border-l-2 border-[#FF5E84]/30 space-y-10 ml-2 sm:ml-8">
           
-          {filteredSchedule.map((item, idx) => {
-            const isCompleted = item.status === 'Completed';
-            const isLive = item.status === 'Live';
+          {filteredSchedule.length > 0 ? (
+            filteredSchedule.map((item, idx) => {
+              const isCompleted = item.status === 'Completed';
+              const isLive = item.status === 'Live';
 
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="relative group"
-              >
-                {/* Timeline Dot Indicator */}
-                <div
-                  className={`absolute -left-[31px] sm:-left-[47px] top-1.5 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-transform duration-300 group-hover:scale-125 ${
-                    isLive
-                      ? 'bg-[#FF8A00] border-white text-white ring-4 ring-[#FF8A00]/30 animate-pulse'
-                      : isCompleted
-                      ? 'bg-[#FF5E84] border-white text-white'
-                      : 'bg-white border-[#FF5E84] text-[#FF5E84]'
-                  }`}
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: idx * 0.05 }}
+                  className="relative group"
                 >
-                  {isCompleted ? (
-                    <CheckCircle className="w-3.5 h-3.5" />
-                  ) : isLive ? (
-                    <Radio className="w-3.5 h-3.5" />
-                  ) : (
-                    <div className="w-2 h-2 rounded-full bg-[#FF5E84]" />
-                  )}
-                </div>
-
-                {/* Event Card */}
-                <div className="glass-card p-6 sm:p-8 rounded-[28px] space-y-4 hover:border-[#FF5E84]/40 transition-all duration-300">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-xs font-sans-manrope font-bold text-[#FF5E84]">
-                      <Clock className="w-4 h-4 text-[#FF5E84]" />
-                      <span>{item.time}</span>
-                    </div>
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-[11px] font-sans-manrope font-bold ${
-                        isLive
-                          ? 'bg-amber-500 text-white animate-pulse'
-                          : isCompleted
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-
-                  <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-bold text-[#111111]">
-                    {item.title}
-                  </h3>
-
-                  <div className="flex flex-wrap items-center gap-6 text-xs font-sans-manrope text-[#5F5F5F]">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-[#FF8A00]" />
-                      <span className="font-semibold">{item.stage}</span>
-                    </div>
-
-                    {item.participants && (
-                      <div className="font-semibold text-[#FF5E84]">
-                        <span>Participants: {item.participants}</span>
-                      </div>
-                    )}
-
-                    {item.coordinator && (
-                      <div>
-                        <span>Coordinator: </span>
-                        <strong className="text-[#111111]">{item.coordinator}</strong>
-                      </div>
+                  {/* Timeline Dot Indicator */}
+                  <div
+                    className={`absolute -left-[31px] sm:-left-[47px] top-1.5 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-transform duration-300 group-hover:scale-125 ${
+                      isLive
+                        ? 'bg-[#FF8A00] border-white text-white ring-4 ring-[#FF8A00]/30 animate-pulse'
+                        : isCompleted
+                        ? 'bg-[#FF5E84] border-white text-white'
+                        : 'bg-white border-[#FF5E84] text-[#FF5E84]'
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle className="w-3.5 h-3.5" />
+                    ) : isLive ? (
+                      <Radio className="w-3.5 h-3.5" />
+                    ) : (
+                      <div className="w-2 h-2 rounded-full bg-[#FF5E84]" />
                     )}
                   </div>
-                </div>
 
-              </motion.div>
-            );
-          })}
+                  {/* Event Card */}
+                  <div className="glass-card p-6 sm:p-8 rounded-[28px] space-y-4 hover:border-[#FF5E84]/40 transition-all duration-300">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 text-xs font-sans-manrope font-bold text-[#FF5E84]">
+                        <Clock className="w-4 h-4 text-[#FF5E84]" />
+                        <span>{item.time}</span>
+                      </div>
+
+                      <span
+                        className={`px-3 py-1 rounded-full text-[11px] font-sans-manrope font-bold ${
+                          isLive
+                            ? 'bg-amber-500 text-white animate-pulse'
+                            : isCompleted
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+
+                    <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-bold text-[#111111]">
+                      {item.title}
+                    </h3>
+
+                    <div className="flex flex-wrap items-center gap-6 text-xs font-sans-manrope text-[#5F5F5F]">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-[#FF8A00]" />
+                        <span className="font-semibold">{item.stage}</span>
+                      </div>
+
+                      {item.participants && (
+                        <div className="font-semibold text-[#FF5E84]">
+                          <span>Participants: {item.participants}</span>
+                        </div>
+                      )}
+
+                      {item.coordinator && (
+                        <div>
+                          <span>Coordinator: </span>
+                          <strong className="text-[#111111]">{item.coordinator}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="bg-white p-8 rounded-[28px] border border-black/8 text-center text-[#5F5F5F] font-sans-manrope text-sm">
+              No events scheduled for {activeDay}.
+            </div>
+          )}
 
         </div>
 
