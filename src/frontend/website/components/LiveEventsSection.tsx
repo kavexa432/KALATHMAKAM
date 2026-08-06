@@ -1,131 +1,320 @@
 import React, { useState } from 'react';
-import { MapPin, ArrowRight, Sparkles, Filter, Clock } from 'lucide-react';
+import { MapPin, ArrowRight, Sparkles, Clock, Search, ChevronRight, AlertCircle } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import type { EventModel } from '../../../shared/types/festivalTypes';
 import { formatTime12Hour } from '../../../utils/timeUtils';
 import { EventDetailModal } from './EventDetailModal';
 
+interface CategoryTile {
+  id: string;
+  title: string;
+  icon: string;
+  countText: string;
+  statusText: string;
+  badgeBg: string;
+  gradient: string;
+}
+
+const CATEGORY_TILES: CategoryTile[] = [
+  {
+    id: 'Fine Arts',
+    title: 'Fine Arts & Drawing',
+    icon: '🎨',
+    countText: '7 Competitions',
+    statusText: '7 Completed (Pre-Fest)',
+    badgeBg: 'bg-amber-100 text-amber-800 border-amber-200',
+    gradient: 'from-amber-500/10 to-orange-500/10',
+  },
+  {
+    id: 'Music',
+    title: 'Vocal & Instrumental Music',
+    icon: '🎼',
+    countText: '13 Competitions',
+    statusText: 'Upcoming on Stage 3 & 6',
+    badgeBg: 'bg-sky-100 text-sky-800 border-sky-200',
+    gradient: 'from-sky-500/10 to-blue-500/10',
+  },
+  {
+    id: 'Dance',
+    title: 'Classical & Folk Dance',
+    icon: '💃',
+    countText: '8 Competitions',
+    statusText: 'Stage 1 (Main Auditorium)',
+    badgeBg: 'bg-rose-100 text-rose-800 border-rose-200',
+    gradient: 'from-rose-500/10 to-pink-500/10',
+  },
+  {
+    id: 'Literary',
+    title: 'Literary & Versification',
+    icon: '📖',
+    countText: '6 Competitions',
+    statusText: 'English & Malayalam Completed',
+    badgeBg: 'bg-purple-100 text-purple-800 border-purple-200',
+    gradient: 'from-purple-500/10 to-indigo-500/10',
+  },
+  {
+    id: 'Languages',
+    title: 'Languages & Recitation',
+    icon: '🎤',
+    countText: '12 Competitions',
+    statusText: 'Hindi, Sanskrit, Arabic',
+    badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    gradient: 'from-emerald-500/10 to-teal-500/10',
+  },
+  {
+    id: 'Drama',
+    title: 'Mono Act & Mimicry',
+    icon: '🎭',
+    countText: '6 Competitions',
+    statusText: 'Kids Auditorium (Stage 6)',
+    badgeBg: 'bg-amber-100 text-amber-900 border-amber-200',
+    gradient: 'from-orange-500/10 to-yellow-500/10',
+  },
+];
+
 export const LiveEventsSection: React.FC = () => {
   const { events } = useFestival();
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategoryTile, setSelectedCategoryTile] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedEvent, setSelectedEvent] = useState<EventModel | null>(null);
 
-  const publicEvents = events.filter(e => e.publishToWebsite);
-  const uniqueCategories = Array.from(new Set(publicEvents.map((e) => e.category).filter(Boolean))).sort();
-  const categories = ['All', ...uniqueCategories];
-
-  const filteredEvents = selectedCategory === 'All'
-    ? publicEvents
-    : publicEvents.filter((e) => e.category === selectedCategory);
+  const publicEvents = events.filter((e) => e.publishToWebsite);
 
   const getStatusBadge = (status: string, event: EventModel) => {
     switch (status) {
       case 'Running':
-        return <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase animate-pulse">● LIVE NOW</span>;
+        return (
+          <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase animate-pulse">
+            🔴 LIVE NOW
+          </span>
+        );
       case 'Completed':
         if (event.resultsPublished) {
-          return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Completed</span>;
+          return (
+            <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+              ✔ Completed
+            </span>
+          );
         } else {
-          return <span className="bg-blue-500/15 text-blue-700 border border-blue-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Completed • Results Awaiting Publication</span>;
+          return (
+            <span className="bg-amber-500/15 text-amber-700 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+              ⏳ Results Pending
+            </span>
+          );
         }
-      case 'Results Pending':
-        return <span className="bg-amber-500/15 text-amber-700 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Results Pending</span>;
       case 'Delayed':
-        return <span className="bg-orange-500/15 text-orange-600 border border-orange-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Delayed</span>;
-      case 'Cancelled':
-      case 'Postponed':
-        return <span className="bg-gray-500/15 text-gray-700 border border-gray-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">{status}</span>;
-      default: // Upcoming, Pending
-        return <span className="bg-blue-500/15 text-blue-600 border border-blue-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Upcoming</span>;
+        return (
+          <span className="bg-orange-500/15 text-orange-600 border border-orange-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+            ⚠️ Delayed
+          </span>
+        );
+      default:
+        return (
+          <span className="bg-blue-500/15 text-blue-600 border border-blue-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+            📅 Upcoming
+          </span>
+        );
     }
   };
 
+  const filteredEvents = publicEvents.filter((evt) => {
+    const query = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      evt.eventName.toLowerCase().includes(query) ||
+      evt.category.toLowerCase().includes(query) ||
+      (evt.stage && evt.stage.toLowerCase().includes(query)) ||
+      (evt.venue && evt.venue.toLowerCase().includes(query));
+
+    if (!matchesSearch) return false;
+
+    if (selectedCategoryTile && !evt.category.toLowerCase().includes(selectedCategoryTile.toLowerCase())) {
+      return false;
+    }
+
+    if (statusFilter !== 'All') {
+      if (statusFilter === 'Running' && evt.status !== 'Running') return false;
+      if (statusFilter === 'Completed' && evt.status !== 'Completed') return false;
+      if (statusFilter === 'Upcoming' && evt.status === 'Completed') return false;
+    }
+
+    return true;
+  });
+
   return (
-    <section id="events" className="relative py-12 sm:py-14 bg-[#FAF8F5]">
+    <section id="events" className="relative py-12 sm:py-16 bg-[#FAF8F5]">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col items-center text-center space-y-3 mb-10">
+        <div className="flex flex-col items-center text-center space-y-3 mb-8">
           <div className="inline-flex items-center gap-2 text-xs font-sans-manrope font-extrabold tracking-[0.2em] text-[#FF5E84] uppercase bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-black/8 shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-[#FF5E84]" />
-            <span>FESTIVAL COMPETITIONS & STAGES</span>
+            <span>FESTIVAL COMPETITIONS & CATEGORIES</span>
           </div>
 
           <h2 className="font-serif-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[#111111] leading-tight">
-            Explore Festival Events
+            Explore Competitions
           </h2>
 
           <p className="font-sans-manrope text-sm sm:text-base text-[#5F5F5F] max-w-xl leading-relaxed font-medium">
-            Over 20+ competitions across 4 main stages. Filter by category to view live status, guidelines, and venue info.
+            Search or select a category below to browse stage venues, rules, and live event statuses.
           </p>
 
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-            <span className="text-xs font-bold text-[#5F5F5F] mr-2 flex items-center gap-1">
-              <Filter className="w-3.5 h-3.5" /> Filter:
-            </span>
-            {categories.map((cat) => (
+          {/* Search Toolbar */}
+          <div className="w-full max-w-2xl relative pt-3">
+            <Search className="w-4.5 h-4.5 text-[#FF5E84] absolute left-4 top-1/2 -translate-y-1/2 mt-1.5" />
+            <input
+              type="text"
+              placeholder="Search competitions (Bharathanatyam, Pencil Drawing, Stage 1...)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-white border border-black/12 text-xs sm:text-sm font-sans-manrope text-[#111111] shadow-xs focus:outline-none focus:border-[#FF5E84] focus:ring-2 focus:ring-[#FF5E84]/20"
+            />
+          </div>
+
+          {/* Status Filter Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {['All', 'Running', 'Upcoming', 'Completed'].map((status) => (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-1.5 rounded-full font-sans-manrope font-bold text-xs transition-all cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-[#FF5E84] text-white shadow-xs'
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3.5 py-1 rounded-full font-sans-manrope font-bold text-xs transition-all cursor-pointer ${
+                  statusFilter === status
+                    ? 'bg-[#111111] text-white shadow-xs'
                     : 'bg-white text-[#5F5F5F] hover:text-[#111111] border border-black/8'
                 }`}
               >
-                {cat}
+                {status === 'Running' ? '🔴 Live Now' : status === 'Completed' ? '✔ Completed' : status === 'Upcoming' ? '📅 Upcoming' : 'All Statuses'}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((evt) => (
-            <div
-              key={evt.id}
-              onClick={() => setSelectedEvent(evt)}
-              className="glass-card bg-white/90 backdrop-blur-xl rounded-[28px] p-6 border border-white/95 shadow-md flex flex-col justify-between space-y-4 text-left group cursor-pointer hover:border-[#FF5E84]/30 transition-all"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-sans-manrope font-extrabold text-[#FF5E84] uppercase tracking-wider">
-                  {evt.category}
-                </span>
-                {getStatusBadge(evt.status, evt)}
-              </div>
+        {/* Category Tiles Navigation Grid (Shown when no category filter is active or for easy navigation) */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-sans-manrope font-extrabold text-sm text-[#111111] uppercase tracking-wider flex items-center gap-2">
+              <span>Browse by Category</span>
+              {selectedCategoryTile && (
+                <button
+                  onClick={() => setSelectedCategoryTile(null)}
+                  className="text-xs text-[#FF5E84] font-bold underline cursor-pointer lowercase"
+                >
+                  (clear selection)
+                </button>
+              )}
+            </h3>
+          </div>
 
-              <div>
-                <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111] group-hover:text-[#FF5E84] transition-colors">
-                  {evt.eventName}
-                </h3>
-                <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 line-clamp-2">
-                  {evt.category} • {evt.type} {evt.language ? `• ${evt.language}` : ''}
-                </p>
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {CATEGORY_TILES.map((tile) => {
+              const isSelected = selectedCategoryTile === tile.id;
 
-              <div className="pt-3 border-t border-black/5 flex items-center justify-between text-xs font-sans-manrope text-[#5F5F5F]">
-                <span className="flex items-center gap-1 font-semibold">
-                  <MapPin className="w-3.5 h-3.5 text-[#3B82F6]" />
-                  <span>{evt.stage ? `${evt.stage} - ${evt.venue}` : evt.venue || 'TBA'}</span>
-                </span>
-                <span className="flex items-center gap-1 font-semibold">
-                  <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
-                  <span>
-                    {evt.scheduledStartTime ? formatTime12Hour(evt.scheduledStartTime) : 'TBA'}
-                    {evt.delayMinutes > 0 && (
-                      <span className="text-red-500 ml-1 text-[10px]">(+{evt.delayMinutes}m)</span>
-                    )}
+              return (
+                <div
+                  key={tile.id}
+                  onClick={() => setSelectedCategoryTile(isSelected ? null : tile.id)}
+                  className={`rounded-2xl p-4 transition-all duration-300 cursor-pointer text-left flex flex-col justify-between border space-y-3 group ${
+                    isSelected
+                      ? 'bg-[#111111] text-white border-[#111111] shadow-md scale-[1.02]'
+                      : 'bg-white hover:bg-[#FAF8F5] text-[#111111] border-black/8 hover:border-black/15 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">{tile.icon}</span>
+                    <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? 'rotate-90 text-[#FF5E84]' : 'text-[#5F5F5F] group-hover:translate-x-0.5'}`} />
+                  </div>
+
+                  <div>
+                    <h4 className={`font-sans-manrope font-extrabold text-xs sm:text-sm leading-snug ${isSelected ? 'text-white' : 'text-[#111111]'}`}>
+                      {tile.title}
+                    </h4>
+                    <span className={`text-[10px] font-semibold block mt-0.5 ${isSelected ? 'text-white/70' : 'text-[#5F5F5F]'}`}>
+                      {tile.countText}
+                    </span>
+                  </div>
+
+                  <span className={`text-[9.5px] font-extrabold px-2 py-0.5 rounded-full inline-block truncate ${isSelected ? 'bg-white/15 text-white' : tile.badgeBg}`}>
+                    {tile.statusText}
                   </span>
-                </span>
-              </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-              <div className="flex items-center justify-between pt-1 text-xs font-sans-manrope font-bold text-[#FF5E84]">
-                <span>View Event Details</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
+        {/* Selected Category Header if active */}
+        {selectedCategoryTile && (
+          <div className="p-4 rounded-2xl bg-white border border-black/8 shadow-2xs mb-6 flex items-center justify-between text-left">
+            <div>
+              <span className="text-xs font-bold text-[#FF5E84] uppercase tracking-wider">Filtered Category</span>
+              <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
+                Showing {selectedCategoryTile} Competitions ({filteredEvents.length})
+              </h3>
             </div>
-          ))}
+            <button
+              onClick={() => setSelectedCategoryTile(null)}
+              className="px-4 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs border border-black/10 cursor-pointer"
+            >
+              Show All
+            </button>
+          </div>
+        )}
+
+        {/* Streamlined Events Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredEvents.length > 0 ? (
+            filteredEvents.map((evt) => (
+              <div
+                key={evt.id}
+                onClick={() => setSelectedEvent(evt)}
+                className="bg-white rounded-[24px] p-5 border border-black/8 hover:border-black/15 shadow-2xs hover:shadow-md flex flex-col justify-between space-y-4 text-left group cursor-pointer transition-all hover:-translate-y-0.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-sans-manrope font-extrabold text-[#FF5E84] uppercase tracking-wider">
+                    {evt.category}
+                  </span>
+                  {getStatusBadge(evt.status, evt)}
+                </div>
+
+                <div>
+                  <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111] group-hover:text-[#FF5E84] transition-colors leading-tight">
+                    {evt.eventName}
+                  </h3>
+                  <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 line-clamp-1">
+                    {evt.type} {evt.language ? `• ${evt.language}` : ''}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-black/6 flex items-center justify-between text-xs font-sans-manrope text-[#5F5F5F]">
+                  <span className="flex items-center gap-1.5 font-semibold truncate">
+                    <MapPin className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" />
+                    <span className="truncate">{evt.stage ? `${evt.stage} - ${evt.venue}` : evt.venue || 'TBA'}</span>
+                  </span>
+                  <span className="flex items-center gap-1 font-semibold shrink-0 ml-2">
+                    <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
+                    <span>{evt.scheduledStartTime ? formatTime12Hour(evt.scheduledStartTime) : 'TBA'}</span>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 text-xs font-sans-manrope font-bold text-[#FF5E84]">
+                  <span>View Details</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full py-12 text-center bg-white rounded-[24px] border border-black/8 space-y-2">
+              <AlertCircle className="w-8 h-8 text-[#FF5E84] mx-auto opacity-70" />
+              <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                No Competitions Found
+              </h4>
+              <p className="font-sans-manrope text-xs text-[#5F5F5F]">
+                Try adjusting your search query or status filter.
+              </p>
+            </div>
+          )}
         </div>
 
       </div>
