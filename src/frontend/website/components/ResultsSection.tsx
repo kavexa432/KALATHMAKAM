@@ -159,8 +159,20 @@ export const ResultsSection: React.FC = () => {
               );
             })
           ) : (
-            <div className="col-span-full py-16 text-center text-[#5F5F5F] font-sans-manrope text-sm bg-white/80 rounded-[32px] border border-black/5">
-              No matching verified results found for "{searchQuery || selectedFilterChip}".
+            <div className="col-span-full py-14 px-6 text-center bg-white rounded-[32px] border border-black/8 shadow-sm space-y-4 max-w-xl mx-auto my-4">
+              <div className="w-14 h-14 rounded-full bg-amber-50 text-[#F59E0B] flex items-center justify-center mx-auto border border-amber-200 shadow-2xs">
+                <Trophy className="w-7 h-7" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
+                  {searchQuery || selectedFilterChip !== 'All' ? 'No Matching Results Found' : 'No Official Results Published Yet'}
+                </h3>
+                <p className="font-sans-manrope text-xs text-[#5F5F5F] leading-relaxed">
+                  {searchQuery || selectedFilterChip !== 'All'
+                    ? `No verified results matching "${searchQuery || selectedFilterChip}".`
+                    : 'Verified result sheets will be uploaded live by festival admins via the Result Sheet OCR Uploader. Published winners and points will appear here automatically in real time!'}
+                </p>
+              </div>
             </div>
           )}
         </div>

@@ -82,68 +82,7 @@ export const initialStages: StageModel[] = [
 
 export const initialEvents: EventModel[] = [];
 
-export const initialResults: EventResultModel[] = [
-  {
-    id: 'res-1',
-    festivalId: '2k26',
-    eventId: 's-comp-1',
-    eventTitle: 'Pencil Drawing (All Categories)',
-    category: 'Fine Arts',
-    position: '1st',
-    points: 10,
-    houseId: 'VEGA',
-    houseName: 'VEGA',
-    participantName: 'Rohan V. Varma',
-    studentClass: 'Class 12-C',
-    status: 'Published',
-    createdAt: '2026-08-05T10:35:00Z',
-  },
-  {
-    id: 'res-2',
-    festivalId: '2k26',
-    eventId: 's-comp-2',
-    eventTitle: 'Painting Water Colour & Crayon',
-    category: 'Fine Arts',
-    position: '1st',
-    points: 10,
-    houseId: 'NOVA',
-    houseName: 'NOVA',
-    participantName: 'Adithya R. Nair',
-    studentClass: 'Class 12-A',
-    status: 'Published',
-    createdAt: '2026-08-05T11:20:00Z',
-  },
-  {
-    id: 'res-3',
-    festivalId: '2k26',
-    eventId: 's-comp-5',
-    eventTitle: 'English Essay Writing (Cat 4)',
-    category: 'English Literary',
-    position: '1st',
-    points: 10,
-    houseId: 'ORION',
-    houseName: 'ORION',
-    participantName: 'Devika P. Pillai',
-    studentClass: 'Class 11-A',
-    status: 'Published',
-    createdAt: '2026-08-05T12:00:00Z',
-  },
-  {
-    id: 'res-4',
-    festivalId: '2k26',
-    eventId: 's-comp-6',
-    eventTitle: 'Malayalam Story Writing (Cat 3)',
-    category: 'Malayalam Literary',
-    position: '1st',
-    points: 10,
-    houseId: 'ASTRA',
-    houseName: 'ASTRA',
-    participantName: 'Kavya B. Raj',
-    studentClass: 'Class 10-C',
-    status: 'Published',
-    createdAt: '2026-08-05T13:15:00Z',
-  },
-];
+export const initialResults: EventResultModel[] = [];
 
 export const initialLiveFeed: LiveActivityFeedItem[] = [
   {

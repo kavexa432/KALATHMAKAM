@@ -297,52 +297,64 @@ export const LeaderboardSection: React.FC = () => {
 
             {/* Wins Modern Feed Cards List */}
             <div className="space-y-3">
-              {filteredWinsData.map((row) => {
-                const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.VEGA;
+              {filteredWinsData.length > 0 ? (
+                filteredWinsData.map((row) => {
+                  const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.VEGA;
 
-                return (
-                  <div
-                    key={row.id}
-                    className="p-4 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/6 shadow-2xs hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className={`w-10 h-10 rounded-2xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0 border border-black/5`}>
-                        {row.icon}
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
-                            {row.competition}
-                          </h4>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5F5F5F]">
-                            {row.categoryType}
-                          </span>
+                  return (
+                    <div
+                      key={row.id}
+                      className="p-4 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/6 shadow-2xs hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className={`w-10 h-10 rounded-2xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0 border border-black/5`}>
+                          {row.icon}
                         </div>
-                        <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
-                          Winner: <strong className="text-[#111111] font-semibold">{row.participant}</strong> • {row.studentClass}
-                        </p>
+
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                              {row.competition}
+                            </h4>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5F5F5F]">
+                              {row.categoryType}
+                            </span>
+                          </div>
+                          <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
+                            Winner: <strong className="text-[#111111] font-semibold">{row.participant}</strong> • {row.studentClass}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-black/8 text-xs font-extrabold">
+                          <img
+                            src={houseEmblems[row.winnerHouse as HouseId]}
+                            alt={row.winnerHouse}
+                            className="w-4 h-4 object-contain mix-blend-multiply"
+                          />
+                          <span style={{ color: houseColor.primary }}>{row.winnerHouse}</span>
+                        </span>
+
+                        <div className="text-right">
+                          <span className="font-sans-manrope font-black text-emerald-600 text-sm">{row.points}</span>
+                          <span className="block text-[10px] text-[#5F5F5F] font-medium">{row.time}</span>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-black/8 text-xs font-extrabold">
-                        <img
-                          src={houseEmblems[row.winnerHouse as HouseId]}
-                          alt={row.winnerHouse}
-                          className="w-4 h-4 object-contain mix-blend-multiply"
-                        />
-                        <span style={{ color: houseColor.primary }}>{row.winnerHouse}</span>
-                      </span>
-
-                      <div className="text-right">
-                        <span className="font-sans-manrope font-black text-emerald-600 text-sm">{row.points}</span>
-                        <span className="block text-[10px] text-[#5F5F5F] font-medium">{row.time}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div className="p-8 text-center bg-[#FAF8F5] rounded-2xl border border-black/5 space-y-2">
+                  <Trophy className="w-8 h-8 text-[#F59E0B] mx-auto opacity-70" />
+                  <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                    No Verified Results Published Yet
+                  </h4>
+                  <p className="font-sans-manrope text-xs text-[#5F5F5F]">
+                    Results will populate live here as administrators upload and publish verified result sheets.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Bottom Button */}
