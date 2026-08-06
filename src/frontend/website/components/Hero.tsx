@@ -109,7 +109,6 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
                 <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent">
                   Art
                 </span>
-                <span className="text-[#F59E0B] text-2xl sm:text-3xl lg:text-4xl font-normal ml-0.5 translate-y-1">✦</span>
               </span>
               ,<br />
               <span className="whitespace-nowrap">
