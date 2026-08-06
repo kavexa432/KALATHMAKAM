@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { X, Calendar, MapPin, Users, Award, FileText, CheckCircle2 } from 'lucide-react';
+import { X, Calendar, MapPin, Users, Award, FileText, CheckCircle2, Clock } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
-import type { EventModel } from '../../../shared/types/festivalTypes';
+import type { ComputedEventModel } from '../../../shared/types/festivalTypes';
 import { houseColors } from '../../../shared/tokens/designTokens';
+import { formatTime12Hour } from '../../../utils/timeUtils';
 
 interface EventDetailModalProps {
-  event: EventModel | null;
+  event: ComputedEventModel | null;
   onClose: () => void;
 }
 
@@ -68,22 +69,39 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
           </div>
 
           <h2 className="font-serif-cormorant font-bold text-3xl sm:text-4xl text-white">
-            {event.title}
+            {event.eventName}
           </h2>
 
           <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-sans-manrope text-white/80">
             <span className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-[#FF5E84]" />
-              <strong>{event.stageName}</strong>
+              <strong>{event.stage ? `${event.stage} - ${event.venue}` : event.venue || 'TBA'}</strong>
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-[#F59E0B]" />
-              <strong>{event.startTime} – {event.endTime}</strong>
+              <strong>{event.date || 'TBA'}</strong>
             </span>
-            <span className="flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-[#3B82F6]" />
-              <strong>{event.participantsCount} Registered Participants</strong>
-            </span>
+            <div className="flex items-center gap-6">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-sans-manrope font-extrabold text-white/60 uppercase tracking-wider flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    Time
+                  </span>
+                  <p className="font-sans-manrope font-bold text-sm text-white">
+                    {formatTime12Hour(event.scheduledStartTime)} {event.delayMinutes > 0 ? <span className="text-red-400">(+{event.delayMinutes}m)</span> : null}
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] font-sans-manrope font-extrabold text-white/60 uppercase tracking-wider flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5" />
+                    Participation
+                  </span>
+                  <p className="font-sans-manrope font-bold text-sm text-white">
+                    {event.type}
+                  </p>
+                </div>
+            </div>
           </div>
         </div>
 
@@ -98,39 +116,15 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
             </h4>
 
             <ul className="space-y-2 text-xs font-sans-manrope text-[#5F5F5F]">
-              {Array.isArray(event.rules) ? (
-                event.rules.map((rule: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
-                    <span>{rule}</span>
-                  </li>
-                ))
-              ) : (
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
-                  <span>{event.rules || 'Official CBSE festival rules apply.'}</span>
-                </li>
-              )}
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
+                <span>Language: {event.language || 'N/A'}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
+                <span>Official CBSE festival rules apply.</span>
+              </li>
             </ul>
-          </div>
-
-          {/* Judges Panel */}
-          <div className="bg-white rounded-2xl p-5 border border-black/5 shadow-2xs space-y-3">
-            <h4 className="font-sans-manrope font-[#111111] uppercase tracking-wider flex items-center gap-2 text-sm font-extrabold">
-              <Award className="w-4 h-4 text-[#F59E0B]" />
-              <span>HONORABLE JUDGING PANEL</span>
-            </h4>
-
-            <div className="flex flex-wrap gap-2">
-              {Array.isArray(event.judges) && event.judges.map((judge: string, idx: number) => (
-                <span
-                  key={idx}
-                  className="bg-[#FAF8F5] text-[#111111] font-bold text-xs px-3.5 py-1.5 rounded-full border border-black/8"
-                >
-                  {judge}
-                </span>
-              ))}
-            </div>
           </div>
 
           {/* Winners Section if completed */}

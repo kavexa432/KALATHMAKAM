@@ -96,18 +96,23 @@ export const GalleryMasonry: React.FC = () => {
       {/* Lightbox Modal */}
       <AnimatePresence>
         {lightboxImage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl"
+            onClick={() => setLightboxImage(null)}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               className="relative max-w-4xl w-full flex flex-col items-center"
+              onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setLightboxImage(null)}
-                className="absolute -top-12 right-0 text-white/80 hover:text-white flex items-center gap-1 text-xs font-bold"
+                className="fixed top-6 right-6 text-white hover:bg-white/10 rounded-full p-2 flex items-center justify-center z-[60] transition-colors"
+                aria-label="Close"
               >
-                <X className="w-6 h-6" /> Close
+                <X className="w-8 h-8" />
               </button>
 
               <div className="rounded-[24px] overflow-hidden shadow-2xl border border-white/10 max-h-[80vh]">

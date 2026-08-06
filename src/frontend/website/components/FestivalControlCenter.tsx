@@ -3,12 +3,19 @@ import { Radio, Trophy, Bell, ArrowRight } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
+import { formatTime12Hour } from '../../../utils/timeUtils';
 
 export const FestivalControlCenter: React.FC = () => {
   const { events, houses, getHousePoints, liveFeed } = useFestival();
 
-  // Find active live event or fallback to ongoing event
-  const liveEvent = events.find((e) => e.status === 'Ongoing' || e.status === 'LIVE NOW') || events[0];
+  // Find active live event or fallback to next upcoming
+  const liveEvent = events.find((e) => e.status === 'Running') || events.find((e) => e.status === 'Upcoming');
+  
+  // Find the event that comes immediately after the live event on the same stage
+  const nextEvent = liveEvent 
+    ? events.find((e) => e.stage === liveEvent.stage && e.status === 'Upcoming' && e.id !== liveEvent.id)
+    : undefined;
+
   const latestNotice = liveFeed[0];
 
   // Computed House Standings
@@ -65,24 +72,30 @@ export const FestivalControlCenter: React.FC = () => {
                 <span className="text-[11px] font-sans-manrope font-extrabold tracking-widest text-[#5F5F5F] uppercase">
                   🎭 CURRENT STAGE EVENT
                 </span>
-                <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                  LIVE NOW
-                </span>
+                {liveEvent?.status === 'Running' ? (
+                  <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                    LIVE NOW
+                  </span>
+                ) : (
+                  <span className="bg-blue-500/15 text-blue-600 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                    {liveEvent?.status || 'No events'}
+                  </span>
+                )}
               </div>
 
               <div>
                 <h4 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
-                  {liveEvent.title}
+                  {liveEvent?.eventName || 'Loading...'}
                 </h4>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 font-semibold">
-                  📍 {liveEvent.stageName} • Category: {liveEvent.category}
+                  📍 {liveEvent ? (liveEvent.stage ? `${liveEvent.stage} - ${liveEvent.venue}` : liveEvent.venue || 'TBA') : ''} • Category: {liveEvent?.category || ''}
                 </p>
               </div>
 
               <div className="pt-2 border-t border-black/6 flex items-center justify-between text-xs font-sans-manrope">
-                <span className="text-[#5F5F5F]">Remaining Participants:</span>
-                <span className="font-extrabold text-[#111111] bg-white px-2.5 py-1 rounded-lg border border-black/5">
-                  04 Participants
+                <span className="text-[#5F5F5F]">Next Up:</span>
+                <span className="font-bold text-[#111111]">
+                  {nextEvent ? `${nextEvent.eventName} @ ${formatTime12Hour(nextEvent.scheduledStartTime)}` : 'None Scheduled'}
                 </span>
               </div>
             </div>

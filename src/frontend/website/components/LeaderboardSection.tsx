@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trophy, TrendingUp, Info, ArrowRight, RotateCw, Clock, Music, BookOpen, Users, Palette, HelpCircle, Filter } from 'lucide-react';
+import { Trophy, TrendingUp, Info, ArrowRight, RotateCw, Clock, Filter } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
@@ -34,8 +34,8 @@ export const LeaderboardSection: React.FC = () => {
       // Calculate recent points delta & wins for this house from results
       const houseResults = results.filter((r) => r.houseId === houseId && r.status === 'Published');
       const recentDelta = houseResults.slice(0, 3).reduce((sum, r) => sum + r.points, 0);
-      const totalWins = houseResults.length > 0 ? houseResults.length : houseId === 'VEGA' ? 14 : houseId === 'NOVA' ? 11 : houseId === 'ORION' ? 8 : 5;
-      const latestWin = houseResults.length > 0 ? houseResults[0].eventTitle : houseId === 'VEGA' ? 'Classical Vocal' : houseId === 'NOVA' ? 'Debate' : houseId === 'ORION' ? 'Folk Dance' : 'Poster Making';
+      const totalWins = houseResults.length;
+      const latestWin = houseResults.length > 0 ? houseResults[0].eventTitle : 'None yet';
 
       return {
         ...h,
@@ -43,7 +43,7 @@ export const LeaderboardSection: React.FC = () => {
         medals,
         totalWins,
         latestWin,
-        recentDelta: recentDelta > 0 ? recentDelta : houseId === 'VEGA' ? 24 : houseId === 'NOVA' ? 18 : houseId === 'ORION' ? 12 : 6,
+        recentDelta,
       };
     })
     .sort((a, b) => b.points - a.points);
@@ -54,93 +54,20 @@ export const LeaderboardSection: React.FC = () => {
   const maxPoints = Math.max(...standings.map((s) => s.points), 1);
 
   // Recent Wins data from Firebase results
-  const recentWinsData = results.length > 0
-    ? results.map((r, i) => ({
-        id: r.id,
-        time: `${11 - (i % 5)}:${45 - (i % 8) * 5} AM`,
-        date: '05 Aug, 2026',
-        categoryTag: r.category.includes('Solo') ? 'Music' : r.category.includes('Dance') ? 'Dance' : 'Literary',
-        competition: r.eventTitle,
-        categoryType: r.category,
-        winnerHouse: r.houseId as HouseId,
-        points: `+${r.points}`,
-        participant: r.participantName,
-        studentClass: r.studentClass,
-        icon: <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />,
-        iconBg: 'bg-[#F59E0B]/12',
-      }))
-    : [
-        {
-          id: 'w-1',
-          time: '11:45 AM',
-          date: '05 Aug, 2026',
-          categoryTag: 'Music',
-          competition: 'Classical Vocal (Solo)',
-          categoryType: 'Senior Category',
-          winnerHouse: 'NOVA' as HouseId,
-          points: '+25 Pts',
-          participant: 'Ananya Krishnan',
-          studentClass: 'Class 11-B',
-          icon: <Music className="w-3.5 h-3.5 text-[#FF5E84]" />,
-          iconBg: 'bg-[#FF5E84]/12',
-        },
-        {
-          id: 'w-2',
-          time: '11:10 AM',
-          date: '05 Aug, 2026',
-          categoryTag: 'Literary',
-          competition: 'Debate Competition',
-          categoryType: 'Senior Category',
-          winnerHouse: 'VEGA' as HouseId,
-          points: '+20 Pts',
-          participant: 'Rohan V. Varma',
-          studentClass: 'Class 12-C',
-          icon: <BookOpen className="w-3.5 h-3.5 text-[#3B82F6]" />,
-          iconBg: 'bg-[#3B82F6]/12',
-        },
-        {
-          id: 'w-3',
-          time: '10:20 AM',
-          date: '05 Aug, 2026',
-          categoryTag: 'Dance',
-          competition: 'Folk Dance (Group)',
-          categoryType: 'Junior Category',
-          winnerHouse: 'ORION' as HouseId,
-          points: '+20 Pts',
-          participant: 'Orion Dance Troupe',
-          studentClass: 'Group Event',
-          icon: <Users className="w-3.5 h-3.5 text-[#F59E0B]" />,
-          iconBg: 'bg-[#F59E0B]/12',
-        },
-        {
-          id: 'w-4',
-          time: '09:40 AM',
-          date: '05 Aug, 2026',
-          categoryTag: 'Fine Arts',
-          competition: 'Poster Making',
-          categoryType: 'Junior Category',
-          winnerHouse: 'ASTRA' as HouseId,
-          points: '+15 Pts',
-          participant: 'Devika Nair',
-          studentClass: 'Class 9-A',
-          icon: <Palette className="w-3.5 h-3.5 text-[#10B981]" />,
-          iconBg: 'bg-[#10B981]/12',
-        },
-        {
-          id: 'w-5',
-          time: '09:05 AM',
-          date: '05 Aug, 2026',
-          categoryTag: 'Literary',
-          competition: 'General Quiz (Team)',
-          categoryType: 'Senior Category',
-          winnerHouse: 'VEGA' as HouseId,
-          points: '+15 Pts',
-          participant: 'Vega Quiz Squad',
-          studentClass: 'Class 12-A',
-          icon: <HelpCircle className="w-3.5 h-3.5 text-[#8B5CF6]" />,
-          iconBg: 'bg-[#8B5CF6]/12',
-        },
-      ];
+  const recentWinsData = results.map((r, i) => ({
+      id: r.id,
+      time: `${11 - (i % 5)}:${45 - (i % 8) * 5} AM`,
+      date: '05 Aug, 2026',
+      categoryTag: r.category.includes('Solo') ? 'Music' : r.category.includes('Dance') ? 'Dance' : 'Literary',
+      competition: r.eventTitle,
+      categoryType: r.category,
+      winnerHouse: r.houseId as HouseId,
+      points: `+${r.points}`,
+      participant: r.participantName,
+      studentClass: r.studentClass,
+      icon: <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />,
+      iconBg: 'bg-[#F59E0B]/12',
+    }));
 
   const categoryFilters = ['All', 'Music', 'Dance', 'Literary', 'Fine Arts'];
 
@@ -157,7 +84,12 @@ export const LeaderboardSection: React.FC = () => {
           
           <div className="text-left space-y-3 max-w-2xl">
             <h2 className="font-serif-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[#111111] leading-tight flex items-center gap-2">
-              <span>House Leaderboard</span>
+              <span>
+                House{' '}
+                <span className="bg-gradient-to-r from-[#FF5E84] to-[#F59E0B] bg-clip-text text-transparent">
+                  Leaderboard
+                </span>
+              </span>
               <span className="text-[#F59E0B] text-3xl font-normal">✦</span>
             </h2>
 
@@ -174,7 +106,7 @@ export const LeaderboardSection: React.FC = () => {
 
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
                 <span>🏆</span>
-                <span>{results.length > 0 ? results.length : 132} Results Published</span>
+                <span>{results.length} Results Published</span>
               </span>
 
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#111111] border border-black/8 text-[11px] font-extrabold font-sans-manrope shadow-2xs">
@@ -214,7 +146,7 @@ export const LeaderboardSection: React.FC = () => {
                   HOUSE {leaderHouse.name} • {leaderHouse.points} PTS
                 </h4>
                 <p className="font-sans-manrope text-[11px] text-white/70">
-                  Leading by +{leadPointsDiff > 0 ? leadPointsDiff : 28} PTS ahead of 2nd place
+                  {leadPointsDiff > 0 ? `Leading by +${leadPointsDiff} PTS ahead of 2nd place` : 'Tied for 1st place'}
                 </p>
               </div>
             </div>

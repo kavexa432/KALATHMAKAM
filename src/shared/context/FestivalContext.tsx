@@ -22,6 +22,7 @@ import type {
   HouseId,
   StageModel,
   EventModel,
+  ComputedEventModel,
   EventResultModel,
   LiveActivityFeedItem,
   AuditLogItem,
@@ -35,19 +36,19 @@ import {
   currentFestival,
   initialHouses,
   initialStages,
-  initialEvents,
   initialResults,
   initialLiveFeed,
   initialAuditLogs,
   initialUsers,
   initialGallery,
 } from '../data/festivalData';
+import { computeEventStatus } from '../../utils/timeUtils';
 
 interface FestivalContextType {
   festival: FestivalEdition;
   houses: HouseModel[];
   stages: StageModel[];
-  events: EventModel[];
+  events: ComputedEventModel[];
   results: EventResultModel[];
   liveFeed: LiveActivityFeedItem[];
   auditLogs: AuditLogItem[];
@@ -63,6 +64,7 @@ interface FestivalContextType {
   getHouseMedals: (houseId: HouseId) => { gold: number; silver: number; bronze: number; total: number };
   
   // Workflow Actions
+  delayEvent: (eventId: string, minutes: number) => Promise<void>;
   login: (role: 'developer' | 'admin' | 'user') => void;
   loginWithGoogle: () => Promise<void>;
   loginCustomUser: (email: string) => void;
@@ -88,7 +90,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [festival] = useState<FestivalEdition>(currentFestival);
   const [houses] = useState<HouseModel[]>(initialHouses);
   const [stages] = useState<StageModel[]>(initialStages);
-  const [events, setEvents] = useState<EventModel[]>(initialEvents);
+  const [events, setEvents] = useState<EventModel[]>([]);
   const [results, setResults] = useState<EventResultModel[]>(initialResults);
   const [liveFeed, setLiveFeed] = useState<LiveActivityFeedItem[]>(initialLiveFeed);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(initialAuditLogs);
@@ -107,6 +109,13 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [firebaseAuthUser, setFirebaseAuthUser] = useState<FirebaseUser | null>(null);
   const [archiveMode, setArchiveMode] = useState<boolean>(false);
+  const [, setTick] = useState(0);
+
+  // Auto-refresh computed statuses every minute
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Helper to persist user state & update user registry list
   const persistUser = (user: UserModel | null) => {
@@ -207,31 +216,68 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Listen to Firestore Users Collection changes in real time
   useEffect(() => {
     try {
-      const unsub = onSnapshot(collection(db, 'users'), (snapshot) => {
-        if (!snapshot.empty) {
-          const firestoreUsers: UserModel[] = [];
-          snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
-          
-          setUsers((prev) => {
-            const mergedMap = new Map<string, UserModel>();
-            prev.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
-            firestoreUsers.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
-            return Array.from(mergedMap.values());
-          });
+      const unsub = onSnapshot(
+        collection(db, 'users'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const firestoreUsers: UserModel[] = [];
+            snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
+            
+            setUsers((prev) => {
+              const mergedMap = new Map<string, UserModel>();
+              prev.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
+              firestoreUsers.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
+              return Array.from(mergedMap.values());
+            });
 
-          if (currentUser) {
-            const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
-            if (match && (match.role !== currentUser.role || match.approved !== currentUser.approved)) {
-              persistUser(match);
+            if (currentUser) {
+              const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
+              if (match && (match.role !== currentUser.role || match.approved !== currentUser.approved)) {
+                persistUser(match);
+              }
             }
           }
-        }
-      });
+        },
+        (err) => console.warn('Firestore users subscription notice:', err)
+      );
       return () => unsub();
     } catch {
       // Local fallback
     }
   }, [currentUser]);
+
+  // Listen to Firestore Events Collection changes in real time
+  useEffect(() => {
+    try {
+      const unsub = onSnapshot(
+        collection(db, 'events'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const firestoreEvents: EventModel[] = [];
+            // Merge the Firestore doc id so doc(id) writes (delay, publish) always hit the right doc
+            snapshot.forEach((d) => firestoreEvents.push({ id: d.id, ...d.data() } as EventModel));
+            // Sort events by date and time roughly
+            firestoreEvents.sort((a, b) => {
+              const timeA = new Date(`${a.date}T${a.scheduledStartTime || '00:00'}`).getTime();
+              const timeB = new Date(`${b.date}T${b.scheduledStartTime || '00:00'}`).getTime();
+              return (timeA || 0) - (timeB || 0);
+            });
+            setEvents(firestoreEvents);
+          }
+        },
+        (err) => console.warn('Firestore events subscription notice:', err)
+      );
+      return () => unsub();
+    } catch (err) {
+      console.error('Failed to subscribe to events:', err);
+    }
+  }, []);
+
+  // Dynamically compute statuses on the fly for all events
+  const computedEvents = events.map((e) => ({
+    ...e,
+    status: computeEventStatus(e),
+  }));
 
   // Dynamic Point Computation Engine
   const getHousePoints = (houseId: HouseId, _day?: LeaderboardDay): number => {
@@ -369,6 +415,27 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAuditLogs((prev) => [newLog, ...prev]);
   };
 
+  const delayEvent = async (eventId: string, minutes: number) => {
+    try {
+      const eventRef = doc(db, 'events', eventId);
+      const target = events.find((e) => e.id === eventId);
+      if (target) {
+        const newDelay = (target.delayMinutes || 0) + minutes;
+        await setDoc(eventRef, { delayMinutes: newDelay }, { merge: true });
+        
+        logAuditAction(
+          currentUser?.name || 'Admin',
+          currentUser?.role || 'admin',
+          'Delayed Event',
+          target.eventName,
+          `Event delayed by ${minutes} minutes. Total delay: ${newDelay} mins.`
+        );
+      }
+    } catch (e) {
+      console.error('Failed to delay event:', e);
+    }
+  };
+
   // Result Workflow Actions
   const submitResult = (newResultData: Omit<EventResultModel, 'id' | 'createdAt' | 'status'>) => {
     const pointsToAdd = newResultData.position === '1st' ? 5 : newResultData.position === '2nd' ? 3 : newResultData.position === '3rd' ? 1 : 0;
@@ -384,8 +451,11 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setResults((prev) => [newResult, ...prev]);
 
     setEvents((prev) =>
-      prev.map((e) => (e.id === newResultData.eventId ? { ...e, status: 'Completed' as const } : e))
+      prev.map((e) => (e.id === newResultData.eventId ? { ...e, resultPublished: true } : e))
     );
+    
+    // Also update in firestore immediately
+    setDoc(doc(db, 'events', newResultData.eventId), { resultPublished: true }, { merge: true }).catch(console.error);
 
     logAuditAction(
       currentUser?.name || 'Admin',
@@ -418,8 +488,10 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
 
     setEvents((prev) =>
-      prev.map((e) => (e.id === target.eventId ? { ...e, status: 'Completed' as const } : e))
+      prev.map((e) => (e.id === target.eventId ? { ...e, resultPublished: true } : e))
     );
+    
+    setDoc(doc(db, 'events', target.eventId), { resultPublished: true }, { merge: true }).catch(console.error);
 
     const newFeedItem: LiveActivityFeedItem = {
       id: `feed-${Date.now()}`,
@@ -590,7 +662,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         festival,
         houses,
         stages,
-        events,
+        events: computedEvents,
         results,
         liveFeed,
         auditLogs,
@@ -602,6 +674,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         getHousePoints,
         getHouseRank,
         getHouseMedals,
+        delayEvent,
         login,
         loginWithGoogle,
         loginCustomUser,

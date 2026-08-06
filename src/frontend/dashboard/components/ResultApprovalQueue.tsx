@@ -30,7 +30,7 @@ export const ResultApprovalQueue: React.FC = () => {
     submitResult({
       festivalId: '2k26',
       eventId: selectedEvt.id,
-      eventTitle: selectedEvt.title,
+      eventTitle: selectedEvt.eventName,
       category: selectedEvt.category,
       position,
       points: getPoints(position),
@@ -65,7 +65,7 @@ export const ResultApprovalQueue: React.FC = () => {
             >
               {events.map((e) => (
                 <option key={e.id} value={e.id}>
-                  {e.title} ({e.category})
+                  {e.eventName} ({e.category})
                 </option>
               ))}
             </select>

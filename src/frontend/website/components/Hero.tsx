@@ -179,7 +179,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
           </div>
 
           {/* Right Column: Prominent Hero Emblem */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-end items-center relative lg:-mr-6 xl:-mr-12 lg:-mt-4">
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-end items-center relative lg:-mr-6 xl:-mr-12 lg:-mt-4 lg:-translate-x-8 xl:-translate-x-16">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}

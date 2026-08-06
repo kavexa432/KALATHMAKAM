@@ -18,11 +18,13 @@ import {
   FileSpreadsheet,
   Lock,
   Code,
+  Clock,
 } from 'lucide-react';
 import { useFestival } from '../../shared/context/FestivalContext';
 import { ResultApprovalQueue } from './components/ResultApprovalQueue';
 import { AuditLogsTable } from './components/AuditLogsTable';
 import { ResultSheetOCRModal } from './components/ResultSheetOCRModal';
+import { formatTime12Hour } from '../../utils/timeUtils';
 import type { AnnouncementType, PriorityLevel, HouseId } from '../../shared/types/festivalTypes';
 
 export const Dashboard: React.FC = () => {
@@ -31,6 +33,7 @@ export const Dashboard: React.FC = () => {
     logout,
     archiveMode,
     toggleArchiveMode,
+    events,
     results,
     users,
     auditLogs,
@@ -40,7 +43,7 @@ export const Dashboard: React.FC = () => {
   } = useFestival();
 
   const [activeTab, setActiveTab] = useState<
-    'Overview' | 'Results' | 'OCRUpload' | 'QRScan' | 'Announcements' | 'UserManagement' | 'AuditLogs' | 'Reports'
+    'Overview' | 'LiveControl' | 'OCRUpload' | 'Results' | 'Leaderboard' | 'Announcements' | 'Schedules' | 'Reports' | 'UserManagement' | 'Settings' | 'QRScan' | 'AuditLogs'
   >('Overview');
 
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
@@ -131,10 +134,37 @@ export const Dashboard: React.FC = () => {
     setTimeout(() => setQrSuccessMessage(''), 4000);
   };
 
+  const handleDelayEvent = (eventId: string) => {
+    useFestival().delayEvent(eventId, 15);
+  };
+
+  const totalEvents = events.length;
+  const completedEvents = events.filter(e => e.status === 'Completed').length;
+  const runningEvents = events.filter(e => e.status === 'Running').length;
+  const remainingEvents = totalEvents - completedEvents - runningEvents;
+  const festivalProgress = totalEvents === 0 ? 0 : Math.round((completedEvents / totalEvents) * 100);
+
   return (
     <section id="control-center" className="relative py-12 bg-[#FAF8F5] border-t border-black/8">
-      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
+        {/* Festival Timeline Top Bar */}
+        <div className="glass-card bg-[#111111] text-white rounded-[24px] p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-6 flex-1 min-w-[300px]">
+            <div className="font-serif-cormorant font-bold text-2xl">Day 2</div>
+            <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#FF5E84] to-[#F59E0B]" style={{ width: `${festivalProgress}%` }} />
+            </div>
+            <div className="font-sans-manrope font-extrabold text-sm">{festivalProgress}%</div>
+          </div>
+          <div className="flex items-center gap-6 font-sans-manrope text-sm font-bold divide-x divide-white/20">
+            <div className="px-3 flex items-center gap-2"><Clock className="w-4 h-4 text-[#F59E0B]" /> {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div className="px-3 text-emerald-400">Running: {runningEvents}</div>
+            <div className="px-3 text-blue-400">Completed: {completedEvents}</div>
+            <div className="px-3 pl-6 text-white/60">Remaining: {remainingEvents}</div>
+          </div>
+        </div>
+
         {/* Top Control Room Header */}
         <div className="glass-card bg-white/90 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 shadow-xl border border-white/95 mb-8 text-left">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-black/8">
@@ -212,23 +242,23 @@ export const Dashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setOcrModalOpen(true)}
-              className="px-5 py-2.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-sans-manrope font-extrabold text-xs flex items-center gap-2 cursor-pointer transition-all"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-amber-600" />
-              <span>Upload Sheet (OCR)</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('QRScan')}
+              onClick={() => setActiveTab('LiveControl')}
               className={`px-5 py-2.5 rounded-full font-sans-manrope font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
-                activeTab === 'QRScan'
+                activeTab === 'LiveControl'
                   ? 'bg-[#111111] text-white shadow-sm'
                   : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border border-black/5'
               }`}
             >
-              <QrCode className="w-3.5 h-3.5 text-[#FF5E84]" />
-              <span>QR Scanner & Score Entry</span>
+              <Radio className="w-3.5 h-3.5 text-[#FF5E84]" />
+              <span>Live Control</span>
+            </button>
+
+            <button
+              onClick={() => setOcrModalOpen(true)}
+              className="px-5 py-2.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-sans-manrope font-extrabold text-xs flex items-center gap-2 cursor-pointer transition-all"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-amber-600" />
+              <span>OCR Upload</span>
             </button>
 
             <button
@@ -240,14 +270,14 @@ export const Dashboard: React.FC = () => {
               }`}
             >
               <Award className="w-3.5 h-3.5 text-[#F59E0B]" />
-              <span>Results Approval ({pendingResultsCount})</span>
+              <span>Results ({pendingResultsCount})</span>
             </button>
 
             <button
               onClick={() => setActiveTab('Announcements')}
               className={`px-5 py-2.5 rounded-full font-sans-manrope font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
                 activeTab === 'Announcements'
-                  ? 'bg-[#111111] text-[#5F5F5F] shadow-sm'
+                  ? 'bg-[#111111] text-white shadow-sm'
                   : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border border-black/5'
               }`}
             >
@@ -266,7 +296,7 @@ export const Dashboard: React.FC = () => {
                 }`}
               >
                 <Shield className="w-3.5 h-3.5 text-[#3B82F6]" />
-                <span>User & Role Management</span>
+                <span>Users</span>
               </button>
             )}
 
@@ -395,6 +425,77 @@ export const Dashboard: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Live Control Tab */}
+        {activeTab === 'LiveControl' && (
+          <div className="bg-white rounded-3xl p-8 border border-black/8 shadow-md text-left space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-black/8">
+              <div>
+                <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
+                  Live Control
+                </h3>
+                <p className="font-sans-manrope text-xs text-[#5F5F5F]">
+                  View real-time event status and manage delays.
+                </p>
+              </div>
+              <Radio className="w-6 h-6 text-[#FF5E84]" />
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-sans-manrope">
+                <thead>
+                  <tr className="border-b border-black/10 text-[#5F5F5F] font-extrabold uppercase">
+                    <th className="py-3 px-4">Time</th>
+                    <th className="py-3 px-4">Event</th>
+                    <th className="py-3 px-4">Stage</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/5">
+                  {events.slice(0, 50).map((evt) => (
+                    <tr key={evt.id} className="hover:bg-[#FAF8F5]">
+                      <td className="py-3.5 px-4 font-bold text-[#111111]">
+                        {formatTime12Hour(evt.scheduledStartTime)}
+                        {evt.delayMinutes > 0 && <span className="text-red-500 ml-1">(+{evt.delayMinutes}m)</span>}
+                      </td>
+                      <td className="py-3.5 px-4 text-[#111111] font-bold">{evt.eventName}</td>
+                      <td className="py-3.5 px-4 text-[#5F5F5F]">{evt.stage}</td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                          evt.status === 'Running' ? 'bg-red-100 text-red-600' :
+                          evt.status === 'Results Pending' ? 'bg-amber-100 text-amber-600' :
+                          evt.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' :
+                          'bg-blue-100 text-blue-600'
+                        }`}>
+                          {evt.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        {evt.status !== 'Completed' && (
+                          <button
+                            onClick={() => handleDelayEvent(evt.id)}
+                            className="px-3 py-1.5 rounded-md bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 font-bold transition-all"
+                          >
+                            Delay 15m
+                          </button>
+                        )}
+                        {evt.status === 'Results Pending' && (
+                          <button
+                            onClick={() => setOcrModalOpen(true)}
+                            className="ml-2 px-3 py-1.5 rounded-md bg-[#111111] text-white hover:bg-gray-800 font-bold transition-all"
+                          >
+                            Upload OCR
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

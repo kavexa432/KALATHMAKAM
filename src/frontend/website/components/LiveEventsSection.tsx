@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowRight, Sparkles, Filter } from 'lucide-react';
+import { MapPin, ArrowRight, Sparkles, Filter, Clock } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
-import type { EventModel } from '../../../shared/types/festivalTypes';
+import type { ComputedEventModel } from '../../../shared/types/festivalTypes';
+import { formatTime12Hour } from '../../../utils/timeUtils';
 import { EventDetailModal } from './EventDetailModal';
 
 export const LiveEventsSection: React.FC = () => {
   const { events } = useFestival();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedEvent, setSelectedEvent] = useState<EventModel | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<ComputedEventModel | null>(null);
 
-  const categories = ['All', 'Dance', 'Music', 'Fine Arts', 'Literature', 'Drama', 'Quiz'];
+  const uniqueCategories = Array.from(new Set(events.map((e) => e.category).filter(Boolean))).sort();
+  const categories = ['All', ...uniqueCategories];
 
   const filteredEvents = selectedCategory === 'All'
     ? events
@@ -17,14 +19,18 @@ export const LiveEventsSection: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'Ongoing':
-      case 'LIVE NOW':
+      case 'Running':
         return <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase animate-pulse">● LIVE NOW</span>;
       case 'Completed':
         return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Completed</span>;
-      case 'Judging':
-        return <span className="bg-amber-500/15 text-amber-700 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Judging</span>;
-      default:
+      case 'Results Pending':
+        return <span className="bg-amber-500/15 text-amber-700 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Results Pending</span>;
+      case 'Delayed':
+        return <span className="bg-orange-500/15 text-orange-600 border border-orange-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Delayed</span>;
+      case 'Cancelled':
+      case 'Postponed':
+        return <span className="bg-gray-500/15 text-gray-700 border border-gray-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">{status}</span>;
+      default: // Upcoming, Pending
         return <span className="bg-blue-500/15 text-blue-600 border border-blue-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Upcoming</span>;
     }
   };
@@ -86,21 +92,26 @@ export const LiveEventsSection: React.FC = () => {
 
               <div>
                 <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111] group-hover:text-[#FF5E84] transition-colors">
-                  {evt.title}
+                  {evt.eventName}
                 </h3>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 line-clamp-2">
-                  {Array.isArray(evt.rules) ? evt.rules[0] : (evt.rules || 'Official CBSE festival rules apply.')}
+                  {evt.category} • {evt.type} {evt.language ? `• ${evt.language}` : ''}
                 </p>
               </div>
 
               <div className="pt-3 border-t border-black/5 flex items-center justify-between text-xs font-sans-manrope text-[#5F5F5F]">
                 <span className="flex items-center gap-1 font-semibold">
                   <MapPin className="w-3.5 h-3.5 text-[#3B82F6]" />
-                  <span>{evt.stageName}</span>
+                  <span>{evt.stage ? `${evt.stage} - ${evt.venue}` : evt.venue || 'TBA'}</span>
                 </span>
                 <span className="flex items-center gap-1 font-semibold">
-                  <Calendar className="w-3.5 h-3.5 text-[#F59E0B]" />
-                  <span>{evt.startTime}</span>
+                  <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  <span>
+                    {evt.scheduledStartTime ? formatTime12Hour(evt.scheduledStartTime) : 'TBA'}
+                    {evt.delayMinutes > 0 && (
+                      <span className="text-red-500 ml-1 text-[10px]">(+{evt.delayMinutes}m)</span>
+                    )}
+                  </span>
                 </span>
               </div>
 

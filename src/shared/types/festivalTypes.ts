@@ -73,23 +73,43 @@ export interface StageModel {
   status?: 'Active' | 'Idle' | 'Delayed' | string;
 }
 
+export type EventStatus = 'Pending' | 'Upcoming' | 'Running' | 'Delayed' | 'Results Pending' | 'Completed' | 'Cancelled';
+
 export interface EventModel {
   id: string;
-  festivalId?: string;
-  title: string;
+  eventName: string;
   category: string;
-  section?: 'LP' | 'UP' | 'HS' | 'HSS' | 'All' | string;
-  cbseCategory?: 'CAT-I' | 'CAT-II' | 'CAT-III' | 'CAT-IV';
-  stageId: string;
-  stageName?: string;
-  scheduledTime?: string;
-  startTime?: string;
-  endTime?: string;
-  status: string;
-  participantsCount: number;
-  rules?: any;
-  judges?: any[];
-  featured?: boolean;
+  type: string;
+  language: string;
+  department?: string; // Optional for now
+  stage: string | null;
+  venue: string | null;
+  date: string;
+  
+  // Timing
+  scheduledStartTime: string; // e.g. "09:00"
+  durationMinutes: number;
+  delayMinutes: number;
+  actualStartTime: string | null;
+  actualEndTime: string | null;
+
+  // Status computation overrides/flags
+  cancelled: boolean;
+  postponed: boolean;
+  
+  // Authoritative Flags
+  resultPublished: boolean;
+  participantsExpected?: number;
+  participantsActual?: number;
+  resultId?: string;
+  winnerHouse?: HouseId | null;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ComputedEventModel extends EventModel {
+  status: EventStatus;
 }
 
 export interface EventResultModel {
