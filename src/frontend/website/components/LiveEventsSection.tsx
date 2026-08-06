@@ -76,10 +76,19 @@ export const LiveEventsSection: React.FC = () => {
   const { events } = useFestival();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryTile, setSelectedCategoryTile] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [statusFilter, setStatusFilter] = useState<string>('Running');
   const [selectedEvent, setSelectedEvent] = useState<EventModel | null>(null);
 
   const publicEvents = events.filter((e) => e.publishToWebsite);
+
+  const handleCategoryTileClick = (tileId: string) => {
+    if (selectedCategoryTile === tileId) {
+      setSelectedCategoryTile(null);
+    } else {
+      setSelectedCategoryTile(tileId);
+      setStatusFilter('All');
+    }
+  };
 
   const getStatusBadge = (status: string, event: EventModel) => {
     switch (status) {
@@ -236,7 +245,7 @@ export const LiveEventsSection: React.FC = () => {
               return (
                 <div
                   key={tile.id}
-                  onClick={() => setSelectedCategoryTile(isSelected ? null : tile.id)}
+                  onClick={() => handleCategoryTileClick(tile.id)}
                   className={`rounded-2xl p-4 transition-all duration-300 cursor-pointer text-left flex flex-col justify-between border space-y-3 group ${
                     isSelected
                       ? 'bg-[#111111] text-white border-[#111111] shadow-md scale-[1.02]'
