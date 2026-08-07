@@ -26,7 +26,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
       {/* Main Container max-width: 1500px */}
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
         
-        {/* Main Grid: 55/45 Ratio with Vertically Centered Grid Items */}
+        {/* Main Grid: Vertically Centered Grid Items */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-center">
           
           {/* Left Social Bar */}
@@ -56,7 +56,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               aria-label="YouTube"
               className="w-8 h-8 rounded-full bg-white border border-black/8 shadow-2xs flex items-center justify-center hover:text-[#EF4444] hover:scale-110 transition-all duration-300"
             >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
             </a>
 
             <div className="w-[1px] h-7 bg-black/12 my-0.5" />
@@ -197,19 +197,19 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
           </div>
 
-          {/* Right Column: Large Prominent Hero Emblem (Extends to the left per user orange arrow) */}
-          <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end items-center relative z-10 lg:-ml-6 xl:-ml-12">
+          {/* Right Column: Grand Prominent Hero Emblem */}
+          <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end items-center relative z-10 lg:-ml-8 xl:-ml-14">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1.08 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="relative w-full max-w-[440px] sm:max-w-[500px] lg:max-w-[580px] xl:max-w-[660px] 2xl:max-w-[720px] aspect-square flex items-center justify-center gpu-render animate-gentle-float shrink-0"
+              className="relative w-full max-w-[480px] sm:max-w-[540px] lg:max-w-[640px] xl:max-w-[720px] 2xl:max-w-[780px] aspect-square flex items-center justify-center gpu-render animate-gentle-float shrink-0"
             >
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_22px_50px_rgba(255,94,132,0.18)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_25px_55px_rgba(255,94,132,0.22)] scale-105"
               />
             </motion.div>
 
