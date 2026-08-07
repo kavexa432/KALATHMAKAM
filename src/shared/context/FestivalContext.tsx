@@ -70,6 +70,17 @@ interface FestivalContextType {
   submitResult: (newResult: Omit<EventResultModel, 'id' | 'createdAt' | 'status'>) => void;
   verifyResult: (resultId: string) => void;
   publishResult: (resultId: string) => void;
+  publishEventWinners: (
+    eventId: string,
+    judgeNotes: string,
+    winners: Array<{
+      position: '1st' | '2nd' | '3rd';
+      studentName: string;
+      studentClass: string;
+      houseId: HouseId;
+      points: number;
+    }>
+  ) => Promise<void>;
   addAnnouncement: (content: string, type: AnnouncementType, priority: PriorityLevel, houseId?: HouseId, points?: number) => void;
   togglePermission: (userId: string, permission: string) => void;
   setUserRole: (userId: string, targetRole: 'developer' | 'admin' | 'user') => void;
@@ -513,6 +524,94 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
+  const publishEventWinners = async (
+    eventId: string,
+    judgeNotes: string,
+    winners: Array<{
+      position: '1st' | '2nd' | '3rd';
+      studentName: string;
+      studentClass: string;
+      houseId: HouseId;
+      points: number;
+    }>
+  ) => {
+    const targetEvent = events.find((e) => e.id === eventId);
+    const eventTitle = targetEvent?.eventName || 'Competition';
+    const category = targetEvent?.category || 'General';
+
+    const newResults: EventResultModel[] = winners.map((w) => ({
+      id: `res-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      eventId,
+      festivalId: '2k26',
+      eventTitle,
+      category,
+      participantName: w.studentName,
+      studentClass: w.studentClass,
+      houseId: w.houseId,
+      houseName: w.houseId,
+      position: w.position,
+      points: w.points,
+      createdAt: new Date().toISOString(),
+      status: 'Published',
+      judgeNotes,
+    }));
+
+    // Update local results state
+    setResults((prev) => [...newResults, ...prev]);
+
+    // Update local events state
+    setEvents((prev) =>
+      prev.map((e) =>
+        e.id === eventId
+          ? {
+              ...e,
+              status: 'Completed',
+              resultsPublished: true,
+              winnerUploaded: true,
+              housePointsUpdated: true,
+            }
+          : e
+      )
+    );
+
+    // Sync to Firestore
+    try {
+      const eventRef = doc(db, 'events', eventId);
+      await setDoc(
+        eventRef,
+        {
+          status: 'Completed',
+          resultsPublished: true,
+          winnerUploaded: true,
+          housePointsUpdated: true,
+        },
+        { merge: true }
+      );
+
+      for (const resItem of newResults) {
+        await setDoc(doc(db, 'results', resItem.id), resItem);
+      }
+    } catch (err) {
+      console.warn('Firestore sync notice:', err);
+    }
+
+    // Create Announcement Feed Item
+    const topWinner = winners.find((w) => w.position === '1st');
+    const feedContent = topWinner
+      ? `🏆 ${eventTitle} (${category}) Results Published! 1st: ${topWinner.studentName} (${topWinner.houseId} House +${topWinner.points} pts)`
+      : `🏆 ${eventTitle} Results Published!`;
+
+    addAnnouncement(feedContent, 'Result', 'Important', topWinner?.houseId, topWinner?.points);
+
+    logAuditAction(
+      currentUser?.name || 'Admin',
+      currentUser?.role || 'admin',
+      'Published Competition Winners',
+      eventTitle,
+      `Published ${winners.length} winner positions for ${eventTitle}`
+    );
+  };
+
   const addAnnouncement = (
     content: string,
     type: AnnouncementType,
@@ -680,6 +779,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         submitResult,
         verifyResult,
         publishResult,
+        publishEventWinners,
         addAnnouncement,
         togglePermission,
         setUserRole,

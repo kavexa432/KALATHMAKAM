@@ -24,8 +24,9 @@ import { useFestival } from '../../shared/context/FestivalContext';
 import { ResultApprovalQueue } from './components/ResultApprovalQueue';
 import { AuditLogsTable } from './components/AuditLogsTable';
 import { ResultSheetOCRModal } from './components/ResultSheetOCRModal';
+import { EventQuickActionModal } from './components/EventQuickActionModal';
 import { formatTime12Hour } from '../../utils/timeUtils';
-import type { AnnouncementType, PriorityLevel, HouseId } from '../../shared/types/festivalTypes';
+import type { AnnouncementType, PriorityLevel, HouseId, EventModel } from '../../shared/types/festivalTypes';
 
 export const Dashboard: React.FC = () => {
   const {
@@ -48,6 +49,10 @@ export const Dashboard: React.FC = () => {
   >('Overview');
 
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
+  const [quickModalOpen, setQuickModalOpen] = useState(false);
+  const [selectedEventForModal, setSelectedEventForModal] = useState<EventModel | null>(null);
+  const [modalTab, setModalTab] = useState<'ocr' | 'manual'>('ocr');
+  const [scheduleFilter, setScheduleFilter] = useState<'All' | 'Running' | 'Upcoming' | 'Needs Result Upload' | 'Completed'>('All');
 
   // Announcement State
   const [announcementText, setAnnouncementText] = useState('');
@@ -340,26 +345,178 @@ export const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Today's Competitions</span>
-                <div className="font-serif-cormorant font-bold text-4xl text-[#111111]">18</div>
+                <div className="font-serif-cormorant font-bold text-4xl text-[#111111]">{events.length || 18}</div>
                 <span className="text-[11px] text-[#10B981] font-bold">● Live Stage Operations</span>
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Pending Results</span>
-                <div className="font-serif-cormorant font-bold text-4xl text-[#F59E0B]">{pendingResultsCount || 4}</div>
-                <span className="text-[11px] text-[#5F5F5F] font-bold">Awaiting Final Sign-off</span>
+                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Results Queue (Pending)</span>
+                <div className="font-serif-cormorant font-bold text-4xl text-[#F59E0B]">
+                  {events.filter((e) => !e.resultsPublished).length || 4}
+                </div>
+                <span className="text-[11px] text-[#FF5E84] font-bold">Awaiting OCR / Winner Entry</span>
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Images Uploaded</span>
-                <div className="font-serif-cormorant font-bold text-4xl text-[#3B82F6]">126</div>
-                <span className="text-[11px] text-[#5F5F5F] font-bold">In Gallery Vault</span>
+                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Completed Events</span>
+                <div className="font-serif-cormorant font-bold text-4xl text-[#3B82F6]">
+                  {events.filter((e) => e.resultsPublished || e.status === 'Completed').length || 6}
+                </div>
+                <span className="text-[11px] text-[#10B981] font-bold">Published Live</span>
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Leaderboard Updated</span>
+                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Leaderboard Leader</span>
                 <div className="font-serif-cormorant font-bold text-3xl text-[#EF4444]">NOVA (450 Pts)</div>
-                <span className="text-[11px] text-[#10B981] font-bold">Updated 2 min ago</span>
+                <span className="text-[11px] text-[#10B981] font-bold">Updated Live</span>
+              </div>
+            </div>
+
+            {/* TODAY'S SCHEDULE & CHRONOLOGICAL RESULTS QUEUE */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/8 shadow-md space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-black/8">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">📅</span>
+                    <h3 className="font-serif-cormorant font-bold text-2xl sm:text-3xl text-[#111111]">
+                      Today's Schedule (10 August 2026)
+                    </h3>
+                  </div>
+                  <p className="font-sans-manrope text-xs text-[#5F5F5F]">
+                    Tap any competition card to trigger OCR result sheet upload or manual winner entry.
+                  </p>
+                </div>
+
+                {/* Filter Pills */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {(['All', 'Running', 'Upcoming', 'Needs Result Upload', 'Completed'] as const).map((filterOpt) => (
+                    <button
+                      key={filterOpt}
+                      type="button"
+                      onClick={() => setScheduleFilter(filterOpt)}
+                      className={`px-3.5 py-1.5 rounded-full font-sans-manrope font-extrabold text-xs transition-all cursor-pointer ${
+                        scheduleFilter === filterOpt
+                          ? 'bg-[#111111] text-white shadow-xs'
+                          : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border border-black/8'
+                      }`}
+                    >
+                      {filterOpt === 'Running' && '🟢 '}
+                      {filterOpt === 'Upcoming' && '🟡 '}
+                      {filterOpt === 'Needs Result Upload' && '🔴 '}
+                      {filterOpt === 'Completed' && '🏆 '}
+                      {filterOpt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Results Queue Info Banner */}
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    ⌛
+                  </div>
+                  <div>
+                    <h4 className="font-sans-manrope font-extrabold text-xs uppercase tracking-wider text-amber-900">
+                      CHRONOLOGICAL RESULTS QUEUE — WAITING FOR RESULT UPLOAD
+                    </h4>
+                    <p className="font-sans-manrope text-xs text-amber-800">
+                      Teachers simply upload official result sheets one after another (OCR) or enter winners manually. Results sync immediately to website.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Events List Cards */}
+              <div className="space-y-3">
+                {events
+                  .filter((evt) => {
+                    if (scheduleFilter === 'All') return true;
+                    if (scheduleFilter === 'Running') return evt.status === 'Running';
+                    if (scheduleFilter === 'Upcoming') return evt.status === 'Upcoming' || evt.status === 'Pending';
+                    if (scheduleFilter === 'Needs Result Upload') return !evt.resultsPublished;
+                    if (scheduleFilter === 'Completed') return evt.resultsPublished || evt.status === 'Completed';
+                    return true;
+                  })
+                  .map((evt) => {
+                    const isDone = evt.resultsPublished || evt.status === 'Completed';
+                    const isRunning = evt.status === 'Running';
+
+                    return (
+                      <div
+                        key={evt.id}
+                        onClick={() => {
+                          setSelectedEventForModal(evt);
+                          setModalTab('ocr');
+                          setQuickModalOpen(true);
+                        }}
+                        className="p-4 sm:p-5 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/8 hover:border-[#FF5E84]/30 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-white border border-black/10 flex flex-col items-center justify-center font-sans-manrope shrink-0 shadow-2xs">
+                            <span className="text-xs font-extrabold text-[#111111]">{evt.scheduledStartTime || '09:15'}</span>
+                            <span className="text-[9px] font-bold text-[#5F5F5F] uppercase">AM</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-sans-manrope font-extrabold text-base text-[#111111]">
+                                {evt.eventName}
+                              </span>
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans-manrope font-extrabold bg-black/5 text-[#5F5F5F]">
+                                {evt.category}
+                              </span>
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-sans-manrope font-extrabold ${
+                                  isDone
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : isRunning
+                                    ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'
+                                    : 'bg-amber-500/15 text-amber-800 border border-amber-500/30'
+                                }`}
+                              >
+                                {isDone ? '🏆 Completed' : isRunning ? '🟢 Running' : '🟡 Upcoming'}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-4 text-xs font-sans-manrope text-[#5F5F5F]">
+                              <span>📍 {evt.venue || 'Main Auditorium'} ({evt.stage || 'Stage 1'})</span>
+                              {evt.participantsExpected && <span>👥 {evt.participantsExpected} Participants</span>}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Card Action Buttons */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEventForModal(evt);
+                              setModalTab('ocr');
+                              setQuickModalOpen(true);
+                            }}
+                            className="px-4 py-2 rounded-full gradient-btn-primary text-white font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs hover:scale-105 transition-all cursor-pointer"
+                          >
+                            <span>📷 Upload Result Sheet</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEventForModal(evt);
+                              setModalTab('manual');
+                              setQuickModalOpen(true);
+                            }}
+                            className="px-4 py-2 rounded-full bg-white hover:bg-black/5 text-[#111111] border border-black/10 font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                          >
+                            <span>✍️ Enter Winners Manually</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
 
@@ -819,6 +976,14 @@ export const Dashboard: React.FC = () => {
         <ResultSheetOCRModal
           isOpen={ocrModalOpen}
           onClose={() => setOcrModalOpen(false)}
+        />
+
+        {/* Quick Action OCR & Manual Winner Entry Modal */}
+        <EventQuickActionModal
+          isOpen={quickModalOpen}
+          onClose={() => setQuickModalOpen(false)}
+          event={selectedEventForModal}
+          initialTab={modalTab}
         />
 
       </div>
