@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                className="h-10 sm:h-12 lg:h-[60px] xl:h-[68px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] origin-left"
+                className="h-12 sm:h-14 lg:h-[72px] xl:h-[80px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] origin-left"
               />
             </a>
 
