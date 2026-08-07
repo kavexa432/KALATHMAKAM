@@ -95,23 +95,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         }`}
       >
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[60px] sm:h-[64px] lg:h-[66px]">
+          <div className="flex items-center justify-between h-[70px] sm:h-[76px] lg:h-[82px]">
             
             {/* Official Custom Malayalam Calligraphy Logo Image */}
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, 'home')}
-              className="flex items-center gap-2 group shrink-0 py-0.5"
+              className="flex items-center gap-2 group shrink-0 py-1"
             >
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                className="h-10 sm:h-12 lg:h-[60px] xl:h-[68px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] origin-left"
+                className="h-11 sm:h-13 lg:h-[68px] xl:h-[76px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] origin-left drop-shadow-2xs"
               />
             </a>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-4 xl:gap-7 2xl:gap-8 ml-4 lg:ml-6">
+            {/* Desktop Navigation Links (Perfectly Centered & Spaced) */}
+            <nav className="hidden lg:flex items-center gap-4.5 xl:gap-7 2xl:gap-9">
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
@@ -119,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     key={link.id}
                     href={link.href}
                     onClick={(e) => handleNavClick(e, link.id)}
-                    className={`relative font-sans-manrope text-[13.5px] xl:text-[14px] font-semibold transition-colors duration-300 ${
+                    className={`relative font-sans-manrope text-[14px] xl:text-[14.5px] font-semibold transition-colors duration-300 ${
                       isActive
                         ? 'text-[#FF5E84] font-bold'
                         : 'text-[#333333] hover:text-[#111111]'

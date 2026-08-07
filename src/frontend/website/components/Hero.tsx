@@ -13,7 +13,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-14 sm:pt-16 lg:pt-18 pb-4 min-h-[75vh] lg:min-h-[82vh] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
+      className="relative pt-20 sm:pt-22 lg:pt-24 pb-4 min-h-[75vh] lg:min-h-[82vh] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
     >
       {/* Warm Golden Cream Ambient Backdrop Glow */}
       <div
