@@ -198,18 +198,18 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
           </div>
 
           {/* Right Column: Grand Prominent Hero Emblem */}
-          <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end items-center relative z-10 lg:-ml-8 xl:-ml-14">
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-end items-center relative z-10 lg:-ml-10 xl:-ml-16">
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1.08 }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1.10 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="relative w-full max-w-[480px] sm:max-w-[540px] lg:max-w-[640px] xl:max-w-[720px] 2xl:max-w-[780px] aspect-square flex items-center justify-center gpu-render animate-gentle-float shrink-0"
+              className="relative w-full max-w-[540px] sm:max-w-[600px] lg:max-w-[720px] xl:max-w-[800px] 2xl:max-w-[860px] aspect-square flex items-center justify-center gpu-render animate-gentle-float shrink-0"
             >
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_25px_55px_rgba(255,94,132,0.22)] scale-105"
+                className="w-full h-full object-contain filter drop-shadow-[0_28px_60px_rgba(255,94,132,0.24)] scale-112"
               />
             </motion.div>
 
