@@ -97,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-[60px] sm:h-[64px] lg:h-[66px]">
             
-            {/* Official Custom Malayalam Calligraphy Logo Image (Slightly Refined ~72px Height) */}
+            {/* Official Custom Malayalam Calligraphy Logo Image */}
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, 'home')}
@@ -106,12 +106,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                className="h-13 sm:h-15 lg:h-[72px] absolute top-1 sm:top-1.5 lg:-top-0.5 left-2 sm:left-4 lg:left-8 w-auto max-w-none object-contain transition-transform duration-300 group-hover:scale-[1.03] origin-top-left"
+                className="h-10 sm:h-12 lg:h-[60px] xl:h-[68px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] origin-left"
               />
             </a>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 ml-32 xl:ml-40">
+            <nav className="hidden lg:flex items-center gap-4 xl:gap-7 2xl:gap-8 ml-4 lg:ml-6">
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
@@ -119,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                     key={link.id}
                     href={link.href}
                     onClick={(e) => handleNavClick(e, link.id)}
-                    className={`relative font-sans-manrope text-[13.5px] font-semibold transition-colors duration-300 ${
+                    className={`relative font-sans-manrope text-[13.5px] xl:text-[14px] font-semibold transition-colors duration-300 ${
                       isActive
                         ? 'text-[#FF5E84] font-bold'
                         : 'text-[#333333] hover:text-[#111111]'

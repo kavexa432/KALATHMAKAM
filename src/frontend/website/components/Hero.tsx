@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Globe } from 'lucide-react';
+import { Globe, Trophy, Building2, MapPin, Sparkles } from 'lucide-react';
 import heroArt from '../../../assets/hero_kerala_art_transparent.png';
 
 interface HeroProps {
@@ -13,7 +13,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
   return (
     <section
       id="home"
-      className="relative pt-14 sm:pt-16 lg:pt-18 pb-8 min-h-[85vh] lg:min-h-[88vh] max-h-[950px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
+      className="relative pt-14 sm:pt-16 lg:pt-18 pb-4 min-h-[75vh] lg:min-h-[82vh] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#FAF8F5]"
     >
       {/* Warm Golden Cream Ambient Backdrop Glow */}
       <div
@@ -23,31 +23,14 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
         }}
       />
 
-      {/* Intentionally Framed Decorative Petals & Swirls */}
-      <div className="absolute top-24 right-[42%] text-[#FF5E84]/25 pointer-events-none animate-petal-float">
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
-        </svg>
-      </div>
-      <div className="absolute top-20 right-[3%] text-[#FF8A00]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '3s' }}>
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
-        </svg>
-      </div>
-      <div className="absolute top-44 left-[18%] text-[#F59E0B]/20 pointer-events-none animate-petal-float" style={{ animationDelay: '6s' }}>
-        <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C12 2 15 8 18 11C21 14 22 17 19 20C16 23 11 21 8 18C5 15 7 10 12 2Z" />
-        </svg>
-      </div>
-
       {/* Main Container max-width: 1500px */}
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 my-auto">
         
-        {/* Main Grid: 48% / 52% Ratio with Vertically Centered Grid Items */}
+        {/* Main Grid: 55/45 Ratio with Vertically Centered Grid Items */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-center">
           
           {/* Left Social Bar */}
-          <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-2.5 text-[#5F5F5F] -mt-10">
+          <div className="hidden lg:flex lg:col-span-1 flex-col items-center gap-2.5 text-[#5F5F5F] -mt-6">
             <a
               href="https://mgmmodelschool.edu.in"
               target="_blank"
@@ -83,8 +66,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
             </span>
           </div>
 
-          {/* Left Content Column (Shifted Upward by ~35px per user diagram) */}
-          <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left space-y-4 -mt-6 lg:-mt-10 xl:-mt-12">
+          {/* Left Content Column */}
+          <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-start text-left space-y-4 relative z-30 max-w-2xl xl:max-w-3xl -mt-4 lg:-mt-6">
             
             {/* Sub-Badge */}
             <motion.div
@@ -93,16 +76,16 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               transition={{ duration: 0.4 }}
               className="inline-flex items-center gap-1.5 text-[11.5px] font-sans-manrope font-extrabold tracking-[0.24em] text-[#FF5E84] uppercase"
             >
-              <span>🌸</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#FF5E84]" />
               <span>KALATHMAKAM 2K26</span>
             </motion.div>
 
-            {/* Dominant Headline (Same Exact Font Size & Weight) */}
+            {/* Dominant Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[88px] font-bold leading-[1.04] tracking-tight text-[#111111]"
+              className="font-serif-cormorant text-5xl sm:text-6xl md:text-7xl lg:text-[78px] xl:text-[86px] font-bold leading-[1.04] tracking-tight text-[#111111]"
             >
               Where{' '}
               <span className="inline-flex items-baseline whitespace-nowrap">
@@ -119,19 +102,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               </span>
             </motion.h1>
 
-            {/* Decorative Separator Motif */}
-            <div className="flex items-center gap-2.5 w-52 text-[#FF5E84]/35 my-2">
-              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
-              <span className="text-[#FF5E84] text-xs">❖</span>
-              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF5E84]/30 to-transparent w-full" />
-            </div>
-
             {/* Description Text */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="font-sans-manrope text-sm sm:text-base lg:text-lg text-[#5F5F5F] max-w-[440px] lg:max-w-[480px] leading-relaxed font-medium"
+              className="font-sans-manrope text-sm sm:text-base lg:text-lg text-[#5F5F5F] max-w-[460px] lg:max-w-[500px] leading-relaxed font-medium"
             >
               The Grand Arts Fest of
               <br />
@@ -145,12 +121,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 pt-2 w-full sm:w-auto"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto"
             >
               {/* Primary Pill: Explore Events → */}
               <button
                 onClick={onExploreEvents}
-                className="gradient-btn-primary text-white font-sans-manrope font-bold text-xs sm:text-sm px-6 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2.5 cursor-pointer group shadow-md hover:scale-[1.02] transition-all w-full sm:w-auto"
+                className="gradient-btn-primary text-white font-sans-manrope font-bold text-xs sm:text-sm px-6 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2.5 cursor-pointer group shadow-md hover:scale-[1.02] transition-all w-full sm:w-auto shrink-0"
               >
                 <span>Explore Events</span>
                 <svg className="w-4 h-4 fill-white transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -159,7 +135,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               {/* Secondary Pill: Watch Promo */}
               <button
                 onClick={onOpenPromo}
-                className="bg-white/90 backdrop-blur-md text-[#111111] font-sans-manrope font-bold text-xs sm:text-[13px] px-5 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2 cursor-pointer border border-black/10 shadow-xs hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all group w-full sm:w-auto"
+                className="bg-white/90 backdrop-blur-md text-[#111111] font-sans-manrope font-bold text-xs sm:text-[13px] px-5 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2 cursor-pointer border border-black/10 shadow-xs hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all group w-full sm:w-auto shrink-0"
               >
                 <div className="w-5 h-5 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
                   <svg className="w-2.5 h-2.5 fill-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -170,28 +146,70 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               {/* Tertiary Lighter Pill: Leaderboard */}
               <button
                 onClick={onViewLeaderboard}
-                className="bg-white/50 hover:bg-white text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-xs sm:text-[13px] px-4.5 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2 cursor-pointer border border-black/8 hover:border-black/15 shadow-none hover:scale-[1.02] transition-all w-full sm:w-auto"
+                className="bg-white/90 hover:bg-white text-[#5F5F5F] hover:text-[#111111] font-sans-manrope font-semibold text-xs sm:text-[13px] px-4.5 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2 cursor-pointer border border-black/10 shadow-xs hover:scale-[1.02] transition-all w-full sm:w-auto shrink-0"
               >
-                <svg className="w-4 h-4 stroke-[#FF5E84]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                <Trophy className="w-4 h-4 text-[#FF5E84]" />
                 <span>Leaderboard</span>
               </button>
             </motion.div>
 
+            {/* Quick Highlights / Key Festival Stats Strip */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="pt-3 flex flex-wrap items-center gap-4 sm:gap-6 text-[#5F5F5F] font-sans-manrope"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200/60 flex items-center justify-center text-[#FF5E84] shrink-0">
+                  <Trophy className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-xs sm:text-sm text-[#111111] block leading-none">100+</span>
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-[#5F5F5F]">Competitions</span>
+                </div>
+              </div>
+
+              <div className="w-[1px] h-6 bg-black/10 hidden sm:block" />
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#FF8A00] shrink-0">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-xs sm:text-sm text-[#111111] block leading-none">4 House Teams</span>
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-[#5F5F5F]">Vega • Nova • Orion • Astra</span>
+                </div>
+              </div>
+
+              <div className="w-[1px] h-6 bg-black/10 hidden sm:block" />
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-xs sm:text-sm text-[#111111] block leading-none">6 Main Stages</span>
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-[#5F5F5F]">MGM Campus</span>
+                </div>
+              </div>
+            </motion.div>
+
           </div>
 
-          {/* Right Column: Prominent Hero Emblem */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-end items-center relative lg:-mr-6 xl:-mr-12 lg:-mt-4 lg:-translate-x-8 xl:-translate-x-16">
+          {/* Right Column: Large Prominent Hero Emblem (Extends to the left per user orange arrow) */}
+          <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end items-center relative z-10 lg:-ml-6 xl:-ml-12">
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1.08 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1.04 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="relative w-full max-w-[580px] lg:max-w-[660px] xl:max-w-[720px] aspect-square flex items-center justify-center gpu-render animate-gentle-float"
+              className="relative w-full max-w-[440px] sm:max-w-[500px] lg:max-w-[580px] xl:max-w-[660px] 2xl:max-w-[720px] aspect-square flex items-center justify-center gpu-render animate-gentle-float shrink-0"
             >
               <img
                 src={heroArt}
                 alt="Kalathmakam 2K26 Cultural Arts Emblem - Kathakali, Mohiniyattam, Theyyam, Chenda, Open Book"
-                className="w-full h-full object-contain filter drop-shadow-[0_22px_50px_rgba(255,94,132,0.18)] scale-108"
+                className="w-full h-full object-contain filter drop-shadow-[0_22px_50px_rgba(255,94,132,0.18)]"
               />
             </motion.div>
 
@@ -201,8 +219,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
 
       </div>
 
-      {/* Seamless Soft Watercolor Bottom Transition Gradient Overlay */}
-      <div className="h-16 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/80 to-[#FAF8F5] pointer-events-none relative z-20" />
+      {/* Soft Watercolor Bottom Transition Gradient Overlay */}
+      <div className="h-10 w-full bg-gradient-to-b from-transparent via-[#FAF8F5]/80 to-[#FAF8F5] pointer-events-none relative z-20" />
 
     </section>
   );
