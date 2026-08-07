@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         }`}
       >
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[60px] sm:h-[64px] lg:h-[66px]">
+          <div className="flex items-center justify-between h-[64px] sm:h-[72px] lg:h-[78px]">
             
             {/* Official Custom Malayalam Calligraphy Logo Image */}
             <a
@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
               <img
                 src={logoImage}
                 alt="Kalathmakam 2K26 Malayalam Calligraphy Official Logo"
-                className="h-12 sm:h-14 lg:h-[72px] xl:h-[80px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] origin-left"
+                className="h-14 sm:h-16 lg:h-[84px] xl:h-[92px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] origin-left"
               />
             </a>
 
