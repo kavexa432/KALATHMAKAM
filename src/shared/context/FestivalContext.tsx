@@ -42,6 +42,7 @@ import {
   initialAuditLogs,
   initialUsers,
   initialGallery,
+  houseEvents,
 } from '../data/festivalData';
 
 interface FestivalContextType {
@@ -336,18 +337,24 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const unsub = onSnapshot(
         collection(db, 'events'),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const firestoreEvents: EventModel[] = [];
-            // Merge the Firestore doc id so doc(id) writes (delay, publish) always hit the right doc
-            snapshot.forEach((d) => firestoreEvents.push({ id: d.id, ...d.data() } as EventModel));
-            // Sort events by date and time roughly
-            firestoreEvents.sort((a, b) => {
-              const timeA = new Date(`${a.date}T${a.scheduledStartTime || '00:00'}`).getTime();
-              const timeB = new Date(`${b.date}T${b.scheduledStartTime || '00:00'}`).getTime();
-              return (timeA || 0) - (timeB || 0);
-            });
-            setEvents(firestoreEvents);
-          }
+          const firestoreEvents: EventModel[] = [];
+          snapshot.forEach((d) => firestoreEvents.push({ id: d.id, ...d.data() } as EventModel));
+
+          // Merge local houseEvents with Firestore events.
+          // Firestore entries take precedence (e.g. resultsPublished flag updates).
+          const firestoreIds = new Set(firestoreEvents.map((e) => e.id));
+          const mergedEvents = [
+            ...firestoreEvents,
+            ...houseEvents.filter((he) => !firestoreIds.has(he.id)),
+          ];
+
+          // Sort events by date and time
+          mergedEvents.sort((a, b) => {
+            const timeA = new Date(`${a.date}T${a.scheduledStartTime || '00:00'}`).getTime();
+            const timeB = new Date(`${b.date}T${b.scheduledStartTime || '00:00'}`).getTime();
+            return (timeA || 0) - (timeB || 0);
+          });
+          setEvents(mergedEvents);
         },
         (err) => console.warn('Firestore events subscription notice:', err)
       );
@@ -542,7 +549,22 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Result Workflow Actions
   const submitResult = (newResultData: Omit<EventResultModel, 'id' | 'createdAt' | 'status'>) => {
-    const pointsToAdd = newResultData.position === '1st' ? 5 : newResultData.position === '2nd' ? 3 : newResultData.position === '3rd' ? 1 : 0;
+    // Determine correct points based on the event's competitionType
+    const sourceEvent = events.find((e) => e.id === newResultData.eventId);
+    const compType = sourceEvent?.competitionType || 'individual';
+
+    let pointsToAdd = 0;
+    if (compType === 'group' || compType === 'team') {
+      // Group / team items: 1st=20, 2nd=15, 3rd=10
+      if (newResultData.position === '1st') pointsToAdd = 20;
+      else if (newResultData.position === '2nd') pointsToAdd = 15;
+      else if (newResultData.position === '3rd') pointsToAdd = 10;
+    } else {
+      // Individual items: 1st=10, 2nd=7, 3rd=5
+      if (newResultData.position === '1st') pointsToAdd = 10;
+      else if (newResultData.position === '2nd') pointsToAdd = 7;
+      else if (newResultData.position === '3rd') pointsToAdd = 5;
+    }
     
     const newResult: EventResultModel = {
       ...newResultData,

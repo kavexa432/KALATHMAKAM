@@ -4,11 +4,25 @@ const { verifyAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-const DEFAULT_POINTS_MAP = {
-  1: 10,
-  2: 8,
-  3: 6
-};
+/**
+ * Calculate house points based on competition type and position.
+ *  group / team  → 1st=20, 2nd=15, 3rd=10
+ *  individual    → 1st=10, 2nd=7,  3rd=5
+ */
+function calcPoints(position, competitionType) {
+  const pos = Number(position);
+  if (competitionType === 'group' || competitionType === 'team') {
+    if (pos === 1) return 20;
+    if (pos === 2) return 15;
+    if (pos === 3) return 10;
+  } else {
+    // individual (default)
+    if (pos === 1) return 10;
+    if (pos === 2) return 7;
+    if (pos === 3) return 5;
+  }
+  return 0;
+}
 
 // POST /api/publish
 router.post('/', verifyAdmin, async (req, res) => {
@@ -64,10 +78,8 @@ router.post('/', verifyAdmin, async (req, res) => {
         }
       }
 
-      // 3. Fetch Point Configuration (if it exists)
-      const settingsRef = db.collection('settings').doc('pointsConfig');
-      const settingsDoc = await transaction.get(settingsRef);
-      const pointsMap = settingsDoc.exists ? settingsDoc.data() : DEFAULT_POINTS_MAP;
+      // 3. Get competition type from event (determines 20/15/10 vs 10/7/5 points)
+      const competitionType = eventData.competitionType || 'individual';
 
       // 4. Fetch Draft details if provided for audit logging
       let draftData = null;
@@ -80,10 +92,10 @@ router.post('/', verifyAdmin, async (req, res) => {
         }
       }
 
-      // 5. Prepare enriched results with points
+      // 5. Prepare enriched results with points based on competition type
       const enrichedResults = results.map(result => {
         const posNum = Number(result.position);
-        const points = pointsMap[posNum] || (posNum === 1 ? 10 : posNum === 2 ? 8 : posNum === 3 ? 6 : 0);
+        const points = calcPoints(posNum, competitionType);
         return {
           position: posNum || result.position,
           studentName: result.studentName.trim(),
@@ -111,6 +123,8 @@ router.post('/', verifyAdmin, async (req, res) => {
         eventId,
         competitionName: eventData.eventName || eventData.title || eventData.competitionName || 'Unknown Competition',
         category: eventData.category || 'Unknown Category',
+        competitionType,
+        houseWise: eventData.houseWise || false,
         results: enrichedResults,
         published: true,
         publishedBy,

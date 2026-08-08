@@ -1,5 +1,13 @@
 export type HouseId = 'NOVA' | 'VEGA' | 'ORION' | 'ASTRA' | 'NONE';
 
+/**
+ * Determines how house points are calculated for a competition:
+ *  - "group"      → 1st=20, 2nd=15, 3rd=10  (e.g. Mime, Group Dance, Group Song)
+ *  - "team"       → 1st=20, 2nd=15, 3rd=10  (e.g. PPT — 2-member team representing one house)
+ *  - "individual" → 1st=10, 2nd=7,  3rd=5   (e.g. Anchoring, Declamation, Western Music)
+ */
+export type HouseCompetitionType = 'group' | 'team' | 'individual';
+
 export type UserRole = 'developer' | 'admin' | 'user' | 'Developer' | 'Admin' | 'User';
 
 export interface UserModel {
@@ -85,6 +93,12 @@ export interface EventModel {
   stage: string | null;
   venue: string | null;
   date: string;
+
+  // House competition metadata
+  houseWise?: boolean;           // true = this event awards house points
+  competitionType?: HouseCompetitionType; // 'group' | 'team' | 'individual'
+  teamSize?: number;             // members per team/group
+  participantsPerHouse?: number; // for individual house events (e.g. 2 per house)
   
   // Timing
   scheduledStartTime: string; // e.g. "09:00"

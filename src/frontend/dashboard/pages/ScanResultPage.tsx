@@ -84,12 +84,20 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
     setStep('preview');
   };
 
-  // Helper point calculator based on position
-  const calculatePoints = (pos: number | string): number => {
+  // Helper point calculator based on competition type and position
+  const calculatePoints = (pos: number | string, compType?: string): number => {
     const p = Number(pos);
-    if (p === 1) return 10;
-    if (p === 2) return 8;
-    if (p === 3) return 6;
+    if (compType === 'group' || compType === 'team') {
+      // Group / team items: 1st=20, 2nd=15, 3rd=10
+      if (p === 1) return 20;
+      if (p === 2) return 15;
+      if (p === 3) return 10;
+    } else {
+      // Individual items: 1st=10, 2nd=7, 3rd=5
+      if (p === 1) return 10;
+      if (p === 2) return 7;
+      if (p === 3) return 5;
+    }
     return 0;
   };
 
@@ -133,7 +141,7 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
         studentName: r.studentName || '',
         studentClass: r.studentClass || '',
         house: r.house ? r.house.toUpperCase() : 'NONE',
-        points: calculatePoints(r.position),
+        points: calculatePoints(r.position, selectedEvent?.competitionType),
         studentNameConfidence: r.studentNameConfidence ?? (r.confidence === 'high' ? 0.95 : r.confidence === 'low' ? 0.6 : 0.8),
         houseConfidence: r.houseConfidence ?? (r.confidence === 'high' ? 0.95 : r.confidence === 'low' ? 0.6 : 0.8),
         positionConfidence: r.positionConfidence ?? 0.98,
@@ -159,7 +167,7 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
 
       // Recalculate points automatically if position changes
       if (field === 'position') {
-        target.points = calculatePoints(value);
+        target.points = calculatePoints(value, selectedEvent?.competitionType);
       }
 
       updated[index] = target;
@@ -177,7 +185,7 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
       studentName: '',
       studentClass: '',
       house: 'NONE',
-      points: calculatePoints(nextPos),
+      points: calculatePoints(nextPos, selectedEvent?.competitionType),
       confidence: 'high',
       studentNameConfidence: 1.0,
       houseConfidence: 1.0,
