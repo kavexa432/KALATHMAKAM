@@ -71,10 +71,12 @@ export const ResultApprovalQueue: React.FC = () => {
             <select
               value={selectedEventId}
               onChange={(e) => handleEventChange(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope"
+              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope text-[#111111]"
+              style={{ colorScheme: 'light' }}
             >
+              <option value="" disabled className="bg-white text-[#111111]">-- Select Competition --</option>
               {events.map((e) => (
-                <option key={e.id} value={e.id}>
+                <option key={e.id} value={e.id} className="bg-white text-[#111111]">
                   {e.eventName} ({e.category})
                 </option>
               ))}
@@ -86,14 +88,15 @@ export const ResultApprovalQueue: React.FC = () => {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold"
+              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold text-[#111111]"
+              style={{ colorScheme: 'light' }}
             >
-              <option value="Cat 1">Cat 1 (LP)</option>
-              <option value="Cat 2">Cat 2 (UP)</option>
-              <option value="Cat 3">Cat 3 (High School)</option>
-              <option value="Cat 4">Cat 4 (Higher Sec)</option>
-              <option value="General">General / Common</option>
-              <option value="Fine Arts">Fine Arts</option>
+              <option value="Cat 1" className="bg-white text-[#111111]">Cat 1 (LP)</option>
+              <option value="Cat 2" className="bg-white text-[#111111]">Cat 2 (UP)</option>
+              <option value="Cat 3" className="bg-white text-[#111111]">Cat 3 (High School)</option>
+              <option value="Cat 4" className="bg-white text-[#111111]">Cat 4 (Higher Sec)</option>
+              <option value="General" className="bg-white text-[#111111]">General / Common</option>
+              <option value="Fine Arts" className="bg-white text-[#111111]">Fine Arts</option>
             </select>
           </div>
 
@@ -114,13 +117,14 @@ export const ResultApprovalQueue: React.FC = () => {
             <select
               value={houseId}
               onChange={(e) => setHouseId(e.target.value as HouseId)}
-              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold"
+              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold text-[#111111]"
+              style={{ colorScheme: 'light' }}
             >
-              <option value="NOVA">🔴 NOVA (Red)</option>
-              <option value="VEGA">🟡 VEGA (Yellow)</option>
-              <option value="ORION">🔵 ORION (Blue)</option>
-              <option value="ASTRA">🟢 ASTRA (Green)</option>
-              <option value="NONE">⚪ Non-House / Individual (Cat 1–2 / No House Pts)</option>
+              <option value="NOVA" className="bg-white text-[#111111]">🔴 NOVA (Red)</option>
+              <option value="VEGA" className="bg-white text-[#111111]">🟡 VEGA (Yellow)</option>
+              <option value="ORION" className="bg-white text-[#111111]">🔵 ORION (Blue)</option>
+              <option value="ASTRA" className="bg-white text-[#111111]">🟢 ASTRA (Green)</option>
+              <option value="NONE" className="bg-white text-[#111111]">⚪ Non-House / Individual (Cat 1–2 / No House Pts)</option>
             </select>
           </div>
 
@@ -129,12 +133,13 @@ export const ResultApprovalQueue: React.FC = () => {
             <select
               value={position}
               onChange={(e) => setPosition(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold"
+              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold text-[#111111]"
+              style={{ colorScheme: 'light' }}
             >
-              <option value="1st">🥇 1st Place (+10 Pts)</option>
-              <option value="2nd">🥈 2nd Place (+8 Pts)</option>
-              <option value="3rd">🥉 3rd Place (+6 Pts)</option>
-              <option value="Participation">🏅 Participation (+4 Pts)</option>
+              <option value="1st" className="bg-white text-[#111111]">🥇 1st Place</option>
+              <option value="2nd" className="bg-white text-[#111111]">🥈 2nd Place</option>
+              <option value="3rd" className="bg-white text-[#111111]">🥉 3rd Place</option>
+              <option value="Participation" className="bg-white text-[#111111]">🏅 Participation</option>
             </select>
           </div>
 
