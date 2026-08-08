@@ -105,8 +105,8 @@ export const About: React.FC = () => {
           <div className="lg:col-span-5 relative flex justify-center">
             <div className="relative max-w-md w-full aspect-square rounded-[32px] overflow-hidden glass-panel p-4 shadow-xl">
               <img
-                src="/about_open_book_art.png"
-                alt="Open book with emerging Kerala cultural art"
+                src="/about_banner.jpg"
+                alt="Kalathmakam 2026 MGM Arts Fest banner at school"
                 className="w-full h-full object-cover rounded-[24px] shadow-md transform hover:scale-105 transition-transform duration-700"
               />
               
