@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -13,6 +11,9 @@ import {
   setDoc,
   onSnapshot,
   collection,
+  query,
+  where,
+  getDocs,
 } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../../config/firebase';
 
@@ -95,7 +96,7 @@ interface FestivalContextType {
 
 const FestivalContext = createContext<FestivalContextType | undefined>(undefined);
 
-const LOCAL_USER_KEY = 'kalathmakam_current_user_cache';
+const LOCAL_USER_KEY = 'kalathmakam_current_user_v1';
 
 export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [festival] = useState<FestivalEdition>(currentFestival);
@@ -199,15 +200,43 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Synchronize User Record to Cloud Firestore Database (users/{uid})
   const syncUserToFirestore = async (userRecord: UserModel) => {
     try {
+      const cleanEmail = (userRecord.email || '').toLowerCase().trim();
+
+      // 1. Check direct UID document in Firestore
       const userRef = doc(db, 'users', userRecord.id);
       const snap = await getDoc(userRef);
       if (snap.exists()) {
         const firestoreData = snap.data() as UserModel;
         persistUser(firestoreData);
-      } else {
-        await setDoc(userRef, userRecord);
-        persistUser(userRecord);
+        return;
       }
+
+      // 2. Check if Developer pre-authorized this email in users collection
+      const q = query(collection(db, 'users'), where('email', '==', cleanEmail));
+      const querySnap = await getDocs(q);
+      
+      if (!querySnap.empty) {
+        const preAuthDoc = querySnap.docs[0];
+        const preAuthData = preAuthDoc.data() as UserModel;
+        const mergedUser: UserModel = {
+          ...preAuthData,
+          id: userRecord.id, // Link official UID
+          avatarUrl: userRecord.avatarUrl || preAuthData.avatarUrl,
+          name: preAuthData.name || userRecord.name,
+        };
+        await setDoc(userRef, mergedUser);
+        persistUser(mergedUser);
+        return;
+      }
+
+      // 3. System Developer always gets Developer access
+      const isDev = cleanEmail === 'vaishnavil4433@gmail.com';
+      const finalUser: UserModel = isDev
+        ? { ...userRecord, role: 'developer', approved: true, permissions: ['All'] }
+        : { ...userRecord, role: 'user', approved: false, permissions: [] };
+
+      await setDoc(userRef, finalUser);
+      persistUser(finalUser);
     } catch (err) {
       console.warn('Firestore Sync Notice:', err);
     }
@@ -225,36 +254,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return { role: 'user', approved: false };
   };
 
-  // Catch mobile redirect authentication results on initial page load
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((res) => {
-        if (res?.user) {
-          res.user.getIdTokenResult().then((idTokenResult) => {
-            const email = res.user.email || '';
-            const claimRole = idTokenResult.claims.role as string | undefined;
-            const { role, approved } = resolveUserRole(email, claimRole);
-            
-            const loggedUser: UserModel = {
-              id: res.user.uid,
-              name: res.user.displayName || email.split('@')[0].toUpperCase(),
-              email,
-              role,
-              approved,
-              permissions: role === 'developer' ? ['All'] : role === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
-              status: 'Active',
-              avatarUrl: res.user.photoURL || undefined,
-              createdAt: new Date().toISOString(),
-            };
-            persistUser(loggedUser);
-            syncUserToFirestore(loggedUser);
-          });
-        }
-      })
-      .catch((err) => {
-        console.warn('Redirect result handling notice:', err);
-      });
-  }, []);
+
 
   // Sync Firebase Auth state strictly with Firestore users/{uid}
   useEffect(() => {
@@ -401,48 +401,42 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return index !== -1 ? index + 1 : 4;
   };
 
-  // Robust Mobile & Desktop Google Auth Engine
+  // Robust Google Auth Engine — popup works reliably on Android Chrome & Desktop
   const loginWithGoogle = async () => {
     try {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile) {
-        // Mobile browsers block popups / iframe cross-window messaging.
-        // Use direct redirect strategy to prevent double account picker prompt.
-        await signInWithRedirect(auth, googleProvider);
-        return;
-      }
+      const provider = googleProvider;
+      provider.addScope('email');
+      provider.addScope('profile');
+      // Ensure fresh account selection only when needed (not forced re-pick)
+      provider.setCustomParameters({ prompt: 'select_account' });
 
-      // Desktop popup strategy
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, provider);
       if (result?.user) {
         const email = result.user.email || '';
-        const { role, approved } = resolveUserRole(email);
         
-        const loggedUser: UserModel = {
+        const tempUser: UserModel = {
           id: result.user.uid,
           name: result.user.displayName || email.split('@')[0].toUpperCase(),
           email,
-          role,
-          approved,
-          permissions: role === 'developer' ? ['All'] : role === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
+          role: 'user',
+          approved: false,
+          permissions: [],
           status: 'Active',
           avatarUrl: result.user.photoURL || undefined,
           createdAt: new Date().toISOString(),
         };
         
-        persistUser(loggedUser);
-        syncUserToFirestore(loggedUser);
-        return;
+        // syncUserToFirestore will read Firestore and assign the correct role
+        // (developer if vaishnavil4433@gmail.com, admin if pre-authorized, user otherwise)
+        await syncUserToFirestore(tempUser);
       }
-    } catch (popupErr: any) {
-      console.warn('Popup login failed, attempting redirect strategy:', popupErr);
-      try {
-        await signInWithRedirect(auth, googleProvider);
-        return;
-      } catch (redirectErr) {
-        console.error('Google Sign-In failed:', redirectErr);
-        throw redirectErr;
+    } catch (err: any) {
+      // User closed popup or popup was blocked
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        return; // Silent — user intentionally closed
       }
+      console.error('Google Sign-In error:', err);
+      throw err;
     }
   };
 
