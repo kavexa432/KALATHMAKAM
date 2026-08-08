@@ -116,18 +116,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
           </button>
 
-          {/* Quick Developer Access (Bypass) */}
-          <button
-            onClick={() => {
-              loginCustomUser('vaishnavil4433@gmail.com');
-              onClose();
-            }}
-            className="w-full py-2.5 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-sans-manrope font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Developer Quick Login (Bypass Popup)</span>
-          </button>
-
           {/* Footer Security Note */}
           <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-white border border-black/8 text-[#5F5F5F]">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
