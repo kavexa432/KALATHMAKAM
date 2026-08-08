@@ -69,7 +69,7 @@ export const LiveEventsSection: React.FC = () => {
   const { events } = useFestival();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryTile, setSelectedCategoryTile] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('Running');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedEvent, setSelectedEvent] = useState<EventModel | null>(null);
 
   const publicEvents = events.filter((e) => e.publishToWebsite);
@@ -197,7 +197,11 @@ export const LiveEventsSection: React.FC = () => {
               type="text"
               placeholder="Search competitions (Bharathanatyam, Pencil Drawing, Stage 1...)"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // When user types a search, show all statuses so results aren't hidden
+                  if (e.target.value.trim()) setStatusFilter('All');
+                }}
               className="w-full pl-11 pr-4 py-3 rounded-full bg-white border border-black/12 text-xs sm:text-sm font-sans-manrope text-[#111111] shadow-xs focus:outline-none focus:border-[#FF5E84] focus:ring-2 focus:ring-[#FF5E84]/20"
             />
           </div>
