@@ -163,12 +163,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const userRef = doc(db, 'users', userRecord.id);
       const snap = await getDoc(userRef);
       if (snap.exists()) {
-        let firestoreData = snap.data() as UserModel;
-        // Force Developer Role
-        if (firestoreData.email.toLowerCase() === 'vaishnavil4433@gmail.com' && firestoreData.role !== 'developer') {
-          firestoreData = { ...firestoreData, role: 'developer', approved: true, permissions: ['All'] };
-          await setDoc(userRef, firestoreData, { merge: true });
-        }
+        const firestoreData = snap.data() as UserModel;
         persistUser(firestoreData);
       } else {
         await setDoc(userRef, userRecord);

@@ -113,8 +113,38 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 />
               </svg>
             )}
+            )}
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
           </button>
+
+          {/* Fallback Testing / Bypass Login for Local Dev & Mobile Testing */}
+          <div className="pt-4 border-t border-black/8 space-y-2">
+            <p className="text-center text-[10px] font-sans-manrope font-bold text-[#FF5E84] uppercase tracking-wider mb-3">
+              Developer Bypass (Testing Only)
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setAccessDeniedMsg(null);
+                  onClose();
+                  loginCustomUser('vaishnavil4433@gmail.com');
+                }}
+                className="flex-1 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-sans-manrope font-bold text-xs cursor-pointer transition-colors"
+              >
+                Test as Developer
+              </button>
+              <button
+                onClick={() => {
+                  setAccessDeniedMsg(null);
+                  onClose();
+                  loginCustomUser('teacher@gmail.com');
+                }}
+                className="flex-1 py-2 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-sans-manrope font-bold text-xs cursor-pointer transition-colors"
+              >
+                Test as Admin
+              </button>
+            </div>
+          </div>
 
           {/* Footer Security Note */}
           <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-white border border-black/8 text-[#5F5F5F]">
