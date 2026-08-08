@@ -36,7 +36,7 @@ router.post('/', verifyAdmin, async (req, res) => {
       // 2. Pre-publish Validation
       const validHouses = ['NOVA', 'VEGA', 'ORION', 'ASTRA', 'NONE', 'N/A'];
       const seenPositions = new Set();
-      const seenStudents = new Set();
+      const seenStudentClassComposite = new Set();
 
       for (const resItem of results) {
         if (!resItem.studentName || !resItem.studentName.trim()) {
@@ -48,11 +48,12 @@ router.post('/', verifyAdmin, async (req, res) => {
           throw new Error(`Validation Error: Invalid house "${resItem.house}" for ${resItem.studentName}. Valid houses: NOVA, VEGA, ORION, ASTRA, NONE.`);
         }
 
-        const studentKey = resItem.studentName.toLowerCase().trim();
-        if (seenStudents.has(studentKey)) {
-          throw new Error(`Validation Error: Duplicate student name "${resItem.studentName}" detected in placements.`);
+        // Composite student key: name + class to avoid false positives for same-named students in different classes
+        const studentCompositeKey = `${resItem.studentName.toLowerCase().trim()}|${(resItem.studentClass || '').toLowerCase().trim()}`;
+        if (seenStudentClassComposite.has(studentCompositeKey)) {
+          throw new Error(`Validation Error: Duplicate student entry "${resItem.studentName} (${resItem.studentClass || 'Class'})" detected.`);
         }
-        seenStudents.add(studentKey);
+        seenStudentClassComposite.add(studentCompositeKey);
 
         const posNum = Number(resItem.position);
         if ([1, 2, 3].includes(posNum)) {
@@ -92,33 +93,54 @@ router.post('/', verifyAdmin, async (req, res) => {
         };
       });
 
-      // 6. Update Event Status
+      // 6. Update Event Flags (Dynamic status engine calculates status = Completed when resultsPublished === true)
       transaction.update(eventRef, {
-        status: 'Completed',
         resultsPublished: true,
         winnerUploaded: true,
         housePointsUpdated: true,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      // 7. Create Result Document
+      // 7. Create Result Document with explicit published metadata
       const resultRef = db.collection('results').doc(eventId);
+      const publishedBy = req.user?.email || 'admin';
+      const publishedAt = admin.firestore.FieldValue.serverTimestamp();
+      const sourceDraftId = req.body.draftId || null;
+
       transaction.set(resultRef, {
         eventId,
         competitionName: eventData.eventName || eventData.title || eventData.competitionName || 'Unknown Competition',
         category: eventData.category || 'Unknown Category',
         results: enrichedResults,
         published: true,
-        publishedAt: admin.firestore.FieldValue.serverTimestamp()
+        publishedBy,
+        publishedAt,
+        sourceDraftId
       });
 
-      // 8. Update House Points
+      // 8. Transaction-Safe House Points Ledger & House Totals Update
       const housePointsToAdd = {};
-      enrichedResults.forEach(r => {
-        if (r.house && r.house !== 'NONE' && r.house !== 'N/A') {
+      
+      for (const r of enrichedResults) {
+        if (r.house && r.house !== 'NONE' && r.house !== 'N/A' && r.points > 0) {
           housePointsToAdd[r.house] = (housePointsToAdd[r.house] || 0) + r.points;
+
+          // Record individual transaction in housePointTransactions ledger
+          const txnRef = db.collection('housePointTransactions').doc();
+          transaction.set(txnRef, {
+            id: txnRef.id,
+            house: r.house,
+            eventId,
+            resultId: eventId,
+            position: r.position,
+            points: r.points,
+            studentName: r.studentName,
+            studentClass: r.studentClass,
+            publishedBy,
+            createdAt: publishedAt
+          });
         }
-      });
+      }
 
       for (const [houseId, points] of Object.entries(housePointsToAdd)) {
         if (points > 0) {
@@ -137,9 +159,10 @@ router.post('/', verifyAdmin, async (req, res) => {
         eventId,
         competitionName: eventData.eventName || eventData.title || eventData.competitionName || 'Unknown Competition',
         category: eventData.category || 'General',
-        user: req.user?.email || 'Admin',
+        user: publishedBy,
         userRole: 'admin',
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: publishedAt,
+        sourceDraftId,
         message: `Results published for ${eventData.eventName || eventData.title || 'Competition'}.`,
         editedFields: draftData ? draftData.editedFields || [] : []
       });

@@ -50,10 +50,10 @@ router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => 
     // Call Gemini Service with trusted event context
     const extractedData = await extractResultsFromImage(file, eventName, category);
 
-    // Save uploaded file to Firebase Storage if bucket is accessible
+    // Save uploaded file to Firebase Storage (private bucket path)
     const draftId = `draft-${Date.now()}`;
     const storagePath = `resultSheets/2026/${eventId}/${draftId}.jpg`;
-    let sourceImageUrl = '';
+    let tempSignedUrl = '';
 
     try {
       if (bucket) {
@@ -67,14 +67,15 @@ router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => 
             }
           }
         });
+        // Short-lived signed URL (2 hours) for active admin review session
         const [url] = await fileUpload.getSignedUrl({
           action: 'read',
-          expires: '03-01-2030'
+          expires: Date.now() + 2 * 60 * 60 * 1000, // 2 hours
         });
-        sourceImageUrl = url;
+        tempSignedUrl = url;
       }
     } catch (storageErr) {
-      console.warn('Storage upload notice (falling back to inline preview):', storageErr.message);
+      console.warn('Storage upload notice:', storageErr.message);
     }
 
     const draftData = {
@@ -84,7 +85,6 @@ router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => 
       category,
       date: eventData.date || new Date().toISOString().split('T')[0],
       sourceImagePath: storagePath,
-      sourceImageUrl: sourceImageUrl || undefined,
       ocrStatus: 'review',
       version: 1,
       results: extractedData.results || [],
@@ -98,7 +98,7 @@ router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => 
     
     await db.collection('resultDrafts').doc(draftId).set(draftData);
 
-    res.json({ draftId, ...draftData });
+    res.json({ draftId, ...draftData, sourceImageUrl: tempSignedUrl || undefined });
   } catch (error) {
     console.error('OCR Route Error:', error);
     res.status(500).json({ error: error.message || 'Failed to process OCR.' });
