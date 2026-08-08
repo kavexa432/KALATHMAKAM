@@ -5,8 +5,17 @@ import { motion } from 'framer-motion';
 
 export const ScheduleTimeline: React.FC = () => {
   const [activeDay, setActiveDay] = useState<string>(DAYS_LIST[1] || DAYS_LIST[0]);
+  const [activeStage, setActiveStage] = useState<string>('All Venues');
 
-  const filteredSchedule = SCHEDULE_DATA.filter((item) => item.day === activeDay);
+  const filteredScheduleByDay = SCHEDULE_DATA.filter((item) => item.day === activeDay);
+  
+  // Extract unique stages for the selected day
+  const uniqueStages = Array.from(new Set(filteredScheduleByDay.map(item => item.stage)));
+
+  // Filter by both day and stage
+  const filteredSchedule = filteredScheduleByDay.filter(
+    (item) => activeStage === 'All Venues' || item.stage === activeStage
+  );
 
   return (
     <section id="schedule" className="py-24 relative overflow-hidden bg-[#FAF8F5]">
@@ -26,14 +35,17 @@ export const ScheduleTimeline: React.FC = () => {
         </div>
 
         {/* Day Selector Tabs */}
-        <div className="flex items-center justify-center gap-3 mb-16 overflow-x-auto pb-2">
+        <div className="flex items-center justify-center gap-3 mb-6 overflow-x-auto pb-2">
           {DAYS_LIST.map((day) => {
             const isActive = activeDay === day;
             return (
               <button
                 key={day}
-                onClick={() => setActiveDay(day)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-sans-manrope font-extrabold transition-all duration-300 cursor-pointer ${
+                onClick={() => {
+                  setActiveDay(day);
+                  setActiveStage('All Venues'); // Reset stage when day changes
+                }}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-sans-manrope font-extrabold transition-all duration-300 cursor-pointer whitespace-nowrap ${
                   isActive
                     ? 'bg-gradient-to-r from-[#FF5E84] to-[#FF8A00] text-white shadow-lg scale-105'
                     : 'glass-card text-[#5F5F5F] hover:text-[#111111]'
@@ -45,6 +57,39 @@ export const ScheduleTimeline: React.FC = () => {
             );
           })}
         </div>
+
+        {/* Venue Selector Tabs */}
+        {uniqueStages.length > 1 && (
+          <div className="flex items-center justify-start sm:justify-center gap-2 mb-16 overflow-x-auto pb-4 px-2 snap-x">
+            <button
+              onClick={() => setActiveStage('All Venues')}
+              className={`snap-center flex items-center gap-2 px-4 py-2 rounded-full text-[11px] sm:text-xs font-sans-manrope font-bold transition-all duration-300 cursor-pointer whitespace-nowrap ${
+                activeStage === 'All Venues'
+                  ? 'bg-[#111111] text-white shadow-md'
+                  : 'glass-card text-[#5F5F5F] hover:text-[#111111]'
+              }`}
+            >
+              All Venues
+            </button>
+            {uniqueStages.map((stage) => {
+              const isActive = activeStage === stage;
+              return (
+                <button
+                  key={stage}
+                  onClick={() => setActiveStage(stage)}
+                  className={`snap-center flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] sm:text-xs font-sans-manrope font-bold transition-all duration-300 cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? 'bg-[#111111] text-white shadow-md'
+                      : 'glass-card text-[#5F5F5F] hover:text-[#111111]'
+                  }`}
+                >
+                  <MapPin className="w-3 h-3" />
+                  <span>{stage.replace('Stage ', 'S').split(':')[0]}</span> 
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Vertical Timeline Container */}
         <div className="relative pl-6 sm:pl-10 border-l-2 border-[#FF5E84]/30 space-y-10 ml-2 sm:ml-8">

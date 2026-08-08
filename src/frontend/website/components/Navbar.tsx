@@ -25,8 +25,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
     { name: 'Results', href: '#results', id: 'results' },
     { name: 'Leaderboard', href: '#leaderboard', id: 'leaderboard' },
     { name: 'Gallery', href: '#gallery', id: 'gallery' },
-    { name: 'Committee', href: '#committee', id: 'committee' },
-    { name: 'Sponsors', href: '#sponsors', id: 'sponsors' },
     { name: 'Contact', href: '#contact', id: 'contact' },
   ];
 

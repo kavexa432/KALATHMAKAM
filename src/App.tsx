@@ -9,8 +9,6 @@ import { ResultsSection } from './frontend/website/components/ResultsSection';
 import { ScheduleTimeline } from './components/ScheduleTimeline';
 import { About } from './components/About';
 import { GalleryMasonry } from './components/GalleryMasonry';
-import { CommitteeGrid } from './components/CommitteeGrid';
-import { SponsorsMarquee } from './components/SponsorsMarquee';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { Dashboard } from './frontend/dashboard/Dashboard';
@@ -74,12 +72,6 @@ export function AppContent() {
 
         {/* 8. Categorized Gallery Masonry */}
         <GalleryMasonry />
-
-        {/* 9. Committee Grid */}
-        <CommitteeGrid />
-
-        {/* 10. Sponsors Marquee */}
-        <SponsorsMarquee />
 
         {/* 11. Contact & Map Section */}
         <ContactSection />
