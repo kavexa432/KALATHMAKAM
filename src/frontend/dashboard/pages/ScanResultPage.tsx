@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Camera,
   Upload,
@@ -7,14 +7,14 @@ import {
   AlertTriangle,
   Sparkles,
   FileText,
-  ChevronDown,
   Eye,
   Plus,
   Trash2,
   Lock,
   ArrowLeft,
   X,
-  Check
+  Check,
+  Search,
 } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { auth } from '../../../config/firebase';
@@ -53,6 +53,24 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
   // Filter events eligible for result upload (not yet published)
   const eligibleEvents = events.filter((e) => !e.resultsPublished && !e.cancelled);
   const selectedEvent = events.find((e) => e.id === selectedEventId);
+
+  // Search & category filter state for the competition picker
+  const [eventSearch, setEventSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+
+  const categoryOptions = useMemo(() => {
+    const cats = Array.from(new Set(eligibleEvents.map((e) => e.category))).sort();
+    return ['All', ...cats];
+  }, [eligibleEvents]);
+
+  const filteredEvents = useMemo(() => {
+    return eligibleEvents.filter((e) => {
+      const matchCat = categoryFilter === 'All' || e.category === categoryFilter;
+      const q = eventSearch.toLowerCase();
+      const matchSearch = !q || e.eventName.toLowerCase().includes(q) || e.category.toLowerCase().includes(q);
+      return matchCat && matchSearch;
+    });
+  }, [eligibleEvents, eventSearch, categoryFilter]);
 
   // Reset or initialize when selected event changes
   const handleSelectEvent = (id: string) => {
@@ -294,26 +312,80 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
                 </h3>
               </div>
 
-              {/* Event Select Dropdown */}
-              <div>
-                <label className="block text-xs font-extrabold text-[#5F5F5F] uppercase tracking-wider mb-2">
+              {/* Searchable Competition Picker */}
+              <div className="space-y-3">
+                <label className="block text-xs font-extrabold text-[#5F5F5F] uppercase tracking-wider">
                   Competition Event
                 </label>
+
+                {/* Search input */}
                 <div className="relative">
-                  <select
-                    value={selectedEventId}
-                    onChange={(e) => handleSelectEvent(e.target.value)}
-                    className="w-full appearance-none px-4 py-3.5 bg-[#FAF8F5] border border-black/10 rounded-2xl font-sans-manrope font-bold text-sm text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#FF5E84]/30"
-                  >
-                    <option value="" disabled>-- Select Competition --</option>
-                    {eligibleEvents.map((evt) => (
-                      <option key={evt.id} value={evt.id}>
-                        {evt.eventName} ({evt.category}) - {evt.date}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40 pointer-events-none" />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5F5F5F] pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search competition name..."
+                    value={eventSearch}
+                    onChange={(e) => { setEventSearch(e.target.value); setSelectedEventId(''); }}
+                    className="w-full pl-10 pr-4 py-3 bg-[#FAF8F5] border border-black/10 rounded-2xl font-sans-manrope text-sm text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#FF5E84]/30"
+                  />
+                  {eventSearch && (
+                    <button onClick={() => setEventSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/30 hover:text-black cursor-pointer">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
+
+                {/* Category filter chips */}
+                <div className="flex gap-2 flex-wrap">
+                  {categoryOptions.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => { setCategoryFilter(cat); setSelectedEventId(''); }}
+                      className={`px-3 py-1.5 rounded-full text-[11px] font-sans-manrope font-bold cursor-pointer transition-all whitespace-nowrap ${
+                        categoryFilter === cat
+                          ? 'bg-[#111111] text-white'
+                          : 'bg-[#FAF8F5] border border-black/10 text-[#5F5F5F] hover:text-[#111111]'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Selected event display */}
+                {selectedEventId && selectedEvent && (
+                  <div className="flex items-center justify-between px-4 py-3 bg-[#FF5E84]/8 border border-[#FF5E84]/30 rounded-2xl">
+                    <div>
+                      <p className="font-sans-manrope font-extrabold text-sm text-[#111111]">{selectedEvent.eventName}</p>
+                      <p className="text-[11px] text-[#5F5F5F]">{selectedEvent.category} · {selectedEvent.stage || selectedEvent.venue}</p>
+                    </div>
+                    <button onClick={() => { setSelectedEventId(''); setEventSearch(''); }} className="text-[#FF5E84] cursor-pointer">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Results list */}
+                {!selectedEventId && (
+                  <div className="border border-black/10 rounded-2xl overflow-hidden max-h-56 overflow-y-auto">
+                    {filteredEvents.length === 0 ? (
+                      <div className="px-4 py-6 text-center text-xs text-[#5F5F5F] font-sans-manrope">
+                        No competitions match your search.
+                      </div>
+                    ) : (
+                      filteredEvents.map((evt) => (
+                        <button
+                          key={evt.id}
+                          onClick={() => { handleSelectEvent(evt.id); setEventSearch(''); }}
+                          className="w-full text-left px-4 py-3 border-b border-black/6 last:border-0 hover:bg-[#FAF8F5] transition-colors cursor-pointer"
+                        >
+                          <p className="font-sans-manrope font-bold text-sm text-[#111111] leading-tight">{evt.eventName}</p>
+                          <p className="text-[11px] text-[#5F5F5F] mt-0.5">{evt.category} · {evt.stage || evt.venue || ''}</p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Read-Only Auto-Filled Details */}
