@@ -199,6 +199,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Synchronize User Record to Cloud Firestore Database (users/{uid})
+  // Always called in background — must never downgrade an already-resolved role
   const syncUserToFirestore = async (userRecord: UserModel) => {
     try {
       const cleanEmail = (userRecord.email || '').toLowerCase().trim();
@@ -208,7 +209,16 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const snap = await getDoc(userRef);
       if (snap.exists()) {
         const firestoreData = snap.data() as UserModel;
-        persistUser(firestoreData);
+        // Only upgrade role — never downgrade (e.g. developer stays developer)
+        const resolvedRole = resolveUserRole(cleanEmail, firestoreData.role);
+        const mergedUser: UserModel = {
+          ...firestoreData,
+          id: userRecord.id,
+          avatarUrl: userRecord.avatarUrl || firestoreData.avatarUrl,
+          role: resolvedRole.role,
+          approved: resolvedRole.approved,
+        };
+        persistUser(mergedUser);
         return;
       }
 
@@ -219,25 +229,22 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!querySnap.empty) {
         const preAuthDoc = querySnap.docs[0];
         const preAuthData = preAuthDoc.data() as UserModel;
+        const resolvedRole = resolveUserRole(cleanEmail, preAuthData.role);
         const mergedUser: UserModel = {
           ...preAuthData,
-          id: userRecord.id, // Link official UID
+          id: userRecord.id,
           avatarUrl: userRecord.avatarUrl || preAuthData.avatarUrl,
           name: preAuthData.name || userRecord.name,
+          role: resolvedRole.role,
+          approved: resolvedRole.approved,
         };
         await setDoc(userRef, mergedUser);
         persistUser(mergedUser);
         return;
       }
 
-      // 3. System Developer always gets Developer access
-      const isDev = cleanEmail === 'vaishnavil4433@gmail.com';
-      const finalUser: UserModel = isDev
-        ? { ...userRecord, role: 'developer', approved: true, permissions: ['All'] }
-        : { ...userRecord, role: 'user', approved: false, permissions: [] };
-
-      await setDoc(userRef, finalUser);
-      persistUser(finalUser);
+      // 3. New user — write to Firestore (role already resolved by resolveUserRole in onAuthStateChanged)
+      await setDoc(userRef, userRecord);
     } catch (err) {
       console.warn('Firestore Sync Notice:', err);
     }
@@ -269,7 +276,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const claimRole = idTokenResult.claims.role as string | undefined;
           const { role, approved } = resolveUserRole(email, claimRole);
 
-          // Optimistic Immediate UI Update
           const tempUser: UserModel = {
             id: fbUser.uid,
             name: fbUser.displayName || email.split('@')[0].toUpperCase(),
@@ -282,12 +288,16 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             createdAt: new Date().toISOString(),
           };
 
+          // Immediately persist so the navbar shows the user right away
           persistUser(tempUser);
-          syncUserToFirestore(tempUser);
+
+          // Then sync with Firestore in background — may upgrade role if pre-authorized
+          syncUserToFirestore(tempUser).catch((e) => console.warn('Firestore sync bg error:', e));
         } catch (error) {
           console.error("Error fetching custom claims:", error);
         }
       } else {
+        // No Firebase user — only clear state if nothing is cached
         const cached = localStorage.getItem(LOCAL_USER_KEY);
         if (!cached) {
           setCurrentUser(null);
