@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
-import { Award, Plus, CheckCircle, Eye } from 'lucide-react';
+import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 
 export const ResultApprovalQueue: React.FC = () => {
-  const { results, events, submitResult, verifyResult, publishResult } = useFestival();
+  const { results, resultDrafts, events, submitResult, verifyResult, publishResult } = useFestival();
   const [selectedEventId, setSelectedEventId] = useState(events[0]?.id || '');
   const [participantName, setParticipantName] = useState('');
   const [studentClass] = useState('Class 12-A');
   const [houseId, setHouseId] = useState<HouseId>('NOVA');
   const [position, setPosition] = useState<'1st' | '2nd' | '3rd' | 'Participation'>('1st');
+  const [category, setCategory] = useState(events[0]?.category || 'General');
 
   const selectedEvt = events.find((e) => e.id === selectedEventId);
 
+  const handleEventChange = (evtId: string) => {
+    setSelectedEventId(evtId);
+    const targetEvt = events.find((e) => e.id === evtId);
+    if (targetEvt) {
+      setCategory(targetEvt.category || 'General');
+    }
+  };
+
   const getPoints = (pos: string) => {
+    if (houseId === 'NONE') return 0; // Non-house events get 0 house points
     switch (pos) {
       case '1st': return 10;
       case '2nd': return 8;
@@ -31,11 +41,11 @@ export const ResultApprovalQueue: React.FC = () => {
       festivalId: '2k26',
       eventId: selectedEvt.id,
       eventTitle: selectedEvt.eventName,
-      category: selectedEvt.category,
+      category,
       position,
       points: getPoints(position),
       houseId,
-      houseName: houseId,
+      houseName: houseId === 'NONE' ? 'Non-House / Individual' : houseId,
       participantName,
       studentClass,
     });
@@ -55,12 +65,12 @@ export const ResultApprovalQueue: React.FC = () => {
           </h4>
         </div>
 
-        <form onSubmit={handleFormSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <form onSubmit={handleFormSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-bold text-[#111111]">Select Event</label>
             <select
               value={selectedEventId}
-              onChange={(e) => setSelectedEventId(e.target.value)}
+              onChange={(e) => handleEventChange(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope"
             >
               {events.map((e) => (
@@ -68,6 +78,22 @@ export const ResultApprovalQueue: React.FC = () => {
                   {e.eventName} ({e.category})
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-[#111111]">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold"
+            >
+              <option value="Cat 1">Cat 1 (LP)</option>
+              <option value="Cat 2">Cat 2 (UP)</option>
+              <option value="Cat 3">Cat 3 (High School)</option>
+              <option value="Cat 4">Cat 4 (Higher Sec)</option>
+              <option value="General">General / Common</option>
+              <option value="Fine Arts">Fine Arts</option>
             </select>
           </div>
 
@@ -94,6 +120,7 @@ export const ResultApprovalQueue: React.FC = () => {
               <option value="VEGA">🟡 VEGA (Yellow)</option>
               <option value="ORION">🔵 ORION (Blue)</option>
               <option value="ASTRA">🟢 ASTRA (Green)</option>
+              <option value="NONE">⚪ Non-House / Individual (Cat 1–2 / No House Pts)</option>
             </select>
           </div>
 
@@ -121,6 +148,79 @@ export const ResultApprovalQueue: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* OCR Result Drafts Queue */}
+      {resultDrafts.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 border border-amber-500/20 shadow-2xs space-y-4 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-amber-600" />
+          <div className="flex items-center justify-between pb-3 border-b border-black/6">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111] uppercase tracking-wider">
+                PENDING OCR DRAFTS
+              </h4>
+            </div>
+            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-bold">
+              {resultDrafts.length} drafts await review
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-sans-manrope border-collapse">
+              <thead>
+                <tr className="border-b border-black/8 text-[#5F5F5F] uppercase text-[10px] font-extrabold">
+                  <th className="py-2.5 px-3">Event</th>
+                  <th className="py-2.5 px-3">Extracted Results</th>
+                  <th className="py-2.5 px-3">Confidence</th>
+                  <th className="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/5">
+                {resultDrafts.map((draft) => (
+                  <tr key={draft.id} className="hover:bg-[#FAF8F5]">
+                    <td className="py-3 px-3 font-bold text-[#111111] align-top">{draft.eventName}</td>
+                    <td className="py-3 px-3 align-top">
+                      <div className="space-y-1">
+                        {draft.results.map((r, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <span className="font-bold text-[#FF5E84]">{r.position}</span>
+                            <span>{r.studentName}</span>
+                            <span className="text-[10px] bg-black/5 px-1.5 rounded">{r.house}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 align-top">
+                      {draft.results.some(r => r.confidence === 'low' || r.confidence === 'medium') ? (
+                        <span className="inline-flex items-center gap-1 text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-full">
+                          <AlertTriangle className="w-3 h-3" /> Needs Review
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <CheckCircle className="w-3 h-3" /> High
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-3 text-right align-top">
+                      <button
+                        className="px-4 py-1.5 rounded-full bg-[#111111] text-white font-bold text-[11px] cursor-pointer shadow-sm hover:scale-105 transition-all"
+                        onClick={() => {
+                           // Open review modal (We can wire this up to ResultSheetOCRModal or dispatch custom event)
+                           // For now, dispatch event
+                           const evt = new CustomEvent('open-ocr-review', { detail: { draftId: draft.id } });
+                           window.dispatchEvent(evt);
+                        }}
+                      >
+                        Review & Publish
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Result Workflow Approval Table */}
       <div className="bg-white rounded-2xl p-6 border border-black/8 shadow-2xs space-y-4">

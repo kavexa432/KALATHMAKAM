@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { extractResultsFromImage } = require('../services/gemini');
+const { verifyAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ const upload = multer({
 });
 
 // POST /api/ocr
-router.post('/', upload.single('resultSheet'), async (req, res) => {
+router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => {
   try {
     const file = req.file;
     const { eventName, category } = req.body;
@@ -35,7 +36,23 @@ router.post('/', upload.single('resultSheet'), async (req, res) => {
     // Call Gemini Service
     const extractedData = await extractResultsFromImage(file, eventName, category);
 
-    res.json(extractedData);
+    // Save to resultDrafts
+    const draftId = `draft-${Date.now()}`;
+    const draftData = {
+      id: draftId,
+      eventName,
+      category,
+      results: extractedData,
+      status: 'Pending Review',
+      createdBy: req.user.email,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Using admin db
+    const { db } = require('../firebaseAdmin');
+    await db.collection('resultDrafts').doc(draftId).set(draftData);
+
+    res.json({ draftId, ...draftData });
   } catch (error) {
     console.error('OCR Route Error:', error);
     res.status(500).json({ error: error.message || 'Failed to process OCR.' });

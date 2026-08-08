@@ -1,4 +1,4 @@
-export type HouseId = 'NOVA' | 'VEGA' | 'ORION' | 'ASTRA';
+export type HouseId = 'NOVA' | 'VEGA' | 'ORION' | 'ASTRA' | 'NONE';
 
 export type UserRole = 'developer' | 'admin' | 'user' | 'Developer' | 'Admin' | 'User';
 
@@ -88,6 +88,7 @@ export interface EventModel {
   
   // Timing
   scheduledStartTime: string; // e.g. "09:00"
+  scheduledEndTime?: string; // e.g. "10:00" or undefined
   durationMinutes: number;
   delayMinutes: number;
   actualStartTime: string | null;
@@ -128,6 +129,22 @@ export interface EventResultModel {
   createdAt: string;
   status: 'Pending Review' | 'Verified' | 'Published' | string;
   judgeNotes?: string;
+}
+
+export interface ResultDraftModel {
+  id: string;
+  eventName: string;
+  category: string;
+  results: Array<{
+    position: number | string;
+    studentName: string;
+    studentClass: string;
+    house: HouseId | string;
+    confidence: 'high' | 'medium' | 'low';
+  }>;
+  status: 'Pending Review' | 'Verified' | 'Published';
+  createdBy: string;
+  createdAt: string;
 }
 
 export type AnnouncementType = 'General Notice' | 'Announcement' | 'Result' | 'Stage Update' | 'Schedule Change' | 'Emergency';

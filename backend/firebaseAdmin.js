@@ -1,5 +1,6 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -25,12 +26,14 @@ if (getApps().length === 0) {
 }
 
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // Fake the old 'admin' object structure for existing code that uses admin.firestore.FieldValue
 const admin = {
   firestore: {
     FieldValue
-  }
+  },
+  auth: () => auth
 };
 
-module.exports = { admin, db };
+module.exports = { admin, db, auth };

@@ -38,24 +38,24 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Judge & Remarks
-  const [judgeName, setJudgeName] = useState('Official Festival Judge Panel');
+  const [judgeName, setJudgeName] = useState('');
 
   // Winner 1 State
   const [w1Name, setW1Name] = useState('');
-  const [w1Class, setW1Class] = useState('Class 9-B');
-  const [w1House, setW1House] = useState<HouseId>('VEGA');
+  const [w1Class, setW1Class] = useState('');
+  const [w1House, setW1House] = useState<HouseId>('NOVA');
   const [w1Points, setW1Points] = useState<number>(10);
 
   // Winner 2 State
   const [w2Name, setW2Name] = useState('');
-  const [w2Class, setW2Class] = useState('Class 10-A');
-  const [w2House, setW2House] = useState<HouseId>('ORION');
+  const [w2Class, setW2Class] = useState('');
+  const [w2House, setW2House] = useState<HouseId>('VEGA');
   const [w2Points, setW2Points] = useState<number>(8);
 
   // Winner 3 State
   const [w3Name, setW3Name] = useState('');
-  const [w3Class, setW3Class] = useState('Class 8-C');
-  const [w3House, setW3House] = useState<HouseId>('NOVA');
+  const [w3Class, setW3Class] = useState('');
+  const [w3House, setW3House] = useState<HouseId>('ORION');
   const [w3Points, setW3Points] = useState<number>(6);
 
   // Reset form when event changes
@@ -66,10 +66,13 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
     setImagePreview(null);
     setSuccessMsg('');
 
-    // Pre-fill sample values if available
-    setW1Name(event.eventName.includes('Bharathanatyam') ? 'Anjali R. Pillai' : '');
-    setW2Name(event.eventName.includes('Bharathanatyam') ? 'Arya S. Kumar' : '');
-    setW3Name(event.eventName.includes('Bharathanatyam') ? 'Keerthana M. Nair' : '');
+    setW1Name('');
+    setW1Class('');
+    setW2Name('');
+    setW2Class('');
+    setW3Name('');
+    setW3Class('');
+    setJudgeName('');
   }, [event, initialTab]);
 
   // Press ESC to close modal
@@ -96,9 +99,6 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
     setOcrStatus('scanning');
     setTimeout(() => {
       setOcrStatus('parsed');
-      if (!w1Name) setW1Name('Anjali R. Pillai');
-      if (!w2Name) setW2Name('Arya S. Kumar');
-      if (!w3Name) setW3Name('Keerthana M. Nair');
     }, 1200);
   };
 
@@ -329,7 +329,9 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                       <span className="px-3 py-1 rounded-full bg-amber-500 text-white font-sans-manrope font-extrabold text-xs flex items-center gap-1">
                         <Award className="w-3.5 h-3.5" /> 1st Place (+10 PTS)
                       </span>
-                      <span className="text-[11px] font-sans-manrope font-bold text-emerald-600">98% OCR Match</span>
+                      {ocrStatus === 'parsed' && (
+                        <span className="text-[11px] font-sans-manrope font-bold text-emerald-600">Smart OCR Extracted</span>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-sans-manrope text-xs">
@@ -338,7 +340,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                         <input
                           type="text"
                           required
-                          placeholder="e.g. Anjali R. Pillai"
+                          placeholder="Enter Student Name"
                           value={w1Name}
                           onChange={(e) => setW1Name(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]"
@@ -349,6 +351,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                         <label className="block text-[11px] font-bold text-[#111111] mb-1">Class / Grade</label>
                         <input
                           type="text"
+                          placeholder="Class e.g. 9-B"
                           value={w1Class}
                           onChange={(e) => setW1Class(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-semibold"
@@ -362,10 +365,11 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                           onChange={(e) => setW1House(e.target.value as HouseId)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]"
                         >
-                          <option value="VEGA">VEGA House</option>
-                          <option value="NOVA">NOVA House</option>
-                          <option value="ORION">ORION House</option>
-                          <option value="ASTRA">ASTRA House</option>
+                          <option value="NOVA">🔴 NOVA (Red)</option>
+                          <option value="VEGA">🟡 VEGA (Yellow)</option>
+                          <option value="ORION">🔵 ORION (Blue)</option>
+                          <option value="ASTRA">🟢 ASTRA (Green)</option>
+                          <option value="NONE">⚪ Non-House / Individual (No House Pts)</option>
                         </select>
                       </div>
                     </div>
@@ -377,7 +381,9 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                       <span className="px-3 py-1 rounded-full bg-slate-200 text-slate-800 font-sans-manrope font-extrabold text-xs flex items-center gap-1">
                         <Award className="w-3.5 h-3.5" /> 2nd Place (+8 PTS)
                       </span>
-                      <span className="text-[11px] font-sans-manrope font-bold text-emerald-600">95% OCR Match</span>
+                      {ocrStatus === 'parsed' && (
+                        <span className="text-[11px] font-sans-manrope font-bold text-emerald-600">Smart OCR Extracted</span>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-sans-manrope text-xs">
@@ -385,7 +391,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                         <label className="block text-[11px] font-bold text-[#111111] mb-1">Student Name</label>
                         <input
                           type="text"
-                          placeholder="e.g. Arya S. Kumar"
+                          placeholder="Enter Student Name"
                           value={w2Name}
                           onChange={(e) => setW2Name(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]"
@@ -396,6 +402,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                         <label className="block text-[11px] font-bold text-[#111111] mb-1">Class / Grade</label>
                         <input
                           type="text"
+                          placeholder="Class e.g. 10-A"
                           value={w2Class}
                           onChange={(e) => setW2Class(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-semibold"
@@ -409,10 +416,11 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                           onChange={(e) => setW2House(e.target.value as HouseId)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]"
                         >
-                          <option value="ORION">ORION House</option>
-                          <option value="VEGA">VEGA House</option>
-                          <option value="NOVA">NOVA House</option>
-                          <option value="ASTRA">ASTRA House</option>
+                          <option value="VEGA">🟡 VEGA (Yellow)</option>
+                          <option value="NOVA">🔴 NOVA (Red)</option>
+                          <option value="ORION">🔵 ORION (Blue)</option>
+                          <option value="ASTRA">🟢 ASTRA (Green)</option>
+                          <option value="NONE">⚪ Non-House / Individual (No House Pts)</option>
                         </select>
                       </div>
                     </div>
@@ -424,7 +432,9 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                       <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-sans-manrope font-extrabold text-xs flex items-center gap-1">
                         <Award className="w-3.5 h-3.5" /> 3rd Place (+6 PTS)
                       </span>
-                      <span className="text-[11px] font-sans-manrope font-bold text-emerald-600">92% OCR Match</span>
+                      {ocrStatus === 'parsed' && (
+                        <span className="text-[11px] font-sans-manrope font-bold text-emerald-600">Smart OCR Extracted</span>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-sans-manrope text-xs">
@@ -432,7 +442,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                         <label className="block text-[11px] font-bold text-[#111111] mb-1">Student Name</label>
                         <input
                           type="text"
-                          placeholder="e.g. Keerthana M. Nair"
+                          placeholder="Enter Student Name"
                           value={w3Name}
                           onChange={(e) => setW3Name(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]"
@@ -443,6 +453,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                         <label className="block text-[11px] font-bold text-[#111111] mb-1">Class / Grade</label>
                         <input
                           type="text"
+                          placeholder="Class e.g. 8-C"
                           value={w3Class}
                           onChange={(e) => setW3Class(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-semibold"
@@ -456,10 +467,11 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                           onChange={(e) => setW3House(e.target.value as HouseId)}
                           className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]"
                         >
-                          <option value="NOVA">NOVA House</option>
-                          <option value="VEGA">VEGA House</option>
-                          <option value="ORION">ORION House</option>
-                          <option value="ASTRA">ASTRA House</option>
+                          <option value="ORION">🔵 ORION (Blue)</option>
+                          <option value="NOVA">🔴 NOVA (Red)</option>
+                          <option value="VEGA">🟡 VEGA (Yellow)</option>
+                          <option value="ASTRA">🟢 ASTRA (Green)</option>
+                          <option value="NONE">⚪ Non-House / Individual (No House Pts)</option>
                         </select>
                       </div>
                     </div>

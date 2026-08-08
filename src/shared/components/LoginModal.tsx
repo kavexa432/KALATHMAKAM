@@ -8,7 +8,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const { loginWithGoogle, loginCustomUser } = useFestival();
+  const { loginWithGoogle } = useFestival();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [accessDeniedMsg, setAccessDeniedMsg] = useState<string | null>(null);
 
@@ -67,10 +67,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             </div>
             <div>
               <h3 className="font-serif-cormorant font-bold text-xl sm:text-2xl text-white leading-tight">
-                Control Portal Access
+                Teacher & Admin Portal
               </h3>
               <p className="font-sans-manrope text-[11px] sm:text-xs text-white/70 mt-0.5">
-                Sign in with Google for admin & developer management.
+                Public visitors do not need to log in. Sign in to access Festival Management tools.
               </p>
             </div>
           </div>
@@ -116,43 +116,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
           </button>
 
-          {/* Fallback Testing / Bypass Login for Local Dev & Mobile Testing */}
-          <div className="pt-4 border-t border-black/8 space-y-2">
-            <p className="text-center text-[10px] font-sans-manrope font-bold text-[#FF5E84] uppercase tracking-wider mb-3">
-              Developer Bypass (Testing Only)
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setAccessDeniedMsg(null);
-                  onClose();
-                  loginCustomUser('vaishnavil4433@gmail.com');
-                }}
-                className="flex-1 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-sans-manrope font-bold text-xs cursor-pointer transition-colors"
-              >
-                Test as Developer
-              </button>
-              <button
-                onClick={() => {
-                  setAccessDeniedMsg(null);
-                  onClose();
-                  loginCustomUser('teacher@gmail.com');
-                }}
-                className="flex-1 py-2 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-sans-manrope font-bold text-xs cursor-pointer transition-colors"
-              >
-                Test as Admin
-              </button>
-            </div>
-          </div>
+
 
           {/* Footer Security Note */}
           <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-white border border-black/8 text-[#5F5F5F]">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <div className="text-xs font-sans-manrope space-y-0.5">
-              <h5 className="font-extrabold text-[#111111]">Public Festival Access</h5>
-              <p className="text-[11px] text-[#5F5F5F] leading-relaxed">
-                All results, leaderboards, and schedules are publicly accessible to everyone. Login is restricted to authorized festival administrators.
-              </p>
+            <div className="text-[10px] leading-relaxed">
+              <span className="font-sans-manrope font-extrabold text-[#111111] block mb-0.5">Secure Authentication</span>
+              Festival management is restricted to authorized administrators.
             </div>
           </div>
 

@@ -15,6 +15,7 @@ const houseEmblems: Record<HouseId, string> = {
   NOVA: novaEmblem,
   ORION: orionEmblem,
   ASTRA: astraEmblem,
+  NONE: '',
 };
 
 interface HouseDetailModalProps {
@@ -69,7 +70,7 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
         >
           {/* Background Emblem Watermark Image */}
           <img
-            src={houseEmblems[houseId]}
+            src={houseEmblems[houseId as keyof typeof houseEmblems] || ''}
             alt={`${houseId} Emblem`}
             className="absolute -right-6 -bottom-6 w-48 h-48 object-contain opacity-25 pointer-events-none mix-blend-overlay"
           />
@@ -84,7 +85,7 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
           <div className="flex items-center gap-4 relative z-10">
             <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md p-2 flex items-center justify-center border border-white/30 shrink-0">
               <img
-                src={houseEmblems[houseId]}
+                src={houseEmblems[houseId as keyof typeof houseEmblems] || ''}
                 alt={houseId}
                 className="w-full h-full object-contain filter drop-shadow-md"
               />

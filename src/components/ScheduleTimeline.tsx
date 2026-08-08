@@ -1,28 +1,49 @@
 import React, { useState } from 'react';
 import { DAYS_LIST, SCHEDULE_DATA } from '../data/scheduleData';
-import { Clock, MapPin, CheckCircle, Radio, Calendar } from 'lucide-react';
+import { Clock, MapPin, CheckCircle, Radio, Calendar, Sun, Sunset } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScheduleTimeline: React.FC = () => {
-  const [activeDay, setActiveDay] = useState<string>(DAYS_LIST[1] || DAYS_LIST[0]);
+  const [activeDay, setActiveDay] = useState<string>(DAYS_LIST[0]);
   const [activeStage, setActiveStage] = useState<string>('All Venues');
+  const [sessionFilter, setSessionFilter] = useState<'Morning' | 'Afternoon' | 'All'>('Morning');
 
   const filteredScheduleByDay = SCHEDULE_DATA.filter((item) => item.day === activeDay);
   
   // Extract unique stages for the selected day
   const uniqueStages = Array.from(new Set(filteredScheduleByDay.map(item => item.stage)));
 
-  // Filter by both day and stage
-  const filteredSchedule = filteredScheduleByDay.filter(
-    (item) => activeStage === 'All Venues' || item.stage === activeStage
-  );
+  // Helper to determine if an event is in Morning Session (09:00 AM - 01:00 PM) vs Afternoon Session
+  const isMorningItem = (timeStr: string) => {
+    if (timeStr.includes('Completed Pre-Fest')) return true;
+    if (timeStr.includes('TBA') || timeStr.includes('Same Session')) return true;
+    if (timeStr.includes('AM')) return true;
+    if (timeStr.includes('PM')) {
+      if (timeStr.startsWith('12:') || timeStr.startsWith('01:00')) return true;
+      return false;
+    }
+    return true;
+  };
+
+  // Filter by day, stage, and session
+  const filteredSchedule = filteredScheduleByDay.filter((item) => {
+    const matchesStage = activeStage === 'All Venues' || item.stage === activeStage;
+    if (!matchesStage) return false;
+
+    if (sessionFilter === 'Morning') {
+      return isMorningItem(item.time);
+    } else if (sessionFilter === 'Afternoon') {
+      return !isMorningItem(item.time);
+    }
+    return true;
+  });
 
   return (
     <section id="schedule" className="py-24 relative overflow-hidden bg-[#FAF8F5]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+        <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
           <span className="text-xs font-sans-manrope font-extrabold tracking-[0.25em] text-[#FF5E84] uppercase">
             PROGRAM AGENDA
           </span>
@@ -30,7 +51,7 @@ export const ScheduleTimeline: React.FC = () => {
             Festival Schedule
           </h2>
           <p className="font-sans-manrope text-base sm:text-lg text-[#5F5F5F]">
-            3 days of non-stop artistic mastery across 3 main stages at MGM Model School campus.
+            Live competition schedule across 7 official stages at MGM Model School campus.
           </p>
         </div>
 
@@ -58,9 +79,50 @@ export const ScheduleTimeline: React.FC = () => {
           })}
         </div>
 
+        {/* Session Selector (Morning vs Afternoon vs All Day) */}
+        {activeDay.includes('Stages') && (
+          <div className="flex items-center justify-center flex-wrap gap-2.5 mb-8">
+            <button
+              onClick={() => setSessionFilter('Morning')}
+              className={`px-5 py-2.5 rounded-full text-xs font-sans-manrope font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
+                sessionFilter === 'Morning'
+                  ? 'bg-[#FF5E84] text-white shadow-md scale-105'
+                  : 'bg-white border border-black/10 text-[#5F5F5F] hover:text-[#111111]'
+              }`}
+            >
+              <Sun className="w-4 h-4 text-amber-300" />
+              <span>Morning Session (09:00 AM – 01:00 PM)</span>
+            </button>
+
+            <button
+              onClick={() => setSessionFilter('Afternoon')}
+              className={`px-5 py-2.5 rounded-full text-xs font-sans-manrope font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
+                sessionFilter === 'Afternoon'
+                  ? 'bg-[#FF8A00] text-white shadow-md scale-105'
+                  : 'bg-white border border-black/10 text-[#5F5F5F] hover:text-[#111111]'
+              }`}
+            >
+              <Sunset className="w-4 h-4 text-amber-200" />
+              <span>Afternoon Session (01:30 PM – 06:30 PM)</span>
+            </button>
+
+            <button
+              onClick={() => setSessionFilter('All')}
+              className={`px-5 py-2.5 rounded-full text-xs font-sans-manrope font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
+                sessionFilter === 'All'
+                  ? 'bg-[#111111] text-white shadow-md scale-105'
+                  : 'bg-white border border-black/10 text-[#5F5F5F] hover:text-[#111111]'
+              }`}
+            >
+              <Clock className="w-4 h-4 text-emerald-400" />
+              <span>Full Day (All Events)</span>
+            </button>
+          </div>
+        )}
+
         {/* Venue Selector Tabs */}
         {uniqueStages.length > 1 && (
-          <div className="flex items-center justify-start sm:justify-center gap-2 mb-16 overflow-x-auto pb-4 px-2 snap-x">
+          <div className="flex items-center justify-start sm:justify-center gap-2 mb-12 overflow-x-auto pb-4 px-2 snap-x">
             <button
               onClick={() => setActiveStage('All Venues')}
               className={`snap-center flex items-center gap-2 px-4 py-2 rounded-full text-[11px] sm:text-xs font-sans-manrope font-bold transition-all duration-300 cursor-pointer whitespace-nowrap ${

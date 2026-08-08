@@ -16,6 +16,7 @@ const houseEmblems: Record<HouseId, string> = {
   NOVA: novaEmblem,
   ORION: orionEmblem,
   ASTRA: astraEmblem,
+  NONE: '',
 };
 
 export const LeaderboardSection: React.FC = () => {

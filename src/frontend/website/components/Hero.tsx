@@ -189,7 +189,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-xs sm:text-sm text-[#111111] block leading-none">6 Main Stages</span>
+                  <span className="font-extrabold text-xs sm:text-sm text-[#111111] block leading-none">7 Main Stages</span>
                   <span className="text-[10px] sm:text-[11px] font-semibold text-[#5F5F5F]">MGM Campus</span>
                 </div>
               </div>

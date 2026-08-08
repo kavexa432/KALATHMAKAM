@@ -1,5 +1,6 @@
 const express = require('express');
-const { db, admin } = require('../firebaseAdmin');
+const { db, admin, auth } = require('../firebaseAdmin');
+const { verifyAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ const DEFAULT_POINTS_MAP = {
 };
 
 // POST /api/publish
-router.post('/', async (req, res) => {
+router.post('/', verifyAdmin, async (req, res) => {
   try {
     const { eventId, results } = req.body;
 
@@ -112,6 +113,11 @@ router.post('/', async (req, res) => {
         points: topWinner ? topWinner.points : 0,
         read: false
       });
+      // 9. Delete Draft if provided
+      if (req.body.draftId) {
+        const draftRef = db.collection('resultDrafts').doc(req.body.draftId);
+        transaction.delete(draftRef);
+      }
     });
 
     res.json({ success: true, message: 'Results published successfully.' });

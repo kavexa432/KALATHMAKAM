@@ -1,76 +1,67 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
     // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
     
     function isDeveloper() {
-      return isAuthenticated() && (
-        request.auth.token.email == 'vaishnavil4433@gmail.com' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer'
-      );
+      return isAuthenticated() && request.auth.token.role == 'developer';
     }
     
-    function isAdminOrDeveloper() {
-      return isAuthenticated() && (
-        isDeveloper() ||
-        (
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.approved == true
-        )
-      );
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'developer');
     }
 
-    // Users Collection - Managed strictly by Developer
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update, delete: if isDeveloper();
-    }
-
-    // Public Festival Content - Read by everyone, Write by Admin / Developer
-    match /events/{document=**} {
+    // Public collections (Read-only for public, Read/Write for Admin/Dev)
+    match /events/{eventId} {
       allow read: if true;
-      allow write: if isAdminOrDeveloper();
+      allow write: if isAdmin();
     }
-
-    match /results/{document=**} {
+    match /stages/{stageId} {
       allow read: if true;
-      allow write: if isAdminOrDeveloper();
+      allow write: if isAdmin();
     }
-
-    match /gallery/{document=**} {
+    match /houses/{houseId} {
       allow read: if true;
-      allow write: if isAdminOrDeveloper();
+      allow write: if isDeveloper(); 
     }
-
-    match /announcements/{document=**} {
+    match /housePoints/{pointId} {
       allow read: if true;
-      allow write: if isAdminOrDeveloper();
+      allow write: if isDeveloper(); // Admin SDK does writes for points during publishing
     }
-
-    match /leaderboard/{document=**} {
+    match /results/{resultId} {
       allow read: if true;
-      allow write: if isAdminOrDeveloper();
+      allow write: if isDeveloper(); // Admin SDK handles results creation during publish
     }
-
-    match /houses/{document=**} {
+    match /announcements/{announcementId} {
       allow read: if true;
-      allow write: if isAdminOrDeveloper();
+      allow write: if isAdmin();
+    }
+    match /liveFeed/{feedId} {
+      allow read: if true;
+      allow write: if isDeveloper(); // Backend writes to liveFeed during publish
+    }
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    match /activityLogs/{document=**} {
+    // Private Collections
+    match /resultDrafts/{draftId} {
+      allow read, write: if isAdmin();
+    }
+    match /auditLogs/{logId} {
       allow read: if isDeveloper();
-      allow write: if isAdminOrDeveloper();
+      allow write: if false; // Only backend creates audit logs
     }
-
-    match /settings/{document=**} {
-      allow read: if true;
-      allow write: if isDeveloper();
+    match /users/{userId} {
+      allow read, write: if isDeveloper();
     }
-
+    match /systemSettings/{settingId} {
+      allow read, write: if isDeveloper();
+    }
   }
 }

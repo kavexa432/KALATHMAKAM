@@ -9,10 +9,12 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
+import { auth } from '../../../config/firebase';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 
 interface ResultSheetOCRModalProps {
   isOpen: boolean;
+  draftId?: string | null;
   onClose: () => void;
 }
 
@@ -28,11 +30,12 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
   isOpen,
+  draftId,
   onClose,
 }) => {
-  const { events } = useFestival();
+  const { events, resultDrafts } = useFestival();
   
-  const [step, setStep] = useState<'upload' | 'processing' | 'review' | 'success'>('upload');
+  const [step, setStep] = useState<'upload' | 'processing' | 'review' | 'success' | 'draft-success'>('upload');
   const [processingStatus, setProcessingStatus] = useState('Reading image...');
   
   const [selectedEventId, setSelectedEventId] = useState<string>('');
@@ -54,6 +57,29 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Load draft if draftId is provided
+  useEffect(() => {
+    if (isOpen && draftId) {
+      const draft = resultDrafts.find(d => d.id === draftId);
+      if (draft) {
+        const targetEvent = events.find(e => e.eventName === draft.eventName);
+        if (targetEvent) {
+          setSelectedEventId(targetEvent.id);
+        }
+        setResultsData(draft.results as OCRResultItem[]);
+        setStep('review');
+      }
+    } else if (isOpen && !draftId) {
+      setStep('upload');
+      setSelectedEventId('');
+      setSelectedFile(null);
+      setImagePreview(null);
+      setResultsData([]);
+      setWarnings([]);
+      setError(null);
+    }
+  }, [isOpen, draftId, resultDrafts, events]);
 
   if (!isOpen) return null;
 
@@ -83,8 +109,13 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
 
       setProcessingStatus('Gemini Vision extracting results...');
 
+      const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+
       const response = await fetch(`${API_URL}/api/ocr`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData,
       });
 
@@ -97,7 +128,7 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
       
       setResultsData(data.results || []);
       setWarnings(data.warnings || []);
-      setStep('review');
+      setStep('draft-success');
     } catch (err: any) {
       console.error('OCR Error:', err);
       setError(err.message || 'An unexpected error occurred during OCR.');
@@ -117,11 +148,17 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
     if (!selectedEventId) return;
 
     try {
+      const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+
       const response = await fetch(`${API_URL}/api/publish`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           eventId: selectedEventId,
+          draftId: draftId || undefined,
           results: resultsData
         })
       });
@@ -362,7 +399,7 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
                             <option value="VEGA">🟡 VEGA</option>
                             <option value="ORION">🔵 ORION</option>
                             <option value="ASTRA">🟢 ASTRA</option>
-                            <option value="N/A">N/A</option>
+                            <option value="NONE">⚪ Non-House / Individual (No House Pts)</option>
                           </select>
                         </div>
                       </div>
@@ -405,6 +442,27 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
                 className="px-8 py-3 rounded-full bg-[#111111] text-white font-sans-manrope font-bold text-xs cursor-pointer shadow-md mt-4"
               >
                 Close Window
+              </button>
+            </div>
+          )}
+
+          {/* STEP 5: DRAFT SUCCESS CONFIRMATION */}
+          {step === 'draft-success' && (
+            <div className="py-12 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+                <FileText className="w-10 h-10" />
+              </div>
+              <h4 className="font-serif-cormorant font-bold text-3xl text-[#111111]">
+                Draft Saved to OCR Queue!
+              </h4>
+              <p className="font-sans-manrope text-xs text-[#5F5F5F] max-w-md mx-auto">
+                The AI has extracted the results. It is now waiting in the Results Queue for an Admin to verify and publish it.
+              </p>
+              <button
+                onClick={onClose}
+                className="px-8 py-3 rounded-full bg-[#111111] text-white font-sans-manrope font-bold text-xs cursor-pointer shadow-md mt-4"
+              >
+                Return to Dashboard
               </button>
             </div>
           )}

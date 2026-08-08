@@ -36,7 +36,10 @@ export const Dashboard: React.FC = () => {
     toggleArchiveMode,
     events,
     results,
+    resultDrafts,
     users,
+    houses,
+    getHousePoints,
     auditLogs,
     addAnnouncement,
     setUserRole,
@@ -49,6 +52,7 @@ export const Dashboard: React.FC = () => {
   >('Overview');
 
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
+  const [draftIdForReview, setDraftIdForReview] = useState<string | null>(null);
   const [quickModalOpen, setQuickModalOpen] = useState(false);
   const [selectedEventForModal, setSelectedEventForModal] = useState<EventModel | null>(null);
   const [modalTab, setModalTab] = useState<'ocr' | 'manual'>('ocr');
@@ -78,6 +82,15 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, [isAdmin, currentUser]);
+
+  useEffect(() => {
+    const handleOpenReview = (e: any) => {
+      setDraftIdForReview(e.detail.draftId);
+      setOcrModalOpen(true);
+    };
+    window.addEventListener('open-ocr-review', handleOpenReview);
+    return () => window.removeEventListener('open-ocr-review', handleOpenReview);
+  }, []);
 
   if (!currentUser || !isAdmin) {
     return (
@@ -111,7 +124,7 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  const pendingResultsCount = results.filter((r) => r.status === 'Pending Review').length;
+  const pendingResultsCount = results.filter((r) => r.status === 'Pending Review').length + resultDrafts.length;
 
   const handlePostAnnouncement = (e: React.FormEvent) => {
     e.preventDefault();
@@ -345,14 +358,14 @@ export const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Today's Competitions</span>
-                <div className="font-serif-cormorant font-bold text-4xl text-[#111111]">{events.length || 18}</div>
+                <div className="font-serif-cormorant font-bold text-4xl text-[#111111]">{events.length}</div>
                 <span className="text-[11px] text-[#10B981] font-bold">● Live Stage Operations</span>
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Results Queue (Pending)</span>
                 <div className="font-serif-cormorant font-bold text-4xl text-[#F59E0B]">
-                  {events.filter((e) => !e.resultsPublished).length || 4}
+                  {events.filter((e) => !e.resultsPublished).length}
                 </div>
                 <span className="text-[11px] text-[#FF5E84] font-bold">Awaiting OCR / Winner Entry</span>
               </div>
@@ -360,14 +373,22 @@ export const Dashboard: React.FC = () => {
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Completed Events</span>
                 <div className="font-serif-cormorant font-bold text-4xl text-[#3B82F6]">
-                  {events.filter((e) => e.resultsPublished || e.status === 'Completed').length || 6}
+                  {events.filter((e) => e.resultsPublished || e.status === 'Completed').length}
                 </div>
                 <span className="text-[11px] text-[#10B981] font-bold">Published Live</span>
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Leaderboard Leader</span>
-                <div className="font-serif-cormorant font-bold text-3xl text-[#EF4444]">NOVA (450 Pts)</div>
+                <div className="font-serif-cormorant font-bold text-2xl text-[#EF4444] truncate">
+                  {(() => {
+                    const topHouse = [...houses]
+                      .map((h) => ({ ...h, pts: getHousePoints(h.id) }))
+                      .sort((a, b) => b.pts - a.pts)[0];
+                    if (!topHouse || topHouse.pts === 0) return 'No Results Yet (0 Pts)';
+                    return `${topHouse.name} (${topHouse.pts} Pts)`;
+                  })()}
+                </div>
                 <span className="text-[11px] text-[#10B981] font-bold">Updated Live</span>
               </div>
             </div>
@@ -975,7 +996,11 @@ export const Dashboard: React.FC = () => {
         {/* OCR Result Sheet Uploader Modal */}
         <ResultSheetOCRModal
           isOpen={ocrModalOpen}
-          onClose={() => setOcrModalOpen(false)}
+          draftId={draftIdForReview}
+          onClose={() => {
+            setOcrModalOpen(false);
+            setDraftIdForReview(null);
+          }}
         />
 
         {/* Quick Action OCR & Manual Winner Entry Modal */}

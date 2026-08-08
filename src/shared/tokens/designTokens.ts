@@ -1,4 +1,17 @@
-export const houseColors = {
+import type { HouseId } from '../types/festivalTypes';
+
+export interface HouseColorInfo {
+  name: string;
+  primary: string;
+  secondary: string;
+  lightBg: string;
+  border: string;
+  text: string;
+  motto: string;
+  symbol: string;
+}
+
+export const houseColors: Record<HouseId, HouseColorInfo> = {
   NOVA: {
     name: 'NOVA',
     primary: '#EF4444',
@@ -39,7 +52,17 @@ export const houseColors = {
     motto: 'Flourishing Virtues, Timeless Excellence',
     symbol: 'Green Shield',
   },
-} as const;
+  NONE: {
+    name: 'Non-House / Individual',
+    primary: '#64748B',
+    secondary: '#475569',
+    lightBg: 'rgba(100, 116, 139, 0.08)',
+    border: 'rgba(100, 116, 139, 0.25)',
+    text: '#475569',
+    motto: 'Individual / Non-House Participation',
+    symbol: 'White Circle',
+  },
+};
 
 export type HouseKey = keyof typeof houseColors;
 

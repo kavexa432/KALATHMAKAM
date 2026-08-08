@@ -30,6 +30,7 @@ import type {
   LeaderboardDay,
   AnnouncementType,
   PriorityLevel,
+  ResultDraftModel,
 } from '../types/festivalTypes';
 import {
   currentFestival,
@@ -48,6 +49,7 @@ interface FestivalContextType {
   stages: StageModel[];
   events: EventModel[];
   results: EventResultModel[];
+  resultDrafts: ResultDraftModel[];
   liveFeed: LiveActivityFeedItem[];
   auditLogs: AuditLogItem[];
   users: UserModel[];
@@ -101,6 +103,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [stages] = useState<StageModel[]>(initialStages);
   const [events, setEvents] = useState<EventModel[]>([]);
   const [results, setResults] = useState<EventResultModel[]>(initialResults);
+  const [resultDrafts, setResultDrafts] = useState<ResultDraftModel[]>([]);
   const [liveFeed, setLiveFeed] = useState<LiveActivityFeedItem[]>(initialLiveFeed);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(initialAuditLogs);
   const [users, setUsers] = useState<UserModel[]>(initialUsers);
@@ -131,13 +134,49 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [firebaseAuthUser, setFirebaseAuthUser] = useState<FirebaseUser | null>(null);
   const [archiveMode, setArchiveMode] = useState<boolean>(false);
-  const [, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
 
   // Auto-refresh computed statuses every minute
   useEffect(() => {
     const timer = setInterval(() => setTick((t) => t + 1), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  const computeDynamicEventStatus = (e: EventModel) => {
+    if (e.cancelled) return 'Cancelled';
+    if (e.resultsPublished || e.status === 'Completed') return 'Completed';
+
+    const now = new Date();
+    
+    const startTimeParts = (e.scheduledStartTime || '00:00').split(':');
+    let startTime = new Date(e.date);
+    if (isNaN(startTime.getTime())) {
+      startTime = new Date();
+    }
+    startTime.setHours(parseInt(startTimeParts[0] || '0'), parseInt(startTimeParts[1] || '0'), 0, 0);
+    
+    if (e.delayMinutes) {
+      startTime = new Date(startTime.getTime() + e.delayMinutes * 60000);
+    }
+
+    const duration = e.durationMinutes || 60;
+    const endTime = new Date(startTime.getTime() + duration * 60000);
+
+    if (now < startTime) {
+      return 'Upcoming';
+    } else if (now >= startTime && now <= endTime) {
+      return 'Running';
+    } else {
+      return 'Results Pending';
+    }
+  };
+
+  const computedEvents = React.useMemo(() => {
+    return events.map(e => ({
+      ...e,
+      status: computeDynamicEventStatus(e)
+    }));
+  }, [events, tick]);
 
   // Helper to persist user state & update user registry list
   const persistUser = (user: UserModel | null) => {
@@ -179,21 +218,25 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     getRedirectResult(auth)
       .then((res) => {
         if (res?.user) {
-          const email = res.user.email || '';
-          const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
-          const loggedUser: UserModel = {
-            id: res.user.uid,
-            name: res.user.displayName || email.split('@')[0].toUpperCase(),
-            email,
-            role: isDev ? 'developer' : 'user',
-            approved: isDev ? true : false,
-            permissions: isDev ? ['All'] : [],
-            status: 'Active',
-            avatarUrl: res.user.photoURL || undefined,
-            createdAt: new Date().toISOString(),
-          };
-          persistUser(loggedUser);
-          syncUserToFirestore(loggedUser);
+          res.user.getIdTokenResult().then(idTokenResult => {
+            const email = res.user.email || '';
+            const role = (idTokenResult.claims.role as 'developer' | 'admin' | 'user') || 'user';
+            const isDevOrAdmin = role === 'developer' || role === 'admin';
+            
+            const loggedUser: UserModel = {
+              id: res.user.uid,
+              name: res.user.displayName || email.split('@')[0].toUpperCase(),
+              email,
+              role: role,
+              approved: isDevOrAdmin,
+              permissions: role === 'developer' ? ['All'] : role === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
+              status: 'Active',
+              avatarUrl: res.user.photoURL || undefined,
+              createdAt: new Date().toISOString(),
+            };
+            persistUser(loggedUser);
+            syncUserToFirestore(loggedUser);
+          });
         }
       })
       .catch(() => {
@@ -207,23 +250,30 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setFirebaseAuthUser(fbUser);
       if (fbUser) {
         const email = fbUser.email || '';
-        const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
         
-        // Optimistic Immediate UI Update (0ms delay)
-        const tempUser: UserModel = {
-          id: fbUser.uid,
-          name: fbUser.displayName || email.split('@')[0].toUpperCase(),
-          email,
-          role: isDev ? 'developer' : 'user',
-          approved: isDev ? true : false,
-          permissions: isDev ? ['All'] : [],
-          status: 'Active',
-          avatarUrl: fbUser.photoURL || undefined,
-          createdAt: new Date().toISOString(),
-        };
+        try {
+          const idTokenResult = await fbUser.getIdTokenResult();
+          const role = (idTokenResult.claims.role as 'developer' | 'admin' | 'user') || 'user';
+          const isDevOrAdmin = role === 'developer' || role === 'admin';
 
-        persistUser(tempUser);
-        syncUserToFirestore(tempUser);
+          // Optimistic Immediate UI Update
+          const tempUser: UserModel = {
+            id: fbUser.uid,
+            name: fbUser.displayName || email.split('@')[0].toUpperCase(),
+            email,
+            role: role,
+            approved: isDevOrAdmin,
+            permissions: role === 'developer' ? ['All'] : role === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
+            status: 'Active',
+            avatarUrl: fbUser.photoURL || undefined,
+            createdAt: new Date().toISOString(),
+          };
+
+          persistUser(tempUser);
+          syncUserToFirestore(tempUser);
+        } catch (error) {
+          console.error("Error fetching custom claims:", error);
+        }
       } else {
         const cached = localStorage.getItem(LOCAL_USER_KEY);
         if (!cached) {
@@ -295,6 +345,26 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
+  // Listen to Firestore resultDrafts Collection
+  useEffect(() => {
+    try {
+      const unsub = onSnapshot(
+        collection(db, 'resultDrafts'),
+        (snapshot) => {
+          const drafts: ResultDraftModel[] = [];
+          snapshot.forEach((d) => drafts.push({ id: d.id, ...d.data() } as ResultDraftModel));
+          // Sort by newest first
+          drafts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          setResultDrafts(drafts);
+        },
+        (err) => console.warn('Firestore resultDrafts subscription notice:', err)
+      );
+      return () => unsub();
+    } catch (err) {
+      console.error('Failed to subscribe to resultDrafts:', err);
+    }
+  }, []);
+
   // Dynamic Point Computation Engine
   const getHousePoints = (houseId: HouseId, _day?: LeaderboardDay): number => {
     const published = results.filter((r) => r.houseId === houseId && (r.status === 'Published' || r.status === 'Verified'));
@@ -350,12 +420,10 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await signInWithRedirect(auth, googleProvider);
         return;
       } catch (redirectErr) {
-        console.warn('Redirect login failed, engaging developer fallback:', redirectErr);
+        console.error('Google Sign-In failed:', redirectErr);
+        throw redirectErr;
       }
     }
-
-    // Reliable fallback for mobile webviews / in-app browsers where Google Auth is restricted
-    loginCustomUser('vaishnavil4433@gmail.com');
   };
 
   const login = (role: 'developer' | 'admin' | 'user') => {
@@ -772,8 +840,9 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         festival,
         houses,
         stages,
-        events,
+        events: computedEvents,
         results,
+        resultDrafts,
         liveFeed,
         auditLogs,
         users,
