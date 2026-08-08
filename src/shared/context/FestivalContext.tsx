@@ -443,7 +443,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Google Auth — popup on desktop, redirect on mobile
+  // Google Auth — redirect on mobile (avoids popup blocking), popup on desktop
   const loginWithGoogle = async () => {
     const provider = googleProvider;
     provider.addScope('email');
@@ -451,13 +451,17 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     provider.setCustomParameters({ prompt: 'select_account' });
 
     if (isMobileBrowser()) {
-      // Mobile: use redirect — no popup blocking issues on iOS/Android
-      await signInWithRedirect(auth, provider);
-      // Page will reload; getRedirectResult (above) handles the result
-      return;
+      try {
+        // Try redirect first (best for mobile)
+        await signInWithRedirect(auth, provider);
+        return;
+      } catch (redirectErr: any) {
+        console.warn('Redirect failed, falling back to popup:', redirectErr?.code);
+        // Fall through to popup below
+      }
     }
 
-    // Desktop: popup is fine
+    // Desktop or redirect fallback
     try {
       const result = await signInWithPopup(auth, provider);
       if (result?.user) {

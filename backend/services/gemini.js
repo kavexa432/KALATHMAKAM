@@ -1,20 +1,22 @@
 const { GoogleGenAI } = require('@google/genai');
 const { resultSchema } = require('../schemas/resultSchema');
 
-// Helper to get an array of keys
 function getApiKeys() {
   const keysString = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
   if (!keysString) return [];
   return keysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
 }
 
-/**
- * Parses image and extracts OCR placements using Gemini
- * Automatically rotates API keys if one fails with a 429
- */
+// Models tried in order — falls back if one hits quota or is unavailable
+const MODELS_TO_TRY = [
+  'gemini-1.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-pro',
+];
+
 async function extractResultsFromImage(file, eventName, category) {
   const apiKeys = getApiKeys();
-  
+
   if (apiKeys.length === 0) {
     throw new Error('No Gemini API keys configured on the server.');
   }
@@ -35,77 +37,78 @@ async function extractResultsFromImage(file, eventName, category) {
   const imagePart = {
     inlineData: {
       data: file.buffer.toString('base64'),
-      mimeType: file.mimetype
-    }
+      mimeType: file.mimetype,
+    },
   };
 
   let lastError = null;
 
-  for (let i = 0; i < apiKeys.length; i++) {
-    const key = apiKeys[i];
-    
-    try {
-      const ai = new GoogleGenAI({ apiKey: key });
-      
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              imagePart
-            ]
-          }
-        ],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: resultSchema,
-          temperature: 0.1,
+  // Try every key × every model combination
+  for (const key of apiKeys) {
+    for (const model of MODELS_TO_TRY) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: key });
+
+        const response = await ai.models.generateContent({
+          model,
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: prompt }, imagePart],
+            },
+          ],
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: resultSchema,
+            temperature: 0.1,
+          },
+        });
+
+        const responseText = response.text;
+        if (!responseText) throw new Error('Empty response from Gemini API.');
+
+        // Strip markdown fences if present
+        const cleaned = responseText
+          .replace(/^```json\s*/i, '')
+          .replace(/```\s*$/i, '')
+          .trim();
+        const parsedData = JSON.parse(cleaned);
+
+        if (!parsedData.results || !Array.isArray(parsedData.results)) {
+          throw new Error('Gemini returned invalid JSON structure (missing results array).');
         }
-      });
 
-      const responseText = response.text;
-      
-      if (!responseText) {
-        throw new Error('Received empty response from Gemini API.');
+        const warnings = [];
+        if (parsedData.results.some((r) => r.confidence === 'low')) {
+          warnings.push('One or more fields had low OCR legibility. Please verify names and houses carefully.');
+        }
+
+        console.log(`[OCR] Success with key index ${apiKeys.indexOf(key)}, model: ${model}`);
+        return {
+          results: parsedData.results,
+          warnings: parsedData.warnings || warnings,
+        };
+
+      } catch (error) {
+        lastError = error;
+        const msg = String(error).toLowerCase();
+        const isQuota = msg.includes('429') || msg.includes('quota') || msg.includes('resource_exhausted') || msg.includes('too many requests');
+        const isUnavailable = msg.includes('not found') || msg.includes('no longer available') || msg.includes('not_found');
+
+        console.warn(`[OCR] key[${apiKeys.indexOf(key)}] model[${model}] failed: ${error.message?.substring(0, 120)}`);
+
+        if (isQuota || isUnavailable) {
+          // Try next model / key
+          continue;
+        }
+
+        // Non-quota error (e.g. bad schema, auth) — throw immediately
+        throw error;
       }
-
-      // Strip markdown code fences if model wraps response
-      const cleaned = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-      const parsedData = JSON.parse(cleaned);
-      
-      if (!parsedData.results || !Array.isArray(parsedData.results)) {
-        throw new Error('Gemini API returned an invalid JSON structure (missing results array).');
-      }
-
-      const warnings = [];
-      const hasLowConfidence = parsedData.results.some(r => r.confidence === 'low');
-      if (hasLowConfidence) {
-        warnings.push('One or more fields had low OCR legibility. Please verify names and houses carefully.');
-      }
-
-      return {
-        results: parsedData.results,
-        warnings: parsedData.warnings || warnings
-      };
-
-    } catch (error) {
-      console.warn(`[OCR Warning] API Key at index ${i} failed. Reason: ${error.message}`);
-      lastError = error;
-      
-      const errorStr = String(error).toLowerCase();
-      if (errorStr.includes('429') || errorStr.includes('quota') || errorStr.includes('too many requests')) {
-        continue;
-      }
-      
-      throw error;
     }
   }
 
-  throw new Error(`All available Gemini API keys failed. Last Error: ${lastError.message}`);
+  throw new Error(`All Gemini API keys and models failed. Last error: ${lastError?.message}`);
 }
 
-module.exports = {
-  extractResultsFromImage
-};
+module.exports = { extractResultsFromImage };
