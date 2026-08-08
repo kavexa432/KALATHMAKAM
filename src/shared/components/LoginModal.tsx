@@ -113,7 +113,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 />
               </svg>
             )}
-            )}
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
           </button>
 
