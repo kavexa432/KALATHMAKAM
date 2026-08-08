@@ -11,9 +11,6 @@ import {
   setDoc,
   onSnapshot,
   collection,
-  query,
-  where,
-  getDocs,
 } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../../config/firebase';
 
@@ -199,18 +196,18 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Synchronize User Record to Cloud Firestore Database (users/{uid})
-  // Always called in background — must never downgrade an already-resolved role
+  // Always called in background — must never self-promote roles.
+  // Role assignment is ONLY done server-side via /api/auth/grant-role (developer only).
   const syncUserToFirestore = async (userRecord: UserModel) => {
     try {
-      const cleanEmail = (userRecord.email || '').toLowerCase().trim();
-
-      // 1. Check direct UID document in Firestore
       const userRef = doc(db, 'users', userRecord.id);
       const snap = await getDoc(userRef);
+
       if (snap.exists()) {
+        // User already exists — read their Firestore role (may have been upgraded by developer)
         const firestoreData = snap.data() as UserModel;
-        // Only upgrade role — never downgrade (e.g. developer stays developer)
-        const resolvedRole = resolveUserRole(cleanEmail, firestoreData.role);
+        // Only upgrade via Firestore data — never downgrade from a higher claim
+        const resolvedRole = resolveUserRole('', firestoreData.role);
         const mergedUser: UserModel = {
           ...firestoreData,
           id: userRecord.id,
@@ -222,43 +219,25 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return;
       }
 
-      // 2. Check if Developer pre-authorized this email in users collection
-      const q = query(collection(db, 'users'), where('email', '==', cleanEmail));
-      const querySnap = await getDocs(q);
-      
-      if (!querySnap.empty) {
-        const preAuthDoc = querySnap.docs[0];
-        const preAuthData = preAuthDoc.data() as UserModel;
-        const resolvedRole = resolveUserRole(cleanEmail, preAuthData.role);
-        const mergedUser: UserModel = {
-          ...preAuthData,
-          id: userRecord.id,
-          avatarUrl: userRecord.avatarUrl || preAuthData.avatarUrl,
-          name: preAuthData.name || userRecord.name,
-          role: resolvedRole.role,
-          approved: resolvedRole.approved,
-        };
-        await setDoc(userRef, mergedUser);
-        persistUser(mergedUser);
-        return;
-      }
-
-      // 3. New user — write to Firestore (role already resolved by resolveUserRole in onAuthStateChanged)
-      await setDoc(userRef, userRecord);
+      // New user — always write role: 'user'. Role can only be elevated by the developer via backend.
+      const newUser: UserModel = {
+        ...userRecord,
+        role: 'user',
+        approved: false,
+        permissions: [],
+      };
+      await setDoc(userRef, newUser);
+      // Don't call persistUser here — onAuthStateChanged already set the correct state from claims
     } catch (err) {
       console.warn('Firestore Sync Notice:', err);
     }
   };
 
-  // Helper to resolve role safely (e.g. vaishnavil4433@gmail.com is always developer)
-  const resolveUserRole = (email: string, claimRole?: string): { role: 'developer' | 'admin' | 'user'; approved: boolean } => {
-    const cleanEmail = (email || '').toLowerCase().trim();
-    if (cleanEmail === 'vaishnavil4433@gmail.com') {
-      return { role: 'developer', approved: true };
-    }
-    if (claimRole === 'developer' || claimRole === 'admin') {
-      return { role: claimRole, approved: true };
-    }
+  // Helper to resolve role STRICTLY from custom claims — never from email on the frontend.
+  // The backend (verifyDeveloper middleware) handles the one-time bootstrap of the developer claim.
+  const resolveUserRole = (_email: string, claimRole?: string): { role: 'developer' | 'admin' | 'user'; approved: boolean } => {
+    if (claimRole === 'developer') return { role: 'developer', approved: true };
+    if (claimRole === 'admin') return { role: 'admin', approved: true };
     return { role: 'user', approved: false };
   };
 
