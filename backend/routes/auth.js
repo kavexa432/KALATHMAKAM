@@ -80,10 +80,21 @@ router.post('/grant-role', verifyDeveloper, async (req, res) => {
   }
 
   try {
-    const userRecord = await auth.getUser(targetUid);
+    // Try to set custom claim — only works if the user has signed in at least once
+    try {
+      await auth.getUser(targetUid); // throws if not found
+      await auth.setCustomUserClaims(targetUid, { role });
+    } catch (authErr) {
+      if (authErr.code === 'auth/user-not-found') {
+        // User hasn't signed in yet — pre-authorize in Firestore only.
+        // The claim will be set server-side when they first log in via verifyDeveloper bootstrap.
+        console.log(`[grant-role] User ${targetUid} not in Firebase Auth yet — pre-authorizing in Firestore only.`);
+      } else {
+        throw authErr;
+      }
+    }
 
-    await auth.setCustomUserClaims(targetUid, { role });
-
+    // Always write to Firestore (works whether user has signed in or not)
     await db.collection('users').doc(targetUid).set({
       role,
       approved: role === 'admin',
@@ -97,10 +108,10 @@ router.post('/grant-role', verifyDeveloper, async (req, res) => {
       userRole: 'developer',
       action: role === 'admin' ? 'Granted Admin Role' : 'Revoked Admin Role',
       entity: 'Users',
-      details: `Set role=${role} for ${userRecord.email} (uid: ${targetUid})`
+      details: `Set role=${role} for uid: ${targetUid}`
     });
 
-    res.json({ success: true, message: `Role set to ${role} for ${userRecord.email}` });
+    res.json({ success: true, message: `Role set to ${role}. If the user is already signed in, they need to sign out and back in.` });
   } catch (error) {
     console.error('Grant role error:', error);
     res.status(500).json({ error: error.message });

@@ -125,35 +125,54 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
 
     setStep('processing');
     setErrorMessage(null);
-    setProcessingStatus('Uploading score sheet to backend...');
 
     try {
+      const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+
+      // Step 1: Pre-warm the backend (ping first so cold-start happens here, not during OCR)
+      setProcessingStatus('Waking up server...');
+      try {
+        await Promise.race([
+          fetch(`${API_URL}/api/ping`),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('ping timeout')), 8000)),
+        ]);
+      } catch {
+        // Ping failed or timed out — server may still be starting, proceed anyway
+      }
+
+      // Step 2: Upload and process
+      setProcessingStatus('Uploading score sheet...');
       const formData = new FormData();
       formData.append('resultSheet', selectedFile);
       formData.append('eventId', selectedEventId);
 
-      setProcessingStatus('Gemini AI Vision extracting placement fields...');
+      setProcessingStatus('Gemini AI reading result sheet...');
 
-      const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+      // 60 second timeout — Gemini can be slow on large images
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-      const response = await fetch(`${API_URL}/api/ocr`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      let response: Response;
+      try {
+        response = await fetch(`${API_URL}/api/ocr`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to process OCR. Please try again.');
+        throw new Error(errData.error || 'OCR failed. Please try again.');
       }
 
       const data = await response.json();
       
       setDraftId(data.draftId || `draft-${Date.now()}`);
       
-      // Enrich extracted placements with application-side point calculations
       const enriched: ResultDraftPlacement[] = (data.results || []).map((r: any) => ({
         position: Number(r.position) || 1,
         studentName: r.studentName || '',
@@ -172,7 +191,11 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
       setStep('review');
     } catch (err: any) {
       console.error('OCR Processing Error:', err);
-      setErrorMessage(err.message || 'Unable to scan score sheet. You can retry or enter results manually.');
+      if (err.name === 'AbortError') {
+        setErrorMessage('Request timed out. The server may be starting up — please wait 30 seconds and try again.');
+      } else {
+        setErrorMessage(err.message || 'Unable to scan score sheet. You can retry or enter results manually.');
+      }
       setStep('preview');
     }
   };

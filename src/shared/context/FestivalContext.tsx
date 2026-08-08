@@ -206,18 +206,30 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const snap = await getDoc(userRef);
 
       if (snap.exists()) {
-        // User already exists — read their Firestore role (may have been upgraded by developer)
+        // User already exists — respect whatever role the developer pre-authorized
         const firestoreData = snap.data() as UserModel;
-        // Only upgrade via Firestore data — never downgrade from a higher claim
-        const resolvedRole = resolveUserRole('', firestoreData.role);
+        // Use the Firestore role if it's admin (developer pre-authorized before login)
+        // but never downgrade a developer claim
+        const currentRole = userRecord.role?.toLowerCase() as 'developer' | 'admin' | 'user';
+        const firestoreRole = (firestoreData.role || 'user').toLowerCase() as 'developer' | 'admin' | 'user';
+
+        let finalRole: 'developer' | 'admin' | 'user' = currentRole;
+        if (currentRole !== 'developer' && (firestoreRole === 'admin' || firestoreRole === 'developer')) {
+          // Firestore has a pre-authorized role — use it (developer granted this before login)
+          finalRole = firestoreRole === 'developer' ? 'developer' : 'admin';
+        }
+
         const mergedUser: UserModel = {
           ...firestoreData,
           id: userRecord.id,
+          name: userRecord.name || firestoreData.name,
           avatarUrl: userRecord.avatarUrl || firestoreData.avatarUrl,
-          role: resolvedRole.role,
-          approved: resolvedRole.approved,
+          role: finalRole,
+          approved: finalRole !== 'user',
         };
         persistUser(mergedUser);
+        // Update the Firestore record with latest name/avatar
+        setDoc(userRef, { name: mergedUser.name, avatarUrl: mergedUser.avatarUrl, updatedAt: new Date().toISOString() }, { merge: true }).catch(() => {});
         return;
       }
 
@@ -229,7 +241,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         permissions: [],
       };
       await setDoc(userRef, newUser);
-      // Don't call persistUser here — onAuthStateChanged already set the correct state from claims
     } catch (err) {
       console.warn('Firestore Sync Notice:', err);
     }
