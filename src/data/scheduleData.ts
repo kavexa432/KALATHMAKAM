@@ -116,6 +116,27 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's7-6', time: 'Same Session', title: 'Digital Painting (Cat 4)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
 
   // ==========================================
+  // OFFICIAL HOUSE-WISE ITEMS (CAT II & CAT III)
+  // ==========================================
+  { id: 's-house-1', time: '09:00 AM', title: 'Mime (Cat 2 Boys - 7 members)', category: 'Drama', stage: 'Stage 6: Kids Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '7 per House' },
+  { id: 's-house-2', time: '11:15 AM', title: 'Fusion Dance (Cat 2 Boys - 10 members)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '10 per House' },
+  { id: 's-house-3', time: '02:30 PM', title: 'Group Dance (Cat 2 Girls - 7 members)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '7 per House' },
+  { id: 's-house-4', time: '03:30 PM', title: 'Kaikottikali (Cat 2 Girls - 10 members)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '10 per House' },
+  { id: 's-house-5', time: '09:00 AM', title: 'PowerPoint Presentation (Cat 2 Common)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '2 per House' },
+  { id: 's-house-6', time: '02:00 PM', title: 'Anchoring (Cat 2 Common)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '2 per House' },
+  { id: 's-house-7', time: '02:45 PM', title: 'Declamation / Turncoat (Cat 2 Common)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '2 per House' },
+  { id: 's-house-8', time: '09:45 AM', title: 'Mime (Cat 3 Boys - 7 members)', category: 'Drama', stage: 'Stage 6: Kids Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '7 per House' },
+  { id: 's-house-9', time: '04:30 PM', title: 'Thiruvathira (Cat 3 Girls - 10 members)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '10 per House' },
+  { id: 's-house-10', time: '05:30 PM', title: 'Oppana (Cat 3 Girls - 10 members)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '10 per House' },
+  { id: 's-house-11', time: '09:45 AM', title: 'PowerPoint Presentation (Cat 3 Common)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '2 per House' },
+  { id: 's-house-12', time: '01:00 PM', title: 'Anchoring (Cat 3 Common)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '2 per House' },
+  { id: 's-house-13', time: '03:30 PM', title: 'Turncoat (Cat 3 Common)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '2 per House' },
+  { id: 's-house-14', time: '04:00 PM', title: 'Group Song (Cat 2 & 3 Combined - 7 members)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '7 per House' },
+  { id: 's-house-15', time: '04:40 PM', title: 'Patriotic Song (Cat 2 & 3 Combined - 7 members)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '7 per House' },
+  { id: 's-house-16', time: '05:20 PM', title: 'National Anthem (Cat 2 & 3 Combined - 7 members)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '7 per House' },
+  { id: 's-house-17', time: '06:30 PM', title: 'One Act Play (Cat 2 & 3 Combined - 10+3 members)', category: 'Drama', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '13 per House' },
+
+  // ==========================================
   // PRE-FEST COMPLETED COMPETITIONS (OFF-STAGE)
   // ==========================================
   { id: 's-comp-1', time: 'Completed Pre-Fest', title: 'Pencil Drawing (All Categories)', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
