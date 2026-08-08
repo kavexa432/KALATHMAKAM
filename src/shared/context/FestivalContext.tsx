@@ -106,6 +106,19 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [users, setUsers] = useState<UserModel[]>(initialUsers);
   const [gallery] = useState<GalleryItemModel[]>(initialGallery);
   
+  // Keep backend awake ping
+  useEffect(() => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // Ping every 20 seconds (20000ms)
+    const interval = setInterval(() => {
+      fetch(`${API_URL}/api/ping`).catch(() => {
+        // Silently ignore ping failures
+      });
+    }, 20000);
+
+    return () => clearInterval(interval);
+  }, []);
+  
   // 0ms Hydration from LocalStorage Cache
   const [currentUser, setCurrentUser] = useState<UserModel | null>(() => {
     try {

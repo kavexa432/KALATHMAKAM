@@ -15,6 +15,12 @@ app.use(express.json());
 const ocrRoutes = require('./routes/ocr');
 const publishRoutes = require('./routes/publish');
 
+// Simple keep-alive route to prevent Render free instance from sleeping
+app.get('/api/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
+// Use routes
 app.use('/api/ocr', ocrRoutes);
 app.use('/api/publish', publishRoutes);
 
