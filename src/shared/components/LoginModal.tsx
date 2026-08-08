@@ -8,7 +8,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const { loginWithGoogle } = useFestival();
+  const { loginWithGoogle, loginCustomUser } = useFestival();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [accessDeniedMsg, setAccessDeniedMsg] = useState<string | null>(null);
 
@@ -114,6 +114,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </svg>
             )}
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
+          </button>
+
+          {/* Quick Developer Access (Bypass) */}
+          <button
+            onClick={() => {
+              loginCustomUser('vaishnavil4433@gmail.com');
+              onClose();
+            }}
+            className="w-full py-2.5 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-sans-manrope font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Developer Quick Login (Bypass Popup)</span>
           </button>
 
           {/* Footer Security Note */}
