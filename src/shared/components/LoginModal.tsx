@@ -8,7 +8,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const { loginWithGoogle, login } = useFestival();
+  const { loginWithGoogle } = useFestival();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [accessDeniedMsg, setAccessDeniedMsg] = useState<string | null>(null);
 
@@ -116,38 +116,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             )}
             <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
           </button>
-
-          <div className="relative flex items-center justify-center my-2">
-            <div className="border-t border-black/10 w-full" />
-            <span className="bg-[#FAF8F5] px-3 text-[10px] font-extrabold uppercase text-[#5F5F5F] tracking-wider shrink-0">
-              OR QUICK ACCESS
-            </span>
-          </div>
-
-          {/* Quick Access Roles for Mobile & Testing */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              onClick={() => {
-                login('developer');
-                onClose();
-              }}
-              className="py-3 px-3 rounded-2xl bg-[#111111] hover:bg-[#2B2B2B] text-white font-sans-manrope font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <span>🔑 Developer Pass</span>
-            </button>
-
-            <button
-              onClick={() => {
-                login('admin');
-                onClose();
-              }}
-              className="py-3 px-3 rounded-2xl bg-gradient-to-r from-[#FF5E84] to-[#FF8A00] text-white font-sans-manrope font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <span>👑 Teacher Admin</span>
-            </button>
-          </div>
-
-
 
           {/* Footer Security Note */}
           <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-white border border-black/8 text-[#5F5F5F]">
