@@ -72,6 +72,9 @@ export const LiveEventsSection: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedEvent, setSelectedEvent] = useState<EventModel | null>(null);
 
+  // Only show the event grid once the user has searched or selected a category
+  const isSearchActive = searchQuery.trim().length > 0 || selectedCategoryTile !== null;
+
   const publicEvents = events.filter((e) => e.publishToWebsite);
 
   const handleCategoryTileClick = (tileId: string) => {
@@ -277,78 +280,108 @@ export const LiveEventsSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Selected Category Header if active */}
-        {selectedCategoryTile && (
-          <div className="p-4 rounded-2xl bg-white border border-black/8 shadow-2xs mb-6 flex items-center justify-between text-left">
-            <div>
-              <span className="text-xs font-bold text-[#FF5E84] uppercase tracking-wider">Filtered Category</span>
-              <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
-                Showing {selectedCategoryTile} Competitions ({filteredEvents.length})
-              </h3>
-            </div>
-            <button
-              onClick={() => setSelectedCategoryTile(null)}
-              className="px-4 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs border border-black/10 cursor-pointer"
-            >
-              Show All
-            </button>
-          </div>
-        )}
-
-        {/* Streamlined Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredEvents.length > 0 ? (
-            filteredEvents.map((evt) => (
-              <div
-                key={evt.id}
-                onClick={() => setSelectedEvent(evt)}
-                className="bg-white rounded-[24px] p-5 border border-black/8 hover:border-black/15 shadow-2xs hover:shadow-md flex flex-col justify-between space-y-4 text-left group cursor-pointer transition-all hover:-translate-y-0.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-sans-manrope font-extrabold text-[#FF5E84] uppercase tracking-wider">
-                    {evt.category}
-                  </span>
-                  {getStatusBadge(evt.status, evt)}
-                </div>
-
+        {/* Event Grid — only shown after search or category selection */}
+        {isSearchActive ? (
+          <>
+            {/* Selected Category Header if active */}
+            {selectedCategoryTile && (
+              <div className="p-4 rounded-2xl bg-white border border-black/8 shadow-2xs mb-6 flex items-center justify-between text-left">
                 <div>
-                  <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111] group-hover:text-[#FF5E84] transition-colors leading-tight">
-                    {evt.eventName}
+                  <span className="text-xs font-bold text-[#FF5E84] uppercase tracking-wider">Filtered Category</span>
+                  <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
+                    Showing {selectedCategoryTile} Competitions ({filteredEvents.length})
                   </h3>
-                  <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 line-clamp-1">
-                    {evt.type} {evt.language ? `• ${evt.language}` : ''}
+                </div>
+                <button
+                  onClick={() => setSelectedCategoryTile(null)}
+                  className="px-4 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-black/5 text-[#111111] font-sans-manrope font-bold text-xs border border-black/10 cursor-pointer"
+                >
+                  Show All
+                </button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredEvents.length > 0 ? (
+                filteredEvents.map((evt) => (
+                  <div
+                    key={evt.id}
+                    onClick={() => setSelectedEvent(evt)}
+                    className="bg-white rounded-[24px] p-5 border border-black/8 hover:border-black/15 shadow-2xs hover:shadow-md flex flex-col justify-between space-y-4 text-left group cursor-pointer transition-all hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-sans-manrope font-extrabold text-[#FF5E84] uppercase tracking-wider">
+                        {evt.category}
+                      </span>
+                      {getStatusBadge(evt.status, evt)}
+                    </div>
+
+                    <div>
+                      <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111] group-hover:text-[#FF5E84] transition-colors leading-tight">
+                        {evt.eventName}
+                      </h3>
+                      <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 line-clamp-1">
+                        {evt.type} {evt.language ? `• ${evt.language}` : ''}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-black/6 flex items-center justify-between text-xs font-sans-manrope text-[#5F5F5F]">
+                      <span className="flex items-center gap-1.5 font-semibold truncate">
+                        <MapPin className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" />
+                        <span className="truncate">{evt.stage ? `${evt.stage} - ${evt.venue}` : evt.venue || 'TBA'}</span>
+                      </span>
+                      <span className="flex items-center gap-1 font-semibold shrink-0 ml-2">
+                        <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
+                        <span>{evt.scheduledStartTime ? formatTime12Hour(evt.scheduledStartTime) : 'TBA'}</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 text-xs font-sans-manrope font-bold text-[#FF5E84]">
+                      <span>View Details</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-center bg-white rounded-[24px] border border-black/8 space-y-2">
+                  <AlertCircle className="w-8 h-8 text-[#FF5E84] mx-auto opacity-70" />
+                  <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                    No Competitions Found
+                  </h4>
+                  <p className="font-sans-manrope text-xs text-[#5F5F5F]">
+                    Try adjusting your search query or status filter.
                   </p>
                 </div>
-
-                <div className="pt-3 border-t border-black/6 flex items-center justify-between text-xs font-sans-manrope text-[#5F5F5F]">
-                  <span className="flex items-center gap-1.5 font-semibold truncate">
-                    <MapPin className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" />
-                    <span className="truncate">{evt.stage ? `${evt.stage} - ${evt.venue}` : evt.venue || 'TBA'}</span>
-                  </span>
-                  <span className="flex items-center gap-1 font-semibold shrink-0 ml-2">
-                    <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
-                    <span>{evt.scheduledStartTime ? formatTime12Hour(evt.scheduledStartTime) : 'TBA'}</span>
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between pt-1 text-xs font-sans-manrope font-bold text-[#FF5E84]">
-                  <span>View Details</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-full py-12 text-center bg-white rounded-[24px] border border-black/8 space-y-2">
-              <AlertCircle className="w-8 h-8 text-[#FF5E84] mx-auto opacity-70" />
-              <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
-                No Competitions Found
+              )}
+            </div>
+          </>
+        ) : (
+          /* Idle state — prompt the user to search or pick a category */
+          <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-[#FF5E84]/10 flex items-center justify-center">
+              <Search className="w-6 h-6 text-[#FF5E84]" />
+            </div>
+            <div className="space-y-1.5">
+              <h4 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
+                Find Your Competition
               </h4>
-              <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                Try adjusting your search query or status filter.
+              <p className="font-sans-manrope text-sm text-[#5F5F5F] max-w-xs mx-auto leading-relaxed">
+                Type a competition name above — like <span className="font-bold text-[#111111]">"Bharathanatyam"</span> or <span className="font-bold text-[#111111]">"Pencil Drawing"</span> — or tap a category tile to browse.
               </p>
             </div>
-          )}
-        </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              {['Pencil Drawing', 'Mime', 'Light Music', 'Anchoring', 'Oppana'].map((hint) => (
+                <button
+                  key={hint}
+                  onClick={() => setSearchQuery(hint)}
+                  className="px-3.5 py-1.5 rounded-full bg-white border border-black/10 text-xs font-sans-manrope font-bold text-[#5F5F5F] hover:text-[#FF5E84] hover:border-[#FF5E84]/40 cursor-pointer transition-all"
+                >
+                  {hint}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
 
