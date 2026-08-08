@@ -31,22 +31,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setAccessDeniedMsg(null);
     
     try {
-      // Start login — don't await the full Firestore sync.
-      // loginWithGoogle triggers signInWithPopup, and once the popup closes
-      // successfully onAuthStateChanged takes over in the background.
+      // On mobile this triggers a redirect (page reloads) — modal closes naturally.
+      // On desktop the popup resolves quickly and we close immediately.
       loginWithGoogle().catch((err: any) => {
-        // Only surface errors that aren't a silent popup-close
         if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
-          setAccessDeniedMsg('Google Sign-In failed. Please try again or open in Chrome/Safari.');
+          setAccessDeniedMsg('Google Sign-In failed. Please try again in Chrome or Safari.');
+          setGoogleLoading(false);
         }
       });
 
-      // Close the modal immediately — auth state will update in background
-      onClose();
+      // Close modal immediately on desktop (redirect handles mobile automatically)
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (!isMobile) {
+        onClose();
+        setGoogleLoading(false);
+      }
+      // On mobile: keep loading spinner briefly while redirect happens
     } catch (err: any) {
       console.warn('Google Auth Error:', err);
-      setAccessDeniedMsg('Google Sign-In was blocked or cancelled. Try opening in Chrome/Safari browser.');
-    } finally {
+      setAccessDeniedMsg('Google Sign-In was blocked or cancelled. Please open the site directly in Chrome or Safari.');
       setGoogleLoading(false);
     }
   };
@@ -124,7 +127,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 />
               </svg>
             )}
-            <span>{googleLoading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
+            <span>{googleLoading ? 'Redirecting to Google...' : 'Continue with Google'}</span>
           </button>
 
           {/* Footer Security Note */}

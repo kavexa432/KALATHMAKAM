@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -397,19 +399,58 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return index !== -1 ? index + 1 : 4;
   };
 
-  // Robust Google Auth Engine — popup works reliably on Android Chrome & Desktop
-  const loginWithGoogle = async () => {
-    try {
-      const provider = googleProvider;
-      provider.addScope('email');
-      provider.addScope('profile');
-      // Ensure fresh account selection only when needed (not forced re-pick)
-      provider.setCustomParameters({ prompt: 'select_account' });
+  // Detect mobile browsers (iOS Safari, Android Chrome, in-app webviews)
+  const isMobileBrowser = () =>
+    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
+  // Handle redirect result on page load (for mobile signInWithRedirect flow)
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          const email = result.user.email || '';
+          const tempUser: UserModel = {
+            id: result.user.uid,
+            name: result.user.displayName || email.split('@')[0].toUpperCase(),
+            email,
+            role: 'user',
+            approved: false,
+            permissions: [],
+            status: 'Active',
+            avatarUrl: result.user.photoURL || undefined,
+            createdAt: new Date().toISOString(),
+          };
+          syncUserToFirestore(tempUser).catch((e) => console.warn('Redirect sync error:', e));
+        }
+      })
+      .catch((err) => {
+        // Silently ignore redirect errors (e.g. user cancelled)
+        if (err?.code !== 'auth/popup-closed-by-user') {
+          console.warn('Redirect result error:', err?.code);
+        }
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Google Auth — popup on desktop, redirect on mobile
+  const loginWithGoogle = async () => {
+    const provider = googleProvider;
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    if (isMobileBrowser()) {
+      // Mobile: use redirect — no popup blocking issues on iOS/Android
+      await signInWithRedirect(auth, provider);
+      // Page will reload; getRedirectResult (above) handles the result
+      return;
+    }
+
+    // Desktop: popup is fine
+    try {
       const result = await signInWithPopup(auth, provider);
       if (result?.user) {
         const email = result.user.email || '';
-        
         const tempUser: UserModel = {
           id: result.user.uid,
           name: result.user.displayName || email.split('@')[0].toUpperCase(),
@@ -421,16 +462,11 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           avatarUrl: result.user.photoURL || undefined,
           createdAt: new Date().toISOString(),
         };
-        
-        // syncUserToFirestore will read Firestore and assign the correct role
-        // (developer if vaishnavil4433@gmail.com, admin if pre-authorized, user otherwise)
-        // Fire-and-forget — onAuthStateChanged handles the final state update
         syncUserToFirestore(tempUser).catch((e) => console.warn('Firestore sync background error:', e));
       }
     } catch (err: any) {
-      // User closed popup or popup was blocked
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        return; // Silent — user intentionally closed
+        return;
       }
       console.error('Google Sign-In error:', err);
       throw err;
