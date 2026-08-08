@@ -1,5 +1,5 @@
 const { GoogleGenAI } = require('@google/genai');
-const resultSchema = require('../schemas/resultSchema');
+const { resultSchema } = require('../schemas/resultSchema');
 
 // Helper to get an array of keys
 function getApiKeys() {
@@ -19,7 +19,6 @@ async function extractResultsFromImage(file, eventName, category) {
     throw new Error('No Gemini API keys configured on the server.');
   }
 
-  // Define prompt
   const prompt = `
     You are an expert OCR AI processing a handwritten or printed score sheet for a cultural festival competition.
     The competition is: "${eventName}" (Category: "${category}").
@@ -30,6 +29,7 @@ async function extractResultsFromImage(file, eventName, category) {
     Extract their House strictly mapping to: 'NOVA', 'VEGA', 'ORION', 'ASTRA', or 'N/A' if missing/unclear.
     Provide a confidence score ('high', 'medium', 'low') based on how legible the handwriting is.
     Do NOT attempt to assign points. Do not guess houses if they are illegible, use 'N/A' and set confidence to 'low'.
+    Return ONLY valid JSON matching the schema. No markdown, no explanation.
   `;
 
   const imagePart = {
@@ -41,7 +41,6 @@ async function extractResultsFromImage(file, eventName, category) {
 
   let lastError = null;
 
-  // Attempt generation rotating through all available keys
   for (let i = 0; i < apiKeys.length; i++) {
     const key = apiKeys[i];
     
@@ -50,11 +49,19 @@ async function extractResultsFromImage(file, eventName, category) {
       
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: [prompt, imagePart],
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: prompt },
+              imagePart
+            ]
+          }
+        ],
         config: {
           responseMimeType: 'application/json',
           responseSchema: resultSchema,
-          temperature: 0.1, // Low temperature for factual extraction
+          temperature: 0.1,
         }
       });
 
@@ -64,14 +71,14 @@ async function extractResultsFromImage(file, eventName, category) {
         throw new Error('Received empty response from Gemini API.');
       }
 
-      const parsedData = JSON.parse(responseText);
+      // Strip markdown code fences if model wraps response
+      const cleaned = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+      const parsedData = JSON.parse(cleaned);
       
-      // Perform strict backend validation on the shape
       if (!parsedData.results || !Array.isArray(parsedData.results)) {
-         throw new Error('Gemini API returned an invalid JSON structure (missing results array).');
+        throw new Error('Gemini API returned an invalid JSON structure (missing results array).');
       }
 
-      // Add a warning if any confidence is low
       const warnings = [];
       const hasLowConfidence = parsedData.results.some(r => r.confidence === 'low');
       if (hasLowConfidence) {
@@ -80,27 +87,23 @@ async function extractResultsFromImage(file, eventName, category) {
 
       return {
         results: parsedData.results,
-        warnings
+        warnings: parsedData.warnings || warnings
       };
 
     } catch (error) {
       console.warn(`[OCR Warning] API Key at index ${i} failed. Reason: ${error.message}`);
       lastError = error;
       
-      // Check if it's a rate limit / quota issue. Usually contains "429" or "quota"
       const errorStr = String(error).toLowerCase();
       if (errorStr.includes('429') || errorStr.includes('quota') || errorStr.includes('too many requests')) {
-        // Continue to the next key in the loop
         continue;
       }
       
-      // If it's a different error (e.g. invalid JSON structure), throw immediately
       throw error;
     }
   }
 
-  // If we exhaust the loop, all keys failed.
-  throw new Error(`All available Gemini API keys failed or hit their rate limits. Last Error: ${lastError.message}`);
+  throw new Error(`All available Gemini API keys failed. Last Error: ${lastError.message}`);
 }
 
 module.exports = {
