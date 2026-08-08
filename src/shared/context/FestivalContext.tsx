@@ -435,7 +435,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         // syncUserToFirestore will read Firestore and assign the correct role
         // (developer if vaishnavil4433@gmail.com, admin if pre-authorized, user otherwise)
-        await syncUserToFirestore(tempUser);
+        // Fire-and-forget — onAuthStateChanged handles the final state update
+        syncUserToFirestore(tempUser).catch((e) => console.warn('Firestore sync background error:', e));
       }
     } catch (err: any) {
       // User closed popup or popup was blocked

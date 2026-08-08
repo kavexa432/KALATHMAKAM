@@ -31,11 +31,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setAccessDeniedMsg(null);
     
     try {
-      await loginWithGoogle();
+      // Start login — don't await the full Firestore sync.
+      // loginWithGoogle triggers signInWithPopup, and once the popup closes
+      // successfully onAuthStateChanged takes over in the background.
+      loginWithGoogle().catch((err: any) => {
+        // Only surface errors that aren't a silent popup-close
+        if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
+          setAccessDeniedMsg('Google Sign-In failed. Please try again or open in Chrome/Safari.');
+        }
+      });
+
+      // Close the modal immediately — auth state will update in background
       onClose();
     } catch (err: any) {
       console.warn('Google Auth Error:', err);
-      setAccessDeniedMsg('Google Sign-In was blocked or cancelled. Try Quick Access below or open in Chrome/Safari browser.');
+      setAccessDeniedMsg('Google Sign-In was blocked or cancelled. Try opening in Chrome/Safari browser.');
     } finally {
       setGoogleLoading(false);
     }
