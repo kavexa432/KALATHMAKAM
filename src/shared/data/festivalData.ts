@@ -2445,7 +2445,7 @@ export const houseEvents: EventModel[] = [
     eventName: 'One Act Play (Cat III)',
     category: 'House Item',
     type: 'Group',
-    language: 'Malayalam',
+    language: 'English',
     houseWise: true,
     competitionType: 'group',
     teamSize: 13, // 10 + 3 members
