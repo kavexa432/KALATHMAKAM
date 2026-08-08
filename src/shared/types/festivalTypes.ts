@@ -131,20 +131,36 @@ export interface EventResultModel {
   judgeNotes?: string;
 }
 
+export interface ResultDraftPlacement {
+  position: 1 | 2 | 3 | number;
+  studentName: string;
+  studentClass: string;
+  house: HouseId | 'NONE' | string;
+  points?: number;
+  studentNameConfidence?: number;
+  houseConfidence?: number;
+  positionConfidence?: number;
+  classConfidence?: number;
+  confidence?: 'high' | 'medium' | 'low';
+}
+
 export interface ResultDraftModel {
   id: string;
+  eventId: string;
   eventName: string;
   category: string;
-  results: Array<{
-    position: number | string;
-    studentName: string;
-    studentClass: string;
-    house: HouseId | string;
-    confidence: 'high' | 'medium' | 'low';
-  }>;
+  date?: string;
+  sourceImagePath?: string;
+  sourceImageUrl?: string;
+  ocrStatus: 'pending' | 'review' | 'published';
+  version?: number;
+  results: ResultDraftPlacement[];
   status: 'Pending Review' | 'Verified' | 'Published';
   createdBy: string;
   createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
+  editedFields?: string[];
 }
 
 export type AnnouncementType = 'General Notice' | 'Announcement' | 'Result' | 'Stage Update' | 'Schedule Change' | 'Emergency';

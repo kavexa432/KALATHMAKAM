@@ -25,6 +25,7 @@ import { ResultApprovalQueue } from './components/ResultApprovalQueue';
 import { AuditLogsTable } from './components/AuditLogsTable';
 import { ResultSheetOCRModal } from './components/ResultSheetOCRModal';
 import { EventQuickActionModal } from './components/EventQuickActionModal';
+import { ScanResultPage } from './pages/ScanResultPage';
 import { formatTime12Hour } from '../../utils/timeUtils';
 import type { AnnouncementType, PriorityLevel, HouseId, EventModel } from '../../shared/types/festivalTypes';
 
@@ -48,7 +49,7 @@ export const Dashboard: React.FC = () => {
   } = useFestival();
 
   const [activeTab, setActiveTab] = useState<
-    'Overview' | 'LiveControl' | 'OCRUpload' | 'Results' | 'Leaderboard' | 'Announcements' | 'Schedules' | 'Reports' | 'UserManagement' | 'Settings' | 'QRScan' | 'AuditLogs'
+    'Overview' | 'LiveControl' | 'ScanResult' | 'Results' | 'Leaderboard' | 'Announcements' | 'Schedules' | 'Reports' | 'UserManagement' | 'Settings' | 'QRScan' | 'AuditLogs'
   >('Overview');
 
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
@@ -215,7 +216,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center gap-3">
               {/* Primary OCR Result Sheet Button */}
               <button
-                onClick={() => setOcrModalOpen(true)}
+                onClick={() => setActiveTab('ScanResult')}
                 className="gradient-btn-primary text-white font-sans-manrope font-bold text-xs px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md cursor-pointer hover:scale-105 transition-all"
               >
                 <FileSpreadsheet className="w-4 h-4" />
@@ -227,8 +228,8 @@ export const Dashboard: React.FC = () => {
                   onClick={toggleArchiveMode}
                   className={`px-4 py-2 rounded-full font-sans-manrope font-bold text-xs flex items-center gap-2 border transition-all cursor-pointer ${
                     archiveMode
-                      ? 'bg-amber-500 text-white border-amber-600'
-                      : 'bg-white text-[#5F5F5F] border-black/10 hover:text-[#111111]'
+                      ? 'bg-amber-500 text-[#111111] font-extrabold border-amber-600'
+                      : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border-black/10'
                   }`}
                 >
                   <Archive className="w-3.5 h-3.5" />
@@ -273,11 +274,15 @@ export const Dashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setOcrModalOpen(true)}
-              className="px-5 py-2.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-sans-manrope font-extrabold text-xs flex items-center gap-2 cursor-pointer transition-all"
+              onClick={() => setActiveTab('ScanResult')}
+              className={`px-5 py-2.5 rounded-full font-sans-manrope font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+                activeTab === 'ScanResult'
+                  ? 'bg-[#111111] text-white shadow-sm'
+                  : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+              }`}
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-amber-600" />
-              <span>OCR Upload</span>
+              <span>Scan Result (OCR)</span>
             </button>
 
             <button
@@ -988,6 +993,10 @@ export const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'ScanResult' && (
+          <ScanResultPage onBackToDashboard={() => setActiveTab('Overview')} />
         )}
 
         {activeTab === 'Results' && <ResultApprovalQueue />}

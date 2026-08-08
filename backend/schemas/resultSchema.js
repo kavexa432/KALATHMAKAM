@@ -28,6 +28,22 @@ const resultSchema = {
             type: Type.STRING, 
             description: "'high', 'medium', or 'low' based on legibility of handwriting." 
           },
+          studentNameConfidence: {
+            type: Type.NUMBER,
+            description: "Confidence score between 0.0 and 1.0 for studentName legibility."
+          },
+          houseConfidence: {
+            type: Type.NUMBER,
+            description: "Confidence score between 0.0 and 1.0 for house legibility."
+          },
+          positionConfidence: {
+            type: Type.NUMBER,
+            description: "Confidence score between 0.0 and 1.0 for position legibility."
+          },
+          classConfidence: {
+            type: Type.NUMBER,
+            description: "Confidence score between 0.0 and 1.0 for studentClass legibility."
+          },
         },
         required: ["position", "studentName", "studentClass", "house", "confidence"],
       }
