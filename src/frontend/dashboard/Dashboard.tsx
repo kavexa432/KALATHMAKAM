@@ -169,7 +169,7 @@ export const Dashboard: React.FC = () => {
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Festival Timeline Top Bar */}
-        <div className="glass-card bg-[#111111] text-white rounded-[24px] p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-[#111111] text-white rounded-[24px] p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-6 flex-1 min-w-[300px]">
             <div className="font-serif-cormorant font-bold text-2xl">Day 2</div>
             <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">

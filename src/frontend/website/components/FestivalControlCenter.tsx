@@ -26,6 +26,9 @@ export const FestivalControlCenter: React.FC = () => {
     }))
     .sort((a, b) => b.points - a.points);
 
+  // Don't render a mostly-empty widget if no events are loaded yet
+  if (events.length === 0) return null;
+
   return (
     <section className="relative py-4 sm:py-6 z-20">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
