@@ -213,22 +213,34 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  // Helper to resolve role safely (e.g. vaishnavil4433@gmail.com is always developer)
+  const resolveUserRole = (email: string, claimRole?: string): { role: 'developer' | 'admin' | 'user'; approved: boolean } => {
+    const cleanEmail = (email || '').toLowerCase().trim();
+    if (cleanEmail === 'vaishnavil4433@gmail.com') {
+      return { role: 'developer', approved: true };
+    }
+    if (claimRole === 'developer' || claimRole === 'admin') {
+      return { role: claimRole, approved: true };
+    }
+    return { role: 'user', approved: false };
+  };
+
   // Catch mobile redirect authentication results on initial page load
   useEffect(() => {
     getRedirectResult(auth)
       .then((res) => {
         if (res?.user) {
-          res.user.getIdTokenResult().then(idTokenResult => {
+          res.user.getIdTokenResult().then((idTokenResult) => {
             const email = res.user.email || '';
-            const role = (idTokenResult.claims.role as 'developer' | 'admin' | 'user') || 'user';
-            const isDevOrAdmin = role === 'developer' || role === 'admin';
+            const claimRole = idTokenResult.claims.role as string | undefined;
+            const { role, approved } = resolveUserRole(email, claimRole);
             
             const loggedUser: UserModel = {
               id: res.user.uid,
               name: res.user.displayName || email.split('@')[0].toUpperCase(),
               email,
-              role: role,
-              approved: isDevOrAdmin,
+              role,
+              approved,
               permissions: role === 'developer' ? ['All'] : role === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
               status: 'Active',
               avatarUrl: res.user.photoURL || undefined,
@@ -239,8 +251,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           });
         }
       })
-      .catch(() => {
-        // Handle redirect errors silently
+      .catch((err) => {
+        console.warn('Redirect result handling notice:', err);
       });
   }, []);
 
@@ -253,16 +265,16 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         try {
           const idTokenResult = await fbUser.getIdTokenResult();
-          const role = (idTokenResult.claims.role as 'developer' | 'admin' | 'user') || 'user';
-          const isDevOrAdmin = role === 'developer' || role === 'admin';
+          const claimRole = idTokenResult.claims.role as string | undefined;
+          const { role, approved } = resolveUserRole(email, claimRole);
 
           // Optimistic Immediate UI Update
           const tempUser: UserModel = {
             id: fbUser.uid,
             name: fbUser.displayName || email.split('@')[0].toUpperCase(),
             email,
-            role: role,
-            approved: isDevOrAdmin,
+            role,
+            approved,
             permissions: role === 'developer' ? ['All'] : role === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
             status: 'Active',
             avatarUrl: fbUser.photoURL || undefined,
@@ -392,19 +404,27 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Robust Mobile & Desktop Google Auth Engine
   const loginWithGoogle = async () => {
     try {
-      // 1. Try popup first (supported by mobile Chrome/Safari when user taps)
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        // Mobile browsers block popups / iframe cross-window messaging.
+        // Use direct redirect strategy to prevent double account picker prompt.
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      }
+
+      // Desktop popup strategy
       const result = await signInWithPopup(auth, googleProvider);
       if (result?.user) {
         const email = result.user.email || '';
-        const isDev = email.toLowerCase() === 'vaishnavil4433@gmail.com';
+        const { role, approved } = resolveUserRole(email);
         
         const loggedUser: UserModel = {
           id: result.user.uid,
           name: result.user.displayName || email.split('@')[0].toUpperCase(),
           email,
-          role: isDev ? 'developer' : 'user',
-          approved: isDev ? true : false,
-          permissions: isDev ? ['All'] : [],
+          role,
+          approved,
+          permissions: role === 'developer' ? ['All'] : role === 'admin' ? ['Events', 'Results', 'Leaderboard', 'Gallery', 'Announcements'] : [],
           status: 'Active',
           avatarUrl: result.user.photoURL || undefined,
           createdAt: new Date().toISOString(),
