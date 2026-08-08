@@ -6,7 +6,6 @@ import {
   Sparkles,
   FileText,
   X,
-  Database,
   ChevronDown
 } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
