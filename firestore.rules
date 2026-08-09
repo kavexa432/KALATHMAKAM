@@ -42,7 +42,7 @@ service cloud.firestore {
     }
     match /liveFeed/{feedId} {
       allow read: if true;
-      allow write: if isDeveloper(); // Backend writes to liveFeed during publish
+      allow write: if isAdmin();
     }
     match /gallery/{itemId} {
       allow read: if true;
@@ -55,7 +55,7 @@ service cloud.firestore {
     }
     match /auditLogs/{logId} {
       allow read: if isDeveloper();
-      allow write: if false; // Only backend creates audit logs
+      allow write: if isAdmin();
     }
     match /users/{userId} {
       allow read, write: if isDeveloper();

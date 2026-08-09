@@ -59,9 +59,9 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's3-10', time: '02:40 PM', title: 'Classical Music (Cat 3 Boys)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 3 },
   { id: 's3-11', time: '03:10 PM', title: 'Classical Music (Cat 3 Girls)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 5 },
   { id: 's3-12', time: '03:50 PM', title: 'Violin (Cat 3)', category: 'Instrumental', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '1 Boy + 1 Girl' },
-  { id: 's3-13', time: '04:00 PM', title: 'Group Song (Common)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
-  { id: 's3-14', time: '04:40 PM', title: 'Patriotic Song (Common)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
-  { id: 's3-15', time: '05:20 PM', title: 'National Anthem (Common)', category: 'Ceremony', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
+  { id: 's3-13', time: '04:00 PM', title: 'Group Song (House-wise Common)', category: 'House Item', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '4 houses, 7 members per house (Classes 6-10)' },
+  { id: 's3-14', time: '04:40 PM', title: 'Patriotic Song (House-wise Common)', category: 'House Item', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '4 houses, 7 members per house (Classes 6-10)' },
+  { id: 's3-15', time: '05:20 PM', title: 'National Anthem (House-wise Common)', category: 'House Item', stage: 'Stage 3: KG Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: '4 houses, 7 members per house (Classes 6-10)' },
 
   // ==========================================
   // STAGE 4: Class VI A (Hindi)
@@ -157,9 +157,9 @@ export const DAY2_SCHEDULE_DATA: ScheduleEvent[] = [
   // ==========================================
   // STAGE 3: KG Auditorium — House Songs (Day 2)
   // ==========================================
-  { id: 'd2-s3-1', time: '09:00 AM', title: 'Group Song (Common - Session 1)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
-  { id: 'd2-s3-2', time: '10:00 AM', title: 'Patriotic Song (Common - Session 1)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
-  { id: 'd2-s3-3', time: '11:00 AM', title: 'National Anthem (Common)', category: 'Ceremony', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
+  { id: 'd2-s3-1', time: '09:00 AM', title: 'Group Song (House-wise Common - Session 1)', category: 'House Item', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '4 houses, 7 members per house (Classes 6-10)' },
+  { id: 'd2-s3-2', time: '10:00 AM', title: 'Patriotic Song (House-wise Common - Session 1)', category: 'House Item', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '4 houses, 7 members per house (Classes 6-10)' },
+  { id: 'd2-s3-3', time: '11:00 AM', title: 'National Anthem (House-wise Common)', category: 'House Item', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '4 houses, 7 members per house (Classes 6-10)' },
   { id: 'd2-s3-4', time: '12:00 PM - 01:00 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming' },
   { id: 'd2-s3-5', time: '01:00 PM', title: 'Western Music (Cat III)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 members per house' },
 

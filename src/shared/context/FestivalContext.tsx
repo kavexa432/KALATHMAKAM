@@ -11,6 +11,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  deleteDoc,
   onSnapshot,
   collection,
 } from 'firebase/firestore';
@@ -113,6 +114,13 @@ const isPublishedResultRecord = (record: any) => {
   return record?.published === true || status === 'published' || status === 'verified';
 };
 
+const sortByCreatedAtDesc = <T extends { timestamp?: string; createdAt?: string }>(items: T[]) =>
+  [...items].sort((a, b) => {
+    const timeA = new Date(a.createdAt || a.timestamp || '').getTime();
+    const timeB = new Date(b.createdAt || b.timestamp || '').getTime();
+    return (timeB || 0) - (timeA || 0);
+  });
+
 const getOperationalEventFields = (event: Partial<EventModel>) =>
   Object.fromEntries(
     Object.entries({
@@ -129,6 +137,10 @@ const getOperationalEventFields = (event: Partial<EventModel>) =>
       durationMinutes: event.durationMinutes,
       publishToWebsite: event.publishToWebsite,
       participantsExpected: event.participantsExpected,
+      houseWise: event.houseWise,
+      competitionType: event.competitionType,
+      teamSize: event.teamSize,
+      participantsPerHouse: event.participantsPerHouse,
       status: event.status,
       delayMinutes: event.delayMinutes,
       actualStartTime: event.actualStartTime,
@@ -144,15 +156,15 @@ const getOperationalEventFields = (event: Partial<EventModel>) =>
 
 export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [festival] = useState<FestivalEdition>(currentFestival);
-  const [houses] = useState<HouseModel[]>(initialHouses);
-  const [stages] = useState<StageModel[]>(initialStages);
+  const [houses, setHouses] = useState<HouseModel[]>(initialHouses);
+  const [stages, setStages] = useState<StageModel[]>(initialStages);
   const [events, setEvents] = useState<EventModel[]>([]);
   const [results, setResults] = useState<EventResultModel[]>(initialResults);
   const [resultDrafts, setResultDrafts] = useState<ResultDraftModel[]>([]);
   const [liveFeed, setLiveFeed] = useState<LiveActivityFeedItem[]>(initialLiveFeed);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(initialAuditLogs);
   const [users, setUsers] = useState<UserModel[]>(initialUsers);
-  const [gallery] = useState<GalleryItemModel[]>(initialGallery);
+  const [gallery, setGallery] = useState<GalleryItemModel[]>(initialGallery);
   const publishedResultEventIdsRef = useRef<Set<string>>(new Set());
 
   const applyPublishedResultsToEvents = (publishedResults: EventResultModel[]) => {
@@ -377,22 +389,17 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const unsub = onSnapshot(
         collection(db, 'users'),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const firestoreUsers: UserModel[] = [];
-            snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
-            
-            setUsers((prev) => {
-              const mergedMap = new Map<string, UserModel>();
-              prev.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
-              firestoreUsers.forEach((u) => mergedMap.set(u.email.toLowerCase(), u));
-              return Array.from(mergedMap.values());
-            });
+          const firestoreUsers: UserModel[] = [];
+          snapshot.forEach((d) => firestoreUsers.push({ id: d.id, ...d.data() } as UserModel));
+          
+          if (firestoreUsers.length > 0) {
+            setUsers(firestoreUsers);
+          }
 
-            if (currentUser) {
-              const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
-              if (match && (match.role !== currentUser.role || match.approved !== currentUser.approved)) {
-                persistUser(match);
-              }
+          if (currentUser) {
+            const match = firestoreUsers.find((u) => u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase());
+            if (match && (match.role !== currentUser.role || match.approved !== currentUser.approved)) {
+              persistUser(match);
             }
           }
         },
@@ -404,6 +411,91 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [currentUser]);
 
+  // Public reference collections: every page gets live Firebase updates.
+  useEffect(() => {
+    const subscriptions: Array<() => void> = [];
+
+    try {
+      subscriptions.push(onSnapshot(
+        collection(db, 'houses'),
+        (snapshot) => {
+          const firestoreHouses: HouseModel[] = [];
+          snapshot.forEach((d) => firestoreHouses.push({ id: d.id as HouseId, ...d.data() } as HouseModel));
+          if (firestoreHouses.length > 0) {
+            setHouses((prev) =>
+              prev.map((house) => firestoreHouses.find((item) => item.id === house.id) || house)
+            );
+          }
+        },
+        (err) => console.warn('Firestore houses subscription notice:', err)
+      ));
+    } catch (err) {
+      console.warn('Failed to subscribe to houses:', err);
+    }
+
+    try {
+      subscriptions.push(onSnapshot(
+        collection(db, 'stages'),
+        (snapshot) => {
+          const firestoreStages: StageModel[] = [];
+          snapshot.forEach((d) => firestoreStages.push({ id: d.id, ...d.data() } as StageModel));
+          if (firestoreStages.length > 0) {
+            setStages((prev) =>
+              prev.map((stage) => firestoreStages.find((item) => item.id === stage.id || item.name === stage.name) || stage)
+            );
+          }
+        },
+        (err) => console.warn('Firestore stages subscription notice:', err)
+      ));
+    } catch (err) {
+      console.warn('Failed to subscribe to stages:', err);
+    }
+
+    try {
+      subscriptions.push(onSnapshot(
+        collection(db, 'liveFeed'),
+        (snapshot) => {
+          const firestoreFeed: LiveActivityFeedItem[] = [];
+          snapshot.forEach((d) => firestoreFeed.push({ id: d.id, ...d.data() } as LiveActivityFeedItem));
+          setLiveFeed(sortByCreatedAtDesc(firestoreFeed));
+        },
+        (err) => console.warn('Firestore liveFeed subscription notice:', err)
+      ));
+    } catch (err) {
+      console.warn('Failed to subscribe to liveFeed:', err);
+    }
+
+    try {
+      subscriptions.push(onSnapshot(
+        collection(db, 'auditLogs'),
+        (snapshot) => {
+          const firestoreLogs: AuditLogItem[] = [];
+          snapshot.forEach((d) => firestoreLogs.push({ id: d.id, ...d.data() } as AuditLogItem));
+          setAuditLogs(sortByCreatedAtDesc(firestoreLogs));
+        },
+        (err) => console.warn('Firestore auditLogs subscription notice:', err)
+      ));
+    } catch (err) {
+      console.warn('Failed to subscribe to auditLogs:', err);
+    }
+
+    try {
+      subscriptions.push(onSnapshot(
+        collection(db, 'gallery'),
+        (snapshot) => {
+          const firestoreGallery: GalleryItemModel[] = [];
+          snapshot.forEach((d) => firestoreGallery.push({ id: d.id, ...d.data() } as GalleryItemModel));
+          setGallery(firestoreGallery);
+        },
+        (err) => console.warn('Firestore gallery subscription notice:', err)
+      ));
+    } catch (err) {
+      console.warn('Failed to subscribe to gallery:', err);
+    }
+
+    return () => subscriptions.forEach((unsubscribe) => unsubscribe());
+  }, []);
+
   // Listen to Firestore Events Collection changes in real time
   useEffect(() => {
     try {
@@ -413,9 +505,12 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const firestoreEvents: EventModel[] = [];
           snapshot.forEach((d) => firestoreEvents.push({ id: d.id, ...d.data() } as EventModel));
 
-          // Keep the canonical event catalogue local, but let Firestore drive live operational state.
           const canonicalEvents = [...initialEvents, ...houseEvents];
-          const mergedEvents = canonicalEvents.map((localEvent) => {
+          const canonicalById = new Map(canonicalEvents.map((event) => [event.id, event]));
+          const sourceEvents = firestoreEvents.length > 0 ? firestoreEvents : canonicalEvents;
+
+          const mergedEvents = sourceEvents.map((sourceEvent) => {
+            const localEvent = canonicalById.get(sourceEvent.id) || sourceEvent;
             const firestoreEvent = firestoreEvents.find((event) => event.id === localEvent.id);
             const mergedEvent = firestoreEvent
               ? { ...localEvent, ...getOperationalEventFields(firestoreEvent) }
@@ -716,6 +811,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const newLog: AuditLogItem = {
       id: `log-${Date.now()}`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      createdAt: new Date().toISOString(),
       user,
       userRole: role,
       action,
@@ -723,6 +819,9 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       details,
     };
     setAuditLogs((prev) => [newLog, ...prev]);
+    setDoc(doc(db, 'auditLogs', newLog.id), newLog).catch((err) =>
+      console.warn('Firestore audit log write notice:', err)
+    );
   };
 
   const delayEvent = async (eventId: string, minutes: number) => {
@@ -942,6 +1041,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id: `feed-${Date.now()}`,
       festivalId: '2k26',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      createdAt: new Date().toISOString(),
       type,
       priority,
       content,
@@ -950,6 +1050,12 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       read: false,
     };
     setLiveFeed((prev) => [newItem, ...prev]);
+    setDoc(doc(db, 'liveFeed', newItem.id), newItem).catch((err) =>
+      console.warn('Firestore liveFeed write notice:', err)
+    );
+    setDoc(doc(db, 'announcements', newItem.id), newItem).catch((err) =>
+      console.warn('Firestore announcement write notice:', err)
+    );
     logAuditAction(
       currentUser?.name || 'Admin',
       currentUser?.role || 'admin',
@@ -960,18 +1066,23 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const togglePermission = (userId: string, permission: string) => {
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id === userId) {
-          const has = u.permissions.includes(permission);
-          const updated = has
-            ? u.permissions.filter((p) => p !== permission)
-            : [...u.permissions, permission];
-          return { ...u, permissions: updated };
-        }
-        return u;
-      })
-    );
+    const targetUser = users.find((u) => u.id === userId);
+    if (!targetUser) return;
+
+    const hasPermission = targetUser.permissions.includes(permission);
+    const updatedUser: UserModel = {
+      ...targetUser,
+      permissions: hasPermission
+        ? targetUser.permissions.filter((p) => p !== permission)
+        : [...targetUser.permissions, permission],
+    };
+
+    setUsers((prev) => prev.map((u) => (u.id === userId ? updatedUser : u)));
+    if (updatedUser) {
+      setDoc(doc(db, 'users', updatedUser.id), updatedUser, { merge: true }).catch((err) =>
+        console.warn('Firestore permission write notice:', err)
+      );
+    }
     logAuditAction(
       currentUser?.name || 'Developer',
       'developer',
@@ -1037,6 +1148,9 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       status: 'Active',
     };
     setUsers((prev) => [...prev, newUser]);
+    setDoc(doc(db, 'users', newUser.id), newUser, { merge: true }).catch((err) =>
+      console.warn('Firestore create admin notice:', err)
+    );
     logAuditAction(
       currentUser?.name || 'Developer',
       'developer',
@@ -1048,6 +1162,9 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const removeUser = (userId: string) => {
     setUsers((prev) => prev.filter((u) => u.id !== userId));
+    deleteDoc(doc(db, 'users', userId)).catch((err) =>
+      console.warn('Firestore remove user notice:', err)
+    );
     logAuditAction(
       currentUser?.name || 'Developer',
       'developer',
@@ -1070,6 +1187,11 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const markFeedRead = () => {
     setLiveFeed((prev) => prev.map((f) => ({ ...f, read: true })));
+    liveFeed.forEach((item) => {
+      if (!item.read) {
+        setDoc(doc(db, 'liveFeed', item.id), { read: true }, { merge: true }).catch(() => {});
+      }
+    });
   };
 
   return (

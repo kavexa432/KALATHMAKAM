@@ -184,6 +184,7 @@ export interface LiveActivityFeedItem {
   id: string;
   festivalId: string;
   timestamp: string;
+  createdAt?: string;
   type: AnnouncementType;
   priority: PriorityLevel;
   content: string;
@@ -195,6 +196,7 @@ export interface LiveActivityFeedItem {
 export interface AuditLogItem {
   id: string;
   timestamp: string;
+  createdAt?: string;
   user: string;
   userRole: UserRole;
   action: string;
