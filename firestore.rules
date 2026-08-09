@@ -34,7 +34,7 @@ service cloud.firestore {
     }
     match /results/{resultId} {
       allow read: if true;
-      allow write: if isDeveloper(); // Admin SDK handles results creation during publish
+      allow write: if isAdmin();
     }
     match /announcements/{announcementId} {
       allow read: if true;

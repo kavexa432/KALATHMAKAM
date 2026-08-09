@@ -24,6 +24,60 @@ function calcPoints(position, competitionType) {
   return 0;
 }
 
+function normalizePositionLabel(position) {
+  const pos = Number(position);
+  if (pos === 1) return '1st';
+  if (pos === 2) return '2nd';
+  if (pos === 3) return '3rd';
+  return String(position);
+}
+
+// GET /api/publish - public published results feed for static hosted frontend fallback
+router.get('/', async (_req, res) => {
+  try {
+    const snapshot = await db.collection('results').get();
+    const flattenedResults = [];
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+
+      if (Array.isArray(data.results)) {
+        data.results.forEach((item, index) => {
+          const houseId = String(item.house || item.houseId || 'NONE').toUpperCase();
+          flattenedResults.push({
+            id: `${docSnap.id}-${index}`,
+            eventId: data.eventId || docSnap.id,
+            festivalId: data.festivalId || '2k26',
+            eventTitle: data.competitionName || data.eventTitle || data.eventName || 'Competition',
+            category: data.category || 'General',
+            participantName: item.studentName || item.participantName || '',
+            studentClass: item.studentClass || '',
+            houseId,
+            houseName: houseId === 'NONE' ? 'Non-House / Individual' : houseId,
+            position: normalizePositionLabel(item.position),
+            points: Number(item.points) || 0,
+            createdAt: data.publishedAt?.toDate?.().toISOString?.() || data.createdAt || new Date().toISOString(),
+            status: data.published ? 'Published' : data.status || 'Published',
+            judgeNotes: data.judgeNotes || '',
+          });
+        });
+        return;
+      }
+
+      flattenedResults.push({
+        id: docSnap.id,
+        ...data,
+        status: data.status || (data.published ? 'Published' : 'Published'),
+      });
+    });
+
+    res.json({ success: true, results: flattenedResults });
+  } catch (error) {
+    console.error('Fetch Published Results Error:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch published results.' });
+  }
+});
+
 // POST /api/publish
 router.post('/', verifyAdmin, async (req, res) => {
   try {
@@ -209,6 +263,8 @@ router.post('/', verifyAdmin, async (req, res) => {
 router.delete('/:eventId', verifyAdmin, async (req, res) => {
   const { eventId } = req.params;
   try {
+    const resultRowsSnapshot = await db.collection('results').where('eventId', '==', eventId).get();
+
     await db.runTransaction(async (transaction) => {
       const eventRef = db.collection('events').doc(eventId);
       const resultRef = db.collection('results').doc(eventId);
@@ -223,6 +279,10 @@ router.delete('/:eventId', verifyAdmin, async (req, res) => {
 
       // Delete result document
       transaction.delete(resultRef);
+
+      resultRowsSnapshot.forEach((docSnap) => {
+        transaction.delete(docSnap.ref);
+      });
 
       // Audit log
       const logRef = db.collection('auditLogs').doc();

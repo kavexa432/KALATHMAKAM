@@ -97,6 +97,7 @@ interface FestivalContextType {
 const FestivalContext = createContext<FestivalContextType | undefined>(undefined);
 
 const LOCAL_USER_KEY = 'kalathmakam_current_user_v1';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const normalizePositionLabel = (position: number | string): '1st' | '2nd' | '3rd' | string => {
   const pos = Number(position);
@@ -137,10 +138,31 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [users, setUsers] = useState<UserModel[]>(initialUsers);
   const [gallery] = useState<GalleryItemModel[]>(initialGallery);
   const publishedResultEventIdsRef = useRef<Set<string>>(new Set());
+
+  const applyPublishedResultsToEvents = (publishedResults: EventResultModel[]) => {
+    const publishedEventIds = new Set(
+      publishedResults
+        .filter((result) => result.status === 'Published' || result.status === 'Verified')
+        .map((result) => result.eventId)
+    );
+    publishedResultEventIdsRef.current = publishedEventIds;
+
+    setEvents((prev) =>
+      prev.map((event) =>
+        publishedEventIds.has(event.id)
+          ? {
+              ...event,
+              resultsPublished: true,
+              winnerUploaded: true,
+              housePointsUpdated: true,
+            }
+          : event
+      )
+    );
+  };
   
   // Keep backend awake ping
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
     // Ping every 20 seconds (20000ms)
     const interval = setInterval(() => {
       fetch(`${API_URL}/api/ping`).catch(() => {
@@ -453,25 +475,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           setResults(firestoreResults);
 
-          const publishedEventIds = new Set(
-            firestoreResults
-              .filter((result) => result.status === 'Published' || result.status === 'Verified')
-              .map((result) => result.eventId)
-          );
-          publishedResultEventIdsRef.current = publishedEventIds;
-
-          setEvents((prev) =>
-            prev.map((event) =>
-              publishedEventIds.has(event.id)
-                ? {
-                    ...event,
-                    resultsPublished: true,
-                    winnerUploaded: true,
-                    housePointsUpdated: true,
-                  }
-                : event
-            )
-          );
+          applyPublishedResultsToEvents(firestoreResults);
         },
         (err) => console.warn('Firestore results subscription notice:', err)
       );
@@ -479,6 +483,34 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (err) {
       console.error('Failed to subscribe to results:', err);
     }
+  }, []);
+
+  // Backend fallback/polling feed for deployed static site. This also updates without page refresh.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPublishedResults = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/publish`, { cache: 'no-store' });
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (cancelled || !Array.isArray(payload.results)) return;
+
+        const apiResults = payload.results as EventResultModel[];
+        setResults(apiResults);
+        applyPublishedResultsToEvents(apiResults);
+      } catch (err) {
+        console.warn('Published results API fallback notice:', err);
+      }
+    };
+
+    loadPublishedResults();
+    const interval = window.setInterval(loadPublishedResults, 10000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
   }, []);
 
   // Listen to Firestore resultDrafts Collection
@@ -694,7 +726,9 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const compType = sourceEvent?.competitionType || 'individual';
 
     let pointsToAdd = 0;
-    if (compType === 'group' || compType === 'team') {
+    if (newResultData.houseId === 'NONE') {
+      pointsToAdd = 0;
+    } else if (compType === 'group' || compType === 'team') {
       // Group / team items: 1st=20, 2nd=15, 3rd=10
       if (newResultData.position === '1st') pointsToAdd = 20;
       else if (newResultData.position === '2nd') pointsToAdd = 15;
@@ -720,8 +754,9 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       prev.map((e) => (e.id === newResultData.eventId ? { ...e, resultsPublished: true, winnerUploaded: true, housePointsUpdated: true } : e))
     );
     
-    // Also update in firestore immediately
+    // Also update Firestore immediately so hosted/static sessions autoload the result.
     setDoc(doc(db, 'events', newResultData.eventId), { resultsPublished: true, winnerUploaded: true, housePointsUpdated: true }, { merge: true }).catch(console.error);
+    setDoc(doc(db, 'results', newResult.id), newResult, { merge: true }).catch(console.error);
 
     logAuditAction(
       currentUser?.name || 'Admin',
