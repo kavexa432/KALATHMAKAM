@@ -636,44 +636,55 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5">
-                  {events.slice(0, 50).map((evt) => (
-                    <tr key={evt.id} className="hover:bg-[#FAF8F5]">
-                      <td className="py-3.5 px-4 font-bold text-[#111111]">
-                        {formatTime12Hour(evt.scheduledStartTime)}
-                        {evt.delayMinutes > 0 && <span className="text-red-500 ml-1">(+{evt.delayMinutes}m)</span>}
-                      </td>
-                      <td className="py-3.5 px-4 text-[#111111] font-bold">{evt.eventName}</td>
-                      <td className="py-3.5 px-4 text-[#5F5F5F]">{evt.stage}</td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                          evt.status === 'Running' ? 'bg-red-100 text-red-600' :
-                          evt.status === 'Results Pending' ? 'bg-amber-100 text-amber-600' :
-                          evt.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' :
-                          'bg-blue-100 text-blue-600'
-                        }`}>
-                          {evt.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        {evt.status !== 'Completed' && (
-                          <button
-                            onClick={() => handleDelayEvent(evt.id)}
-                            className="px-3 py-1.5 rounded-md bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 font-bold transition-all"
-                          >
-                            Delay 15m
-                          </button>
-                        )}
-                        {evt.status === 'Results Pending' && (
-                          <button
-                            onClick={() => setOcrModalOpen(true)}
-                            className="ml-2 px-3 py-1.5 rounded-md bg-[#111111] text-white hover:bg-gray-800 font-bold transition-all"
-                          >
-                            Upload OCR
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {events
+                    .filter((evt) => {
+                      const displayName = (evt.eventName || (evt as any).title || '').trim();
+                      return displayName.length > 0;
+                    })
+                    .slice(0, 50)
+                    .map((evt) => {
+                      const displayName = evt.eventName || (evt as any).title || 'Untitled Event';
+                      const displayStage = evt.stage || evt.venue || 'Venue TBA';
+
+                      return (
+                        <tr key={evt.id} className="hover:bg-[#FAF8F5]">
+                          <td className="py-3.5 px-4 font-bold text-[#111111]">
+                            {formatTime12Hour(evt.scheduledStartTime)}
+                            {evt.delayMinutes > 0 && <span className="text-red-500 ml-1">(+{evt.delayMinutes}m)</span>}
+                          </td>
+                          <td className="py-3.5 px-4 text-[#111111] font-bold">{displayName}</td>
+                          <td className="py-3.5 px-4 text-[#5F5F5F]">{displayStage}</td>
+                          <td className="py-3.5 px-4">
+                            <span className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                              evt.status === 'Running' ? 'bg-red-100 text-red-600' :
+                              evt.status === 'Results Pending' ? 'bg-amber-100 text-amber-600' :
+                              evt.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' :
+                              'bg-blue-100 text-blue-600'
+                            }`}>
+                              {evt.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            {evt.status !== 'Completed' && (
+                              <button
+                                onClick={() => handleDelayEvent(evt.id)}
+                                className="px-3 py-1.5 rounded-md bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 font-bold transition-all"
+                              >
+                                Delay 15m
+                              </button>
+                            )}
+                            {evt.status === 'Results Pending' && (
+                              <button
+                                onClick={() => setOcrModalOpen(true)}
+                                className="ml-2 px-3 py-1.5 rounded-md bg-[#111111] text-white hover:bg-gray-800 font-bold transition-all"
+                              >
+                                Upload OCR
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
