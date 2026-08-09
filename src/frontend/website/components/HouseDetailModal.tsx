@@ -109,10 +109,7 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
               <span className="opacity-75">Captain:</span>{' '}
               <strong className="font-extrabold">{house.captain}</strong>
             </div>
-            <div>
-              <span className="opacity-75">Vice Captain:</span>{' '}
-              <strong className="font-extrabold">{house.viceCaptain}</strong>
-            </div>
+
             <div>
               <span className="opacity-75">Teacher In-charge:</span>{' '}
               <strong className="font-extrabold">{house.teacherInCharge}</strong>

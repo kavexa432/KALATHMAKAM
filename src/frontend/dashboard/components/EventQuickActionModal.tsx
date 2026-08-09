@@ -34,13 +34,13 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
   const [w1Name, setW1Name] = useState('');
   const [w1Class, setW1Class] = useState('');
   const [w1House, setW1House] = useState<HouseId>('NOVA');
-  const [w1Points, setW1Points] = useState<number>(10);
+  const [w1Points] = useState<number>(10);
 
   // Winner 2
   const [w2Name, setW2Name] = useState('');
   const [w2Class, setW2Class] = useState('');
   const [w2House, setW2House] = useState<HouseId>('VEGA');
-  const [w2Points, setW2Points] = useState<number>(7);
+  const [w2Points] = useState<number>(7);
   const [shared2nd, setShared2nd] = useState(false);
   const [w2bName, setW2bName] = useState('');
   const [w2bClass, setW2bClass] = useState('');
@@ -50,7 +50,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
   const [w3Name, setW3Name] = useState('');
   const [w3Class, setW3Class] = useState('');
   const [w3House, setW3House] = useState<HouseId>('ORION');
-  const [w3Points, setW3Points] = useState<number>(5);
+  const [w3Points] = useState<number>(5);
   const [shared3rd, setShared3rd] = useState(false);
   const [w3bName, setW3bName] = useState('');
   const [w3bClass, setW3bClass] = useState('');

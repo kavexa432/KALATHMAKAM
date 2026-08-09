@@ -63,7 +63,7 @@ export interface HouseModel {
   gradient?: string;
   bgGlow?: string;
   captain: string;
-  viceCaptain: string;
+
   teacherInCharge: string;
   motto?: string;
   flagSymbol?: string;

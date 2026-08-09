@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Heart, ArrowUp } from 'lucide-react';
+import { Sparkles, ArrowUp } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const scrollToTop = () => {
@@ -36,6 +36,11 @@ export const Footer: React.FC = () => {
             <p className="font-sans-manrope text-xs font-semibold text-[#FF8A00]">
               "Where Art Breathes, Talent Flourishes."
             </p>
+
+            <div className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 w-fit">
+              <span className="text-[11px] font-sans-manrope text-gray-400">Made by</span>
+              <span className="text-[11px] font-sans-manrope font-extrabold text-[#FF5E84]">Vaishnavi L, IX B</span>
+            </div>
           </div>
 
           {/* Quick Navigation Links */}
@@ -75,12 +80,6 @@ export const Footer: React.FC = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-sans-manrope text-gray-500">
           <p>© 2026 MGM Model School, Ayiroor, Varkala. All rights reserved.</p>
           
-          <div className="flex items-center gap-1">
-            <span>Crafted with</span>
-            <Heart className="w-3.5 h-3.5 text-[#FF5E84] fill-current" />
-            <span>for Kalathmakam Arts Fest</span>
-          </div>
-
           <button
             onClick={scrollToTop}
             className="w-9 h-9 rounded-full bg-white/10 text-white hover:bg-[#FF5E84] flex items-center justify-center transition-all duration-300"

@@ -34,7 +34,7 @@ export const EventsBento: React.FC<EventsBentoProps> = ({ onRegisterEvent }) => 
             Explore Festival Events
           </h2>
           <p className="font-sans-manrope text-base sm:text-lg text-[#5F5F5F]">
-            Over 20+ exciting competitions across 9 distinct art categories. Find your event and register to win.
+            80+ competitions across Dance, Music, Languages, Fine Arts, Computer and more. Find your event below.
           </p>
         </div>
 
