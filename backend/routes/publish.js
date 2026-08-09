@@ -49,7 +49,6 @@ router.post('/', verifyAdmin, async (req, res) => {
 
       // 2. Pre-publish Validation
       const validHouses = ['NOVA', 'VEGA', 'ORION', 'ASTRA', 'NONE', 'N/A'];
-      const seenPositions = new Set();
       const seenStudentClassComposite = new Set();
 
       for (const resItem of results) {
@@ -70,11 +69,8 @@ router.post('/', verifyAdmin, async (req, res) => {
         seenStudentClassComposite.add(studentCompositeKey);
 
         const posNum = Number(resItem.position);
-        if ([1, 2, 3].includes(posNum)) {
-          if (seenPositions.has(posNum)) {
-            throw new Error(`Validation Error: Duplicate position ${posNum} detected.`);
-          }
-          seenPositions.add(posNum);
+        if (![1, 2, 3].includes(posNum)) {
+          throw new Error(`Validation Error: Invalid position "${resItem.position}". Use 1, 2, or 3.`);
         }
       }
 

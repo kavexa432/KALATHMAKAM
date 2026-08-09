@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Camera, ChevronDown, Lock } from 'lucide-react';
+import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Camera, ChevronDown, Lock, Trash2 } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 
 type ManualPlacement = {
+  id: string;
   position: '1st' | '2nd' | '3rd';
   participantName: string;
   studentClass: string;
@@ -12,9 +13,9 @@ type ManualPlacement = {
 };
 
 const emptyPlacements = (houseId: HouseId): ManualPlacement[] => [
-  { position: '1st', participantName: '', studentClass: '', houseId },
-  { position: '2nd', participantName: '', studentClass: '', houseId },
-  { position: '3rd', participantName: '', studentClass: '', houseId },
+  { id: 'base-1st', position: '1st', participantName: '', studentClass: '', houseId },
+  { id: 'base-2nd', position: '2nd', participantName: '', studentClass: '', houseId },
+  { id: 'base-3rd', position: '3rd', participantName: '', studentClass: '', houseId },
 ];
 
 export const ResultApprovalQueue: React.FC = () => {
@@ -59,6 +60,30 @@ export const ResultApprovalQueue: React.FC = () => {
     );
   };
 
+  const addSharedPlacement = (position: '2nd' | '3rd') => {
+    const insertAfterIndex = placements.reduce(
+      (lastIndex, p, index) => (p.position === position ? index : lastIndex),
+      -1
+    );
+    const newPlacement: ManualPlacement = {
+      id: `shared-${position}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      position,
+      participantName: '',
+      studentClass: '',
+      houseId: isHouseEvent ? 'NOVA' : 'NONE',
+    };
+
+    setPlacements((prev) => [
+      ...prev.slice(0, insertAfterIndex + 1),
+      newPlacement,
+      ...prev.slice(insertAfterIndex + 1),
+    ]);
+  };
+
+  const removeSharedPlacement = (id: string) => {
+    setPlacements((prev) => prev.filter((p) => p.id !== id));
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEvt) return;
@@ -71,7 +96,7 @@ export const ResultApprovalQueue: React.FC = () => {
     }));
 
     if (filledPlacements.some((p) => !p.participantName)) {
-      alert('Please enter names for 1st, 2nd, and 3rd positions.');
+      alert('Please enter names for every placement row.');
       return;
     }
 
@@ -172,12 +197,13 @@ export const ResultApprovalQueue: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="hidden md:grid grid-cols-[96px_1fr_120px_180px_110px] gap-2 px-1">
+                <div className="hidden md:grid grid-cols-[104px_1fr_120px_180px_110px_42px] gap-2 px-1">
                   <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Position</span>
                   <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Name</span>
                   <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Class</span>
                   <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">House</span>
                   <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Points</span>
+                  <span className="sr-only">Remove</span>
                 </div>
 
                 {placements.map((entry, index) => {
@@ -186,11 +212,14 @@ export const ResultApprovalQueue: React.FC = () => {
 
                   return (
                     <div
-                      key={entry.position}
-                      className="grid grid-cols-1 md:grid-cols-[96px_1fr_120px_180px_110px] gap-2 p-3 md:p-0 rounded-xl md:rounded-none bg-[#FAF8F5] md:bg-transparent border border-black/8 md:border-0"
+                      key={entry.id}
+                      className="grid grid-cols-1 md:grid-cols-[104px_1fr_120px_180px_110px_42px] gap-2 p-3 md:p-0 rounded-xl md:rounded-none bg-[#FAF8F5] md:bg-transparent border border-black/8 md:border-0"
                     >
                       <div className="px-3 py-2.5 rounded-xl bg-white md:bg-[#FAF8F5] border border-black/10 text-xs font-extrabold text-[#111111]">
                         {entry.position} Place
+                        {entry.id.startsWith('shared') && (
+                          <span className="ml-1 text-[9px] text-[#FF5E84]">Shared</span>
+                        )}
                       </div>
                       <input
                         type="text"
@@ -224,9 +253,37 @@ export const ResultApprovalQueue: React.FC = () => {
                         <span>+{pointsPreview} pts</span>
                         <Lock className="w-3 h-3 text-black/30" />
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSharedPlacement(entry.id)}
+                        disabled={!entry.id.startsWith('shared')}
+                        title={entry.id.startsWith('shared') ? 'Remove shared placement' : 'Base position cannot be removed'}
+                        className="h-10 rounded-xl border border-black/10 text-[#EF4444] flex items-center justify-center disabled:opacity-30 disabled:text-[#5F5F5F] disabled:cursor-not-allowed hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   );
                 })}
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => addSharedPlacement('2nd')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-sans-manrope font-extrabold text-[11px] border border-blue-100 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add shared 2nd
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addSharedPlacement('3rd')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-sans-manrope font-extrabold text-[11px] border border-amber-100 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add shared 3rd
+                  </button>
+                </div>
 
                 {!isHouseEvent && (
                   <p className="text-[11px] text-[#5F5F5F] font-sans-manrope font-bold">

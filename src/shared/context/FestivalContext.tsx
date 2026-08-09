@@ -594,7 +594,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const newResult: EventResultModel = {
       ...newResultData,
       points: pointsToAdd,
-      id: `res-${Date.now()}`,
+      id: `res-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       status: 'Published',
       createdAt: new Date().toISOString(),
     };
