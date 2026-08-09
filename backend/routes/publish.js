@@ -209,4 +209,41 @@ router.post('/', verifyAdmin, async (req, res) => {
   }
 });
 
+// DELETE /api/publish/:eventId — Admin deletes a published result and resets event flags
+router.delete('/:eventId', verifyAdmin, async (req, res) => {
+  const { eventId } = req.params;
+  try {
+    await db.runTransaction(async (transaction) => {
+      const eventRef = db.collection('events').doc(eventId);
+      const resultRef = db.collection('results').doc(eventId);
+
+      // Reset event flags
+      transaction.update(eventRef, {
+        resultsPublished: false,
+        winnerUploaded: false,
+        housePointsUpdated: false,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Delete result document
+      transaction.delete(resultRef);
+
+      // Audit log
+      const logRef = db.collection('auditLogs').doc();
+      transaction.set(logRef, {
+        action: 'RESULT_DELETED',
+        eventId,
+        user: req.user?.email || 'admin',
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        message: `Results deleted for event ${eventId}`,
+      });
+    });
+
+    res.json({ success: true, message: 'Results deleted successfully.' });
+  } catch (error) {
+    console.error('Delete Result Error:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete results.' });
+  }
+});
+
 module.exports = router;
