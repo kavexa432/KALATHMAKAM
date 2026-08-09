@@ -106,11 +106,8 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's6-12', time: '03:00 PM', title: 'Arabic Recitation (Cat 2)', category: 'Arabic', stage: 'Stage 6: Kids Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 3 },
 
   // ==========================================
-  // STAGE 7: Computer Lab (Computer Competitions)
+  // STAGE 7: Computer Lab (Digital Painting only - PPT is a House Item, not individual)
   // ==========================================
-  { id: 's7-1', time: '09:00 AM', title: 'PPT (Cat 2)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
-  { id: 's7-2', time: 'TBA', title: 'PPT (Cat 3)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
-  { id: 's7-3', time: 'TBA', title: 'PPT (Cat 4)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
   { id: 's7-4', time: '12:00 PM', title: 'Digital Painting (Cat 2)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
   { id: 's7-5', time: 'Same Session', title: 'Digital Painting (Cat 3)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
   { id: 's7-6', time: 'Same Session', title: 'Digital Painting (Cat 4)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
@@ -118,13 +115,13 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   // ==========================================
   // PRE-FEST COMPLETED COMPETITIONS (OFF-STAGE)
   // ==========================================
-  { id: 's-comp-1', time: 'Completed Pre-Fest', title: 'Pencil Drawing (All Categories)', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-2', time: 'Completed Pre-Fest', title: 'Water Colour Painting', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-3', time: 'Completed Pre-Fest', title: 'Crayon Painting', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-4', time: 'Completed Pre-Fest', title: 'Oil Colour Painting', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-5', time: 'Completed Pre-Fest', title: 'Cartoon', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-6', time: 'Completed Pre-Fest', title: 'Poster Making', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-7', time: 'Completed Pre-Fest', title: 'Collage', category: 'Fine Arts', stage: 'Art Gallery / Ezhuthachan Block', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-1', time: 'Completed Pre-Fest', title: 'Pencil Drawing (All Categories)', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-2', time: 'Completed Pre-Fest', title: 'Water Colour Painting', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-3', time: 'Completed Pre-Fest', title: 'Crayon Painting', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-4', time: 'Completed Pre-Fest', title: 'Oil Colour Painting', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-5', time: 'Completed Pre-Fest', title: 'Cartoon', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-6', time: 'Completed Pre-Fest', title: 'Poster Making', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-7', time: 'Completed Pre-Fest', title: 'Collage', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
   { id: 's-comp-8', time: 'Completed Pre-Fest', title: 'English Essay Writing & Story Writing', category: 'English Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
   { id: 's-comp-9', time: 'Completed Pre-Fest', title: 'English Versification (Cat 1, 2, 3, 4)', category: 'English Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
   { id: 's-comp-10', time: 'Completed Pre-Fest', title: 'Malayalam Essay Writing & Story Writing', category: 'Malayalam Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },

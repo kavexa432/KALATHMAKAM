@@ -185,7 +185,7 @@ export const EVENTS_DATA: EventItem[] = [
     title: 'Water Color & Acrylic Canvas Painting',
     category: 'Painting',
     description: 'Live painting competition centered on spot topic revealed at the venue.',
-    stage: 'Art Pavilion (Ezhuthachan Block)',
+    stage: 'Mini Auditorium',
     time: '10:00 AM - 12:30 PM',
     day: 'Day 2',
     duration: '2.5 Hours',
