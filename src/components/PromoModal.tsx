@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X, Sparkles, Volume2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import promoVideo from '../assets/promo.mp4';
 
 interface PromoModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface PromoModalProps {
 }
 
 export const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   // Press ESC to close modal
   useEffect(() => {
     if (!isOpen) return;
@@ -19,6 +22,14 @@ export const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Pause video when modal closes
+  useEffect(() => {
+    if (!isOpen && videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -60,12 +71,14 @@ export const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
 
         {/* Video Player Container */}
         <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
-          <iframe
-            className="w-full h-full"
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=0"
+          <video
+            ref={videoRef}
+            src={promoVideo}
+            className="w-full h-full object-contain"
+            controls
+            autoPlay
+            playsInline
             title="Kalathmakam Promo Video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
           />
         </div>
 
