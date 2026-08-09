@@ -10,7 +10,7 @@ export interface ScheduleEvent {
   participants?: string | number | null;
 }
 
-export const DAYS_LIST = ['Monday 10/08 (Stages)', 'Pre-Fest (Completed)'] as const;
+export const DAYS_LIST = ['Monday 10/08 (Stages)', 'Tuesday 11/08 (Day 2)', 'Pre-Fest (Completed)'] as const;
 
 export const SCHEDULE_DATA: ScheduleEvent[] = [
   // ==========================================
@@ -129,4 +129,61 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's-comp-10', time: 'Completed Pre-Fest', title: 'Malayalam Essay Writing & Story Writing', category: 'Malayalam Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
   { id: 's-comp-11', time: 'Completed Pre-Fest', title: 'Malayalam Versification (Cat 1, 2, 3, 4)', category: 'Malayalam Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
   { id: 's-comp-12', time: 'Completed Pre-Fest', title: 'Hindi Essay, Story Writing & Versification (Cat 4)', category: 'Hindi Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
+];
+
+// ==========================================
+// DAY 2 — Tuesday 11/08/2026 SCHEDULE
+// ==========================================
+export const DAY2_SCHEDULE_DATA: ScheduleEvent[] = [
+  // ==========================================
+  // STAGE 1: Main Auditorium — House Items (Dance/Drama)
+  // ==========================================
+  { id: 'd2-s1-1', time: '09:00 AM', title: 'One Act Play (Common - Session 1)', category: 'Drama', stage: 'Stage 1: Main Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '10+3 members per house' },
+  { id: 'd2-s1-2', time: '12:30 PM - 01:30 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 1: Main Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming' },
+  { id: 'd2-s1-3', time: '01:30 PM', title: 'One Act Play (Common - Session 2)', category: 'Drama', stage: 'Stage 1: Main Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '10+3 members per house' },
+  { id: 'd2-s1-4', time: '03:30 PM', title: 'Mime (Cat II Boys)', category: 'Drama', stage: 'Stage 1: Main Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
+  { id: 'd2-s1-5', time: '04:30 PM', title: 'Mime (Cat III Boys)', category: 'Drama', stage: 'Stage 1: Main Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
+
+  // ==========================================
+  // STAGE 2: Mini Auditorium — English (Day 2)
+  // ==========================================
+  { id: 'd2-s2-1', time: '09:00 AM', title: 'English Recitation (Cat 1)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 16 },
+  { id: 'd2-s2-2', time: '10:00 AM', title: 'English Recitation (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 31 },
+  { id: 'd2-s2-3', time: '11:45 AM', title: 'Elocution (Cat 1)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 19 },
+  { id: 'd2-s2-4', time: '12:45 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming' },
+  { id: 'd2-s2-5', time: '01:30 PM', title: 'Elocution (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 36 },
+  { id: 'd2-s2-6', time: '03:30 PM', title: 'Declamation (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 8 },
+
+  // ==========================================
+  // STAGE 3: KG Auditorium — House Songs (Day 2)
+  // ==========================================
+  { id: 'd2-s3-1', time: '09:00 AM', title: 'Group Song (Common - Session 1)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
+  { id: 'd2-s3-2', time: '10:00 AM', title: 'Patriotic Song (Common - Session 1)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
+  { id: 'd2-s3-3', time: '11:00 AM', title: 'National Anthem (Common)', category: 'Ceremony', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
+  { id: 'd2-s3-4', time: '12:00 PM - 01:00 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming' },
+  { id: 'd2-s3-5', time: '01:00 PM', title: 'Western Music (Cat III)', category: 'Music', stage: 'Stage 3: KG Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 members per house' },
+
+  // ==========================================
+  // STAGE 5: Class IX A — House Dance (Day 2)
+  // ==========================================
+  { id: 'd2-s5-1', time: '09:00 AM', title: 'Fusion Dance (Cat II Boys)', category: 'Dance', stage: 'Stage 5: Class IX A', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '10 members per house' },
+  { id: 'd2-s5-2', time: '10:30 AM', title: 'Group Dance (Cat II Girls)', category: 'Dance', stage: 'Stage 5: Class IX A', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '7 members per house' },
+  { id: 'd2-s5-3', time: '11:45 AM', title: 'Kaikottikali (Cat II Girls)', category: 'Dance', stage: 'Stage 5: Class IX A', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '10 members per house' },
+  { id: 'd2-s5-4', time: '12:45 PM - 01:30 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 5: Class IX A', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming' },
+  { id: 'd2-s5-5', time: '01:30 PM', title: 'Thiruvathira (Cat III Girls)', category: 'Dance', stage: 'Stage 5: Class IX A', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '10 members per house' },
+  { id: 'd2-s5-6', time: '03:00 PM', title: 'Oppana (Cat III Girls)', category: 'Dance', stage: 'Stage 5: Class IX A', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '10 members per house' },
+
+  // ==========================================
+  // STAGE 7: Computer Lab — PPT Presentation (Day 2)
+  // ==========================================
+  { id: 'd2-s7-1', time: '09:00 AM', title: 'PowerPoint Presentation (Cat II)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 per house' },
+  { id: 'd2-s7-2', time: '10:30 AM', title: 'PowerPoint Presentation (Cat III)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 per house' },
+
+  // ==========================================
+  // OFF-STAGE — Anchoring & Declamation (Day 2)
+  // ==========================================
+  { id: 'd2-off-1', time: '09:00 AM', title: 'Anchoring (Cat II Common)', category: 'English', stage: 'Off-Stage Venue', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 per house' },
+  { id: 'd2-off-2', time: '11:00 AM', title: 'Anchoring (Cat III Common)', category: 'English', stage: 'Off-Stage Venue', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 per house' },
+  { id: 'd2-off-3', time: '01:30 PM', title: 'Declamation (Cat II Common)', category: 'English', stage: 'Off-Stage Venue', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 per house' },
+  { id: 'd2-off-4', time: '03:00 PM', title: 'Turncoat (Cat III Common)', category: 'English', stage: 'Off-Stage Venue', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: '2 per house' },
 ];

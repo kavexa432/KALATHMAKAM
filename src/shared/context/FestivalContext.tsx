@@ -116,6 +116,19 @@ const isPublishedResultRecord = (record: any) => {
 const getOperationalEventFields = (event: Partial<EventModel>) =>
   Object.fromEntries(
     Object.entries({
+      eventName: event.eventName,
+      category: event.category,
+      type: event.type,
+      language: event.language,
+      department: event.department,
+      stage: event.stage,
+      venue: event.venue,
+      date: event.date,
+      scheduledStartTime: event.scheduledStartTime,
+      scheduledEndTime: event.scheduledEndTime,
+      durationMinutes: event.durationMinutes,
+      publishToWebsite: event.publishToWebsite,
+      participantsExpected: event.participantsExpected,
       status: event.status,
       delayMinutes: event.delayMinutes,
       actualStartTime: event.actualStartTime,

@@ -1,125 +1,107 @@
-import React, { useEffect, useState } from 'react';
-import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Camera, ChevronDown, Lock, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Camera, ChevronDown, Lock } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 
-type ManualPlacement = {
-  id: string;
-  position: '1st' | '2nd' | '3rd';
-  participantName: string;
-  studentClass: string;
-  houseId: HouseId;
-};
-
-const emptyPlacements = (houseId: HouseId): ManualPlacement[] => [
-  { id: 'base-1st', position: '1st', participantName: '', studentClass: '', houseId },
-  { id: 'base-2nd', position: '2nd', participantName: '', studentClass: '', houseId },
-  { id: 'base-3rd', position: '3rd', participantName: '', studentClass: '', houseId },
+const HOUSES: { value: HouseId | 'NONE'; label: string }[] = [
+  { value: 'NOVA', label: '🔴 NOVA' },
+  { value: 'VEGA', label: '🟡 VEGA' },
+  { value: 'ORION', label: '🔵 ORION' },
+  { value: 'ASTRA', label: '🟢 ASTRA' },
+  { value: 'NONE', label: '⚪ No House (Individual)' },
 ];
 
+interface PlacementRow {
+  position: '1st' | '2nd' | '3rd';
+  studentName: string;
+  studentClass: string;
+  houseId: HouseId | 'NONE';
+}
+
 export const ResultApprovalQueue: React.FC = () => {
-  const { results, resultDrafts, events, submitResult, verifyResult, publishResult } = useFestival();
+  const { results, resultDrafts, events, publishEventWinners, verifyResult, publishResult } = useFestival();
   const [manualOpen, setManualOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState(events[0]?.id || '');
-  const [category, setCategory] = useState(events[0]?.category || 'General');
-  const [placements, setPlacements] = useState<ManualPlacement[]>(emptyPlacements('NOVA'));
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const selectedEvt = events.find((e) => e.id === selectedEventId);
-  const isHouseEvent = selectedEvt?.houseWise === true;
   const compType = selectedEvt?.competitionType || 'individual';
+  const isNonHouse = !selectedEvt?.houseWise;
 
-  useEffect(() => {
-    if (!selectedEvt) return;
-    setCategory(selectedEvt.category || 'General');
-    setPlacements((prev) =>
-      prev.map((p) => ({
-        ...p,
-        houseId: selectedEvt.houseWise ? (p.houseId === 'NONE' ? 'NOVA' : p.houseId) : 'NONE',
-      }))
-    );
-  }, [selectedEvt?.id, selectedEvt?.houseWise]);
-
-  const getPoints = (position: string, houseId: HouseId) => {
-    if (houseId === 'NONE' || !isHouseEvent) return 0;
+  // Points based on competition type
+  const getPoints = (pos: '1st' | '2nd' | '3rd') => {
     if (compType === 'group' || compType === 'team') {
-      return position === '1st' ? 20 : position === '2nd' ? 15 : position === '3rd' ? 10 : 0;
+      return pos === '1st' ? 20 : pos === '2nd' ? 15 : 10;
     }
-    return position === '1st' ? 10 : position === '2nd' ? 7 : position === '3rd' ? 5 : 0;
+    return pos === '1st' ? 10 : pos === '2nd' ? 7 : 5;
   };
 
-  const updatePlacement = (
-    index: number,
-    field: 'participantName' | 'studentClass' | 'houseId',
-    value: string
-  ) => {
-    setPlacements((prev) =>
-      prev.map((p, idx) =>
-        idx === index ? { ...p, [field]: field === 'houseId' ? (value as HouseId) : value } : p
-      )
-    );
-  };
+  const defaultHouse = (isNonHouse: boolean): HouseId | 'NONE' => isNonHouse ? 'NONE' : 'NOVA';
 
-  const addSharedPlacement = (position: '2nd' | '3rd') => {
-    const insertAfterIndex = placements.reduce(
-      (lastIndex, p, index) => (p.position === position ? index : lastIndex),
-      -1
-    );
-    const newPlacement: ManualPlacement = {
-      id: `shared-${position}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      position,
-      participantName: '',
-      studentClass: '',
-      houseId: isHouseEvent ? 'NOVA' : 'NONE',
-    };
+  const [placements, setPlacements] = useState<PlacementRow[]>([
+    { position: '1st', studentName: '', studentClass: '', houseId: 'NONE' },
+    { position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' },
+    { position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' },
+  ]);
 
-    setPlacements((prev) => [
-      ...prev.slice(0, insertAfterIndex + 1),
-      newPlacement,
-      ...prev.slice(insertAfterIndex + 1),
+  const handleEventChange = (evtId: string) => {
+    setSelectedEventId(evtId);
+    const evt = events.find((e) => e.id === evtId);
+    const nonHouse = !evt?.houseWise;
+    setPlacements([
+      { position: '1st', studentName: '', studentClass: '', houseId: defaultHouse(nonHouse) },
+      { position: '2nd', studentName: '', studentClass: '', houseId: defaultHouse(nonHouse) },
+      { position: '3rd', studentName: '', studentClass: '', houseId: defaultHouse(nonHouse) },
     ]);
   };
 
-  const removeSharedPlacement = (id: string) => {
-    setPlacements((prev) => prev.filter((p) => p.id !== id));
+  const updatePlacement = (idx: number, field: keyof PlacementRow, value: string) => {
+    setPlacements((prev) => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEvt) return;
 
-    const filledPlacements = placements.map((p) => ({
-      ...p,
-      participantName: p.participantName.trim(),
-      studentClass: p.studentClass.trim(),
-      houseId: isHouseEvent ? p.houseId : ('NONE' as HouseId),
-    }));
+    const filled = placements.filter((p) => p.studentName.trim());
+    if (filled.length === 0) return;
 
-    if (filledPlacements.some((p) => !p.participantName)) {
-      alert('Please enter names for every placement row.');
-      return;
+    setSubmitting(true);
+    try {
+      await publishEventWinners(
+        selectedEvt.id,
+        '',
+        filled.map((p) => ({
+          position: p.position,
+          studentName: p.studentName.trim(),
+          studentClass: p.studentClass.trim(),
+          houseId: p.houseId as HouseId,
+          points: getPoints(p.position),
+        }))
+      );
+      setSuccessMsg(`✅ Results published for ${selectedEvt.eventName}!`);
+      setSelectedEventId('');
+      setPlacements([
+        { position: '1st', studentName: '', studentClass: '', houseId: 'NONE' },
+        { position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' },
+        { position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' },
+      ]);
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err: any) {
+      alert('Submit failed: ' + err.message);
+    } finally {
+      setSubmitting(false);
     }
-
-    filledPlacements.forEach((p) => {
-      submitResult({
-        festivalId: '2k26',
-        eventId: selectedEvt.id,
-        eventTitle: selectedEvt.eventName,
-        category,
-        position: p.position,
-        points: getPoints(p.position, p.houseId),
-        houseId: p.houseId,
-        houseName: p.houseId === 'NONE' ? 'Non-House / Individual' : p.houseId,
-        participantName: p.participantName,
-        studentClass: p.studentClass,
-      });
-    });
-
-    setPlacements(emptyPlacements(isHouseEvent ? 'NOVA' : 'NONE'));
   };
+
+  const MEDAL: Record<string, string> = { '1st': '🥇', '2nd': '🥈', '3rd': '🥉' };
 
   return (
     <div className="space-y-5 text-left">
+
+      {/* ── PRIMARY: OCR Upload CTA ── */}
       <div className="bg-gradient-to-br from-[#111111] to-[#2B2B2B] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#FF5E84]/20 flex items-center justify-center shrink-0">
@@ -128,23 +110,20 @@ export const ResultApprovalQueue: React.FC = () => {
           <div>
             <h4 className="font-sans-manrope font-extrabold text-sm text-white">Upload Result Sheet via OCR</h4>
             <p className="text-xs text-white/60 mt-0.5 font-sans-manrope">
-              Snap a photo of the judge's sheet. Gemini AI extracts all placements automatically.
+              Snap a photo of the judge's sheet — Gemini AI extracts all placements automatically.
             </p>
           </div>
         </div>
         <button
-          onClick={() => {
-            const el = document.getElementById('scan-result-tab');
-            if (el) el.click();
-            else window.dispatchEvent(new CustomEvent('open-scan-result'));
-          }}
+          onClick={() => window.dispatchEvent(new CustomEvent('open-scan-result'))}
           className="shrink-0 px-5 py-2.5 rounded-xl bg-[#FF5E84] hover:bg-[#e84d72] text-white font-sans-manrope font-extrabold text-xs flex items-center gap-2 cursor-pointer transition-all shadow-md"
         >
           <Sparkles className="w-4 h-4" />
-          Open OCR Scanner
+          Open OCR Scanner →
         </button>
       </div>
 
+      {/* ── SECONDARY: Manual Entry (collapsible) ── */}
       <div className="bg-white rounded-2xl border border-black/8 shadow-2xs overflow-hidden">
         <button
           onClick={() => setManualOpen(!manualOpen)}
@@ -153,9 +132,7 @@ export const ResultApprovalQueue: React.FC = () => {
           <div className="flex items-center gap-2">
             <Plus className="w-4 h-4 text-[#5F5F5F]" />
             <span className="font-sans-manrope font-extrabold text-sm text-[#111111]">Manual Result Entry</span>
-            <span className="text-[10px] font-bold text-[#5F5F5F] bg-black/6 px-2 py-0.5 rounded-full">
-              3 positions at once
-            </span>
+            <span className="text-[10px] font-bold text-[#5F5F5F] bg-black/6 px-2 py-0.5 rounded-full">Fallback option</span>
           </div>
           <ChevronDown className={`w-4 h-4 text-[#5F5F5F] transition-transform duration-200 ${manualOpen ? 'rotate-180' : ''}`} />
         </button>
@@ -163,141 +140,93 @@ export const ResultApprovalQueue: React.FC = () => {
         {manualOpen && (
           <div className="px-5 pb-5 border-t border-black/6">
             <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Competition</label>
-                  <select
-                    value={selectedEventId}
-                    onChange={(e) => setSelectedEventId(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope text-[#111111]"
-                    style={{ colorScheme: 'light' }}
-                  >
-                    <option value="" disabled className="bg-white text-[#111111]">-- Select Competition --</option>
-                    {events.map((e) => (
-                      <option key={e.id} value={e.id} className="bg-white text-[#111111]">
-                        {e.eventName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div className="space-y-1">
-                  <label className="text-[11px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Category</label>
-                  <div className="px-3 py-2.5 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope text-[#111111] font-bold">
-                    {category || '-'}
-                    {selectedEvt?.competitionType && (
-                      <span className="ml-2 text-[10px] text-[#FF5E84] font-bold">
-                        {isHouseEvent
-                          ? `(${compType === 'individual' ? 'Individual: 10/7/5 pts' : 'Team/Group: 20/15/10 pts'})`
-                          : '(Non-house: 0 pts)'}
+              {/* Competition selector */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Competition</label>
+                <select
+                  value={selectedEventId}
+                  onChange={(e) => handleEventChange(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope text-[#111111]"
+                  style={{ colorScheme: 'light' }}
+                  required
+                >
+                  <option value="" disabled className="bg-white text-[#111111]">-- Select Competition --</option>
+                  {events.map((e) => (
+                    <option key={e.id} value={e.id} className="bg-white text-[#111111]">{e.eventName}</option>
+                  ))}
+                </select>
+                {selectedEvt && (
+                  <p className="text-[10px] text-[#5F5F5F] mt-1">
+                    {selectedEvt.category}
+                    {selectedEvt.competitionType && (
+                      <span className="ml-2 text-[#FF5E84] font-bold">
+                        ({compType === 'group' ? 'Group: 20/15/10 pts' : compType === 'team' ? 'Team: 20/15/10 pts' : 'Individual: 10/7/5 pts'})
                       </span>
                     )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="hidden md:grid grid-cols-[104px_1fr_120px_180px_110px_42px] gap-2 px-1">
-                  <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Position</span>
-                  <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Name</span>
-                  <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Class</span>
-                  <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">House</span>
-                  <span className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Points</span>
-                  <span className="sr-only">Remove</span>
-                </div>
-
-                {placements.map((entry, index) => {
-                  const entryHouseId = isHouseEvent ? entry.houseId : 'NONE';
-                  const pointsPreview = getPoints(entry.position, entryHouseId);
-
-                  return (
-                    <div
-                      key={entry.id}
-                      className="grid grid-cols-1 md:grid-cols-[104px_1fr_120px_180px_110px_42px] gap-2 p-3 md:p-0 rounded-xl md:rounded-none bg-[#FAF8F5] md:bg-transparent border border-black/8 md:border-0"
-                    >
-                      <div className="px-3 py-2.5 rounded-xl bg-white md:bg-[#FAF8F5] border border-black/10 text-xs font-extrabold text-[#111111]">
-                        {entry.position} Place
-                        {entry.id.startsWith('shared') && (
-                          <span className="ml-1 text-[9px] text-[#FF5E84]">Shared</span>
-                        )}
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        placeholder={`${entry.position} place winner`}
-                        value={entry.participantName}
-                        onChange={(e) => updatePlacement(index, 'participantName', e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl bg-white md:bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope text-[#111111]"
-                      />
-                      <input
-                        type="text"
-                        placeholder="e.g. 9A"
-                        value={entry.studentClass}
-                        onChange={(e) => updatePlacement(index, 'studentClass', e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl bg-white md:bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope text-[#111111]"
-                      />
-                      <select
-                        value={entryHouseId}
-                        disabled={!isHouseEvent}
-                        onChange={(e) => updatePlacement(index, 'houseId', e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl bg-white md:bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold text-[#111111] disabled:text-[#5F5F5F] disabled:bg-black/5"
-                        style={{ colorScheme: 'light' }}
-                      >
-                        <option value="NOVA" className="bg-white text-[#111111]">NOVA</option>
-                        <option value="VEGA" className="bg-white text-[#111111]">VEGA</option>
-                        <option value="ORION" className="bg-white text-[#111111]">ORION</option>
-                        <option value="ASTRA" className="bg-white text-[#111111]">ASTRA</option>
-                        <option value="NONE" className="bg-white text-[#111111]">Non-House / Individual</option>
-                      </select>
-                      <div className="px-3 py-2.5 rounded-xl bg-black/5 border border-black/10 text-xs font-extrabold text-[#111111] flex items-center justify-between">
-                        <span>+{pointsPreview} pts</span>
-                        <Lock className="w-3 h-3 text-black/30" />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeSharedPlacement(entry.id)}
-                        disabled={!entry.id.startsWith('shared')}
-                        title={entry.id.startsWith('shared') ? 'Remove shared placement' : 'Base position cannot be removed'}
-                        className="h-10 rounded-xl border border-black/10 text-[#EF4444] flex items-center justify-center disabled:opacity-30 disabled:text-[#5F5F5F] disabled:cursor-not-allowed hover:bg-red-50 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })}
-
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => addSharedPlacement('2nd')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-sans-manrope font-extrabold text-[11px] border border-blue-100 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Add shared 2nd
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addSharedPlacement('3rd')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-sans-manrope font-extrabold text-[11px] border border-amber-100 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Add shared 3rd
-                  </button>
-                </div>
-
-                {!isHouseEvent && (
-                  <p className="text-[11px] text-[#5F5F5F] font-sans-manrope font-bold">
-                    This is a non-house item, so every position is saved as Non-House / Individual with 0 house points.
+                    {isNonHouse && <span className="ml-2 text-amber-600 font-bold">· Non-house event</span>}
                   </p>
                 )}
               </div>
 
+              {/* 3-position rows */}
+              <div className="space-y-3">
+                {placements.map((row, idx) => (
+                  <div key={row.position} className="p-3.5 rounded-xl bg-[#FAF8F5] border border-black/8 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{MEDAL[row.position]}</span>
+                      <span className="font-sans-manrope font-extrabold text-xs text-[#111111]">
+                        {row.position === '1st' ? '1st Place' : row.position === '2nd' ? '2nd Place' : '3rd Place'}
+                      </span>
+                      <span className="ml-auto text-[10px] font-bold text-[#FF5E84]">
+                        <Lock className="w-2.5 h-2.5 inline mr-0.5" />+{getPoints(row.position)} pts
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Student Name"
+                        value={row.studentName}
+                        onChange={(e) => updatePlacement(idx, 'studentName', e.target.value)}
+                        className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Class (e.g. 9A)"
+                        value={row.studentClass}
+                        onChange={(e) => updatePlacement(idx, 'studentClass', e.target.value)}
+                        className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]"
+                      />
+                      <select
+                        value={row.houseId}
+                        onChange={(e) => updatePlacement(idx, 'houseId', e.target.value)}
+                        disabled={isNonHouse}
+                        className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50"
+                        style={{ colorScheme: 'light' }}
+                      >
+                        {HOUSES.map((h) => (
+                          <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {successMsg && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
+                  {successMsg}
+                </div>
+              )}
+
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl gradient-btn-primary text-white font-sans-manrope font-bold text-xs cursor-pointer shadow-xs"
+                  disabled={!selectedEventId || submitting}
+                  className="px-6 py-2.5 rounded-xl gradient-btn-primary text-white font-sans-manrope font-bold text-xs cursor-pointer shadow-xs disabled:opacity-50"
                 >
-                  Submit All 3 Positions
+                  {submitting ? 'Publishing...' : 'Publish All Results →'}
                 </button>
               </div>
             </form>
@@ -305,6 +234,7 @@ export const ResultApprovalQueue: React.FC = () => {
         )}
       </div>
 
+      {/* ── OCR Drafts Queue ── */}
       {resultDrafts.length > 0 && (
         <div className="bg-white rounded-2xl p-5 border border-amber-400/30 shadow-2xs space-y-3 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-400 to-amber-500" />
@@ -313,21 +243,16 @@ export const ResultApprovalQueue: React.FC = () => {
               <Sparkles className="w-4 h-4 text-amber-500" />
               <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">OCR Drafts Awaiting Review</h4>
             </div>
-            <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-bold">
-              {resultDrafts.length} pending
-            </span>
+            <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-bold">{resultDrafts.length} pending</span>
           </div>
-
           <div className="space-y-2">
             {resultDrafts.map((draft) => {
-              const hasLowConf = draft.results.some((r) => r.confidence === 'low' || r.confidence === 'medium');
+              const hasLowConf = draft.results.some(r => r.confidence === 'low' || r.confidence === 'medium');
               return (
                 <div key={draft.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#FAF8F5] border border-black/6">
                   <div className="min-w-0">
                     <p className="font-sans-manrope font-bold text-xs text-[#111111] truncate">{draft.eventName}</p>
-                    <p className="text-[11px] text-[#5F5F5F] mt-0.5">
-                      {draft.results.length} placement{draft.results.length !== 1 ? 's' : ''} extracted
-                    </p>
+                    <p className="text-[11px] text-[#5F5F5F] mt-0.5">{draft.results.length} placement{draft.results.length !== 1 ? 's' : ''} extracted</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {hasLowConf ? (
@@ -342,9 +267,7 @@ export const ResultApprovalQueue: React.FC = () => {
                     <button
                       className="px-3.5 py-1.5 rounded-xl bg-[#111111] text-white font-bold text-[11px] cursor-pointer hover:bg-black transition-colors"
                       onClick={() => window.dispatchEvent(new CustomEvent('open-ocr-review', { detail: { draftId: draft.id } }))}
-                    >
-                      Review
-                    </button>
+                    >Review →</button>
                   </div>
                 </div>
               );
@@ -353,6 +276,7 @@ export const ResultApprovalQueue: React.FC = () => {
         </div>
       )}
 
+      {/* ── Results Queue ── */}
       <div className="bg-white rounded-2xl border border-black/8 shadow-2xs overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-black/6">
           <div className="flex items-center gap-2">
@@ -361,7 +285,6 @@ export const ResultApprovalQueue: React.FC = () => {
           </div>
           <span className="text-xs text-[#5F5F5F] font-bold">{results.length} total</span>
         </div>
-
         {results.length === 0 ? (
           <div className="px-5 py-10 text-center text-[#5F5F5F] font-sans-manrope text-xs">
             No results submitted yet. Use the OCR scanner or manual entry above.
@@ -387,39 +310,29 @@ export const ResultApprovalQueue: React.FC = () => {
                       <td className="py-3 px-4 font-bold text-[#111111]">{r.eventTitle}</td>
                       <td className="py-3 px-4 text-[#333]">{r.participantName}</td>
                       <td className="py-3 px-4">
-                        <span
-                          className="font-extrabold text-[10px] px-2 py-0.5 rounded-md"
-                          style={{ backgroundColor: hInfo?.lightBg || '#F4F4F4', color: hInfo?.text || '#333' }}
-                        >
+                        <span className="font-extrabold text-[10px] px-2 py-0.5 rounded-md"
+                          style={{ backgroundColor: hInfo?.lightBg, color: hInfo?.text }}>
                           {r.houseId}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-extrabold">
-                        {r.position} <span className="text-[#FF5E84]">+{r.points}pts</span>
-                      </td>
+                      <td className="py-3 px-4 font-extrabold">{r.position} <span className="text-[#FF5E84]">+{r.points}pts</span></td>
                       <td className="py-3 px-4">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           r.status === 'Published' ? 'bg-emerald-100 text-emerald-700' :
                           r.status === 'Verified' ? 'bg-blue-100 text-blue-700' :
                           'bg-amber-100 text-amber-700'
-                        }`}>
-                          {r.status}
-                        </span>
+                        }`}>{r.status}</span>
                       </td>
                       <td className="py-3 px-4 text-right space-x-2">
                         {r.status === 'Pending Review' && (
-                          <button
-                            onClick={() => verifyResult(r.id)}
-                            className="px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px] cursor-pointer"
-                          >
+                          <button onClick={() => verifyResult(r.id)}
+                            className="px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px] cursor-pointer">
                             <Eye className="w-3 h-3 inline mr-1" />Verify
                           </button>
                         )}
                         {r.status !== 'Published' && (
-                          <button
-                            onClick={() => publishResult(r.id)}
-                            className="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] cursor-pointer"
-                          >
+                          <button onClick={() => publishResult(r.id)}
+                            className="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] cursor-pointer">
                             <CheckCircle className="w-3 h-3 inline mr-1" />Publish
                           </button>
                         )}

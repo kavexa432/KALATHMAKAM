@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DAYS_LIST, SCHEDULE_DATA } from '../data/scheduleData';
+import { DAYS_LIST, SCHEDULE_DATA, DAY2_SCHEDULE_DATA } from '../data/scheduleData';
 import { Clock, MapPin, CheckCircle, Radio, Calendar, ChevronDown } from 'lucide-react';
 
 export const ScheduleTimeline: React.FC = () => {
@@ -12,7 +12,8 @@ export const ScheduleTimeline: React.FC = () => {
 
   const INITIAL_VISIBLE = 8;
 
-  const filteredScheduleByDay = SCHEDULE_DATA.filter((item) => item.day === activeDay);
+  const ALL_SCHEDULE = [...SCHEDULE_DATA, ...DAY2_SCHEDULE_DATA];
+  const filteredScheduleByDay = ALL_SCHEDULE.filter((item) => item.day === activeDay);
   const uniqueStages = Array.from(new Set(filteredScheduleByDay.map(item => item.stage)));
 
   const isMorningItem = (timeStr: string) => {
