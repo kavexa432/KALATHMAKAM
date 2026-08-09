@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Camera, ChevronDown, Lock } from 'lucide-react';
+import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Lock, Trash2 } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
@@ -20,8 +20,8 @@ interface PlacementRow {
 }
 
 export const ResultApprovalQueue: React.FC = () => {
-  const { results, resultDrafts, events, publishEventWinners, verifyResult, publishResult } = useFestival();
-  const [manualOpen, setManualOpen] = useState(false);
+  const { results, resultDrafts, events, publishEventWinners, verifyResult, publishResult, deleteResult } = useFestival();
+  const [manualOpen] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -32,9 +32,11 @@ export const ResultApprovalQueue: React.FC = () => {
 
   // Points based on competition type
   const getPoints = (pos: '1st' | '2nd' | '3rd') => {
-    if (compType === 'group' || compType === 'team') {
+    if (compType === 'group') {
+      // Large group items (Mime, Group Dance, Group Song): 1st=20, 2nd=15, 3rd=10
       return pos === '1st' ? 20 : pos === '2nd' ? 15 : 10;
     }
+    // team (PPT — 2 members) + individual (Anchoring, Turn Coat, Declamation): 1st=10, 2nd=7, 3rd=5
     return pos === '1st' ? 10 : pos === '2nd' ? 7 : 5;
   };
 
@@ -101,41 +103,12 @@ export const ResultApprovalQueue: React.FC = () => {
   return (
     <div className="space-y-5 text-left">
 
-      {/* ── PRIMARY: OCR Upload CTA ── */}
-      <div className="bg-gradient-to-br from-[#111111] to-[#2B2B2B] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#FF5E84]/20 flex items-center justify-center shrink-0">
-            <Camera className="w-5 h-5 text-[#FF5E84]" />
-          </div>
-          <div>
-            <h4 className="font-sans-manrope font-extrabold text-sm text-white">Upload Result Sheet via OCR</h4>
-            <p className="text-xs text-white/60 mt-0.5 font-sans-manrope">
-              Snap a photo of the judge's sheet — Gemini AI extracts all placements automatically.
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent('open-scan-result'))}
-          className="shrink-0 px-5 py-2.5 rounded-xl bg-[#FF5E84] hover:bg-[#e84d72] text-white font-sans-manrope font-extrabold text-xs flex items-center gap-2 cursor-pointer transition-all shadow-md"
-        >
-          <Sparkles className="w-4 h-4" />
-          Open OCR Scanner →
-        </button>
-      </div>
-
-      {/* ── SECONDARY: Manual Entry (collapsible) ── */}
+      {/* ── PRIMARY: Manual Result Entry — always open ── */}
       <div className="bg-white rounded-2xl border border-black/8 shadow-2xs overflow-hidden">
-        <button
-          onClick={() => setManualOpen(!manualOpen)}
-          className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-[#FAF8F5] transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Plus className="w-4 h-4 text-[#5F5F5F]" />
-            <span className="font-sans-manrope font-extrabold text-sm text-[#111111]">Manual Result Entry</span>
-            <span className="text-[10px] font-bold text-[#5F5F5F] bg-black/6 px-2 py-0.5 rounded-full">Fallback option</span>
-          </div>
-          <ChevronDown className={`w-4 h-4 text-[#5F5F5F] transition-transform duration-200 ${manualOpen ? 'rotate-180' : ''}`} />
-        </button>
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-black/6 bg-[#FAF8F5]">
+          <Plus className="w-4 h-4 text-[#F59E0B]" />
+          <span className="font-sans-manrope font-extrabold text-sm text-[#111111]">Manual Result Entry</span>
+        </div>
 
         {manualOpen && (
           <div className="px-5 pb-5 border-t border-black/6">
@@ -161,7 +134,7 @@ export const ResultApprovalQueue: React.FC = () => {
                     {selectedEvt.category}
                     {selectedEvt.competitionType && (
                       <span className="ml-2 text-[#FF5E84] font-bold">
-                        ({compType === 'group' ? 'Group: 20/15/10 pts' : compType === 'team' ? 'Team: 20/15/10 pts' : 'Individual: 10/7/5 pts'})
+                        ({compType === 'group' ? 'Group: 20/15/10 pts' : compType === 'team' ? 'Team (PPT): 10/7/5 pts' : 'Individual: 10/7/5 pts'})
                       </span>
                     )}
                     {isNonHouse && <span className="ml-2 text-amber-600 font-bold">· Non-house event</span>}
@@ -336,6 +309,17 @@ export const ResultApprovalQueue: React.FC = () => {
                             <CheckCircle className="w-3 h-3 inline mr-1" />Publish
                           </button>
                         )}
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Delete result for ${r.participantName} (${r.position} in ${r.eventTitle})?\n\nThis will retract the result and post a live notice to attendees.`)) {
+                              deleteResult(r.id);
+                            }
+                          }}
+                          className="px-3 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] cursor-pointer"
+                          title="Delete & retract result"
+                        >
+                          <Trash2 className="w-3 h-3 inline mr-1" />Delete
+                        </button>
                       </td>
                     </tr>
                   );

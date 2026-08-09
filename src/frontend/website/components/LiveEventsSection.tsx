@@ -3,6 +3,7 @@ import { MapPin, ArrowRight, Sparkles, Clock, Search, ChevronRight, AlertCircle,
 import { useFestival } from '../../../shared/context/FestivalContext';
 import type { EventModel } from '../../../shared/types/festivalTypes';
 import { formatTime12Hour } from '../../../utils/timeUtils';
+import { cleanVenueName } from '../../../utils/venueUtils';
 import { EventDetailModal } from './EventDetailModal';
 
 interface CategoryTile {
@@ -333,7 +334,7 @@ export const LiveEventsSection: React.FC = () => {
                     <div className="pt-3 border-t border-black/6 flex items-center justify-between text-xs font-sans-manrope text-[#5F5F5F]">
                       <span className="flex items-center gap-1.5 font-semibold truncate">
                         <MapPin className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" />
-                        <span className="truncate">{evt.stage ? `${evt.stage} - ${evt.venue}` : evt.venue || 'TBA'}</span>
+                        <span className="truncate">{cleanVenueName(evt.venue, evt.stage)}</span>
                       </span>
                       <span className="flex items-center gap-1 font-semibold shrink-0 ml-2">
                         <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />

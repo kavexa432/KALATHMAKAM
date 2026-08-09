@@ -6,17 +6,19 @@ const router = express.Router();
 
 /**
  * Calculate house points based on competition type and position.
- *  group / team  → 1st=20, 2nd=15, 3rd=10
- *  individual    → 1st=10, 2nd=7,  3rd=5
+ *  group      → 1st=20, 2nd=15, 3rd=10  (large groups: Mime, Group Dance, Group Song)
+ *  team       → 1st=10, 2nd=7,  3rd=5   (PPT — 2-member team per house, individual-scale marks)
+ *  individual → 1st=10, 2nd=7,  3rd=5   (Anchoring, Turn Coat, Declamation — individual but house-representing)
  */
 function calcPoints(position, competitionType) {
   const pos = Number(position);
-  if (competitionType === 'group' || competitionType === 'team') {
+  if (competitionType === 'group') {
+    // Large group items only
     if (pos === 1) return 20;
     if (pos === 2) return 15;
     if (pos === 3) return 10;
   } else {
-    // individual (default)
+    // team (PPT) + individual — same scale: 1st=10, 2nd=7, 3rd=5
     if (pos === 1) return 10;
     if (pos === 2) return 7;
     if (pos === 3) return 5;

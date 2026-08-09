@@ -23,8 +23,8 @@ export function AppContent() {
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [selectedRegisterEvent] = useState<EventItem | null>(null);
 
-  const handleExploreEvents = () => {
-    const el = document.getElementById('events');
+  const handleViewResults = () => {
+    const el = document.getElementById('results');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
@@ -48,7 +48,7 @@ export function AppContent() {
         {/* 1. Refined Hero Section with 30-Point Pixel Alignment & Parallax */}
         <Hero
           onOpenPromo={() => setPromoModalOpen(true)}
-          onExploreEvents={handleExploreEvents}
+          onViewResults={handleViewResults}
           onViewLeaderboard={handleViewLeaderboard}
         />
 

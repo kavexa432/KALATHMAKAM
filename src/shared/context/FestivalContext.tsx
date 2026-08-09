@@ -14,6 +14,7 @@ import {
   collection,
 } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../../config/firebase';
+import { cleanVenueName } from '../../utils/venueUtils';
 
 import type {
   FestivalEdition,
@@ -73,6 +74,7 @@ interface FestivalContextType {
   submitResult: (newResult: Omit<EventResultModel, 'id' | 'createdAt' | 'status'>) => void;
   verifyResult: (resultId: string) => void;
   publishResult: (resultId: string) => void;
+  deleteResult: (resultId: string) => void;
   publishEventWinners: (
     eventId: string,
     judgeNotes: string,
@@ -85,6 +87,7 @@ interface FestivalContextType {
     }>
   ) => Promise<void>;
   addAnnouncement: (content: string, type: AnnouncementType, priority: PriorityLevel, houseId?: HouseId, points?: number) => void;
+  deleteAnnouncement: (feedId: string) => void;
   togglePermission: (userId: string, permission: string) => void;
   setUserRole: (userId: string, targetRole: 'developer' | 'admin' | 'user') => void;
   toggleAdminAccess: (userId: string) => void;
@@ -510,9 +513,16 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const mergedEvents = sourceEvents.map((sourceEvent) => {
             const localEvent = canonicalById.get(sourceEvent.id) || sourceEvent;
             const firestoreEvent = firestoreEvents.find((event) => event.id === localEvent.id);
-            const mergedEvent = firestoreEvent
+            const rawMerged = firestoreEvent
               ? { ...localEvent, ...getOperationalEventFields(firestoreEvent) }
               : localEvent;
+
+            const venueClean = cleanVenueName(rawMerged.venue, rawMerged.stage);
+            const mergedEvent = {
+              ...rawMerged,
+              venue: venueClean,
+            };
+
             return publishedResultEventIdsRef.current.has(localEvent.id)
               ? {
                   ...mergedEvent,
@@ -522,14 +532,22 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 }
               : mergedEvent;
           });
+          
+          // Filter out Digital Painting Cat 4 (removed from festival)
+          const validEvents = mergedEvents.filter((evt) => {
+            if (evt.id === 'evt-s7-6' || evt.id === 's7-6') return false;
+            const name = (evt.eventName || '').toLowerCase();
+            if (name.includes('digital painting') && (name.includes('cat 4') || name.includes('cat iv'))) return false;
+            return true;
+          });
 
           // Sort events by date and time
-          mergedEvents.sort((a, b) => {
+          validEvents.sort((a, b) => {
             const timeA = new Date(`${a.date}T${a.scheduledStartTime || '00:00'}`).getTime();
             const timeB = new Date(`${b.date}T${b.scheduledStartTime || '00:00'}`).getTime();
             return (timeA || 0) - (timeB || 0);
           });
-          setEvents(mergedEvents);
+          setEvents(validEvents);
         },
         (err) => console.warn('Firestore events subscription notice:', err)
       );
@@ -829,13 +847,13 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let pointsToAdd = 0;
     if (newResultData.houseId === 'NONE') {
       pointsToAdd = 0;
-    } else if (compType === 'group' || compType === 'team') {
-      // Group / team items: 1st=20, 2nd=15, 3rd=10
+    } else if (compType === 'group') {
+      // Large group items (Mime, Group Dance, Group Song): 1st=20, 2nd=15, 3rd=10
       if (newResultData.position === '1st') pointsToAdd = 20;
       else if (newResultData.position === '2nd') pointsToAdd = 15;
       else if (newResultData.position === '3rd') pointsToAdd = 10;
     } else {
-      // Individual items: 1st=10, 2nd=7, 3rd=5
+      // team (PPT — 2 members) + individual (Anchoring, Turn Coat, Declamation, Western Music): 1st=10, 2nd=7, 3rd=5
       if (newResultData.position === '1st') pointsToAdd = 10;
       else if (newResultData.position === '2nd') pointsToAdd = 7;
       else if (newResultData.position === '3rd') pointsToAdd = 5;
@@ -914,6 +932,59 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       'Published Result',
       target.eventTitle,
       `Published result. House ${target.houseId} received +${target.points} pts.`
+    );
+  };
+
+  const deleteResult = (resultId: string) => {
+    const target = results.find((r) => r.id === resultId);
+    if (!target) return;
+
+    // Remove from local state
+    setResults((prev) => prev.filter((r) => r.id !== resultId));
+
+    // If this was the only result for the event, mark event as no longer having results
+    const remainingForEvent = results.filter((r) => r.id !== resultId && r.eventId === target.eventId);
+    if (remainingForEvent.length === 0) {
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === target.eventId
+            ? { ...e, resultsPublished: false, winnerUploaded: false, housePointsUpdated: false }
+            : e
+        )
+      );
+      setDoc(doc(db, 'events', target.eventId), { resultsPublished: false, winnerUploaded: false, housePointsUpdated: false }, { merge: true }).catch(console.error);
+    }
+
+    // Delete from Firestore
+    deleteDoc(doc(db, 'results', resultId)).catch(console.error);
+
+    // Post a live activity feed notice so attendees see it was retracted
+    const deletionNotice: LiveActivityFeedItem = {
+      id: `feed-del-${Date.now()}`,
+      festivalId: '2k26',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      type: 'Stage Update',
+      priority: 'Important',
+      content: `⚠️ Result retracted: ${target.eventTitle} — ${target.position} place (${target.participantName}) has been removed by admin. Leaderboard updated.`,
+      houseId: target.houseId,
+      points: 0,
+      read: false,
+    };
+    setLiveFeed((prev) => [deletionNotice, ...prev]);
+
+    // Announce via the live feed
+    addAnnouncement(
+      `⚠️ Result Retracted: ${target.eventTitle} — ${target.position} place result for ${target.participantName} (${target.houseId}) has been removed. Scores have been updated.`,
+      'Stage Update',
+      'Important'
+    );
+
+    logAuditAction(
+      currentUser?.name || 'Admin',
+      currentUser?.role || 'admin',
+      'Deleted Result',
+      target.eventTitle,
+      `Removed ${target.position} place result for ${target.participantName} (${target.houseId}, -${target.points} pts)`
     );
   };
 
@@ -1037,6 +1108,19 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       'Created Announcement',
       type,
       content
+    );
+  };
+
+  const deleteAnnouncement = (feedId: string) => {
+    setLiveFeed((prev) => prev.filter((f) => f.id !== feedId));
+    deleteDoc(doc(db, 'liveFeed', feedId)).catch(console.error);
+    deleteDoc(doc(db, 'announcements', feedId)).catch(console.error);
+    logAuditAction(
+      currentUser?.name || 'Admin',
+      currentUser?.role || 'admin',
+      'Deleted Announcement',
+      'Live Feed',
+      `Removed announcement ID ${feedId}`
     );
   };
 
@@ -1196,8 +1280,10 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         submitResult,
         verifyResult,
         publishResult,
+        deleteResult,
         publishEventWinners,
         addAnnouncement,
+        deleteAnnouncement,
         togglePermission,
         setUserRole,
         toggleAdminAccess,

@@ -5,11 +5,11 @@ import heroArt from '../../../assets/hero_kerala_art_transparent.png';
 
 interface HeroProps {
   onOpenPromo: () => void;
-  onExploreEvents: () => void;
+  onViewResults: () => void;
   onViewLeaderboard: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onViewLeaderboard }) => {
+export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onViewResults, onViewLeaderboard }) => {
   return (
     <section
       id="home"
@@ -123,12 +123,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenPromo, onExploreEvents, onView
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto"
             >
-              {/* Primary Pill: Explore Events → */}
+              {/* Primary Pill: Results → */}
               <button
-                onClick={onExploreEvents}
+                onClick={onViewResults}
                 className="gradient-btn-primary text-white font-sans-manrope font-bold text-xs sm:text-sm px-6 py-3.5 sm:py-3 rounded-full flex items-center justify-center gap-2.5 cursor-pointer group shadow-md hover:scale-[1.02] transition-all w-full sm:w-auto shrink-0"
               >
-                <span>Explore Events</span>
+                <span>Results</span>
                 <svg className="w-4 h-4 fill-white transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
 

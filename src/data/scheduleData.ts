@@ -112,7 +112,6 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's7-3', time: 'Same Session', title: 'PPT (Cat 4)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
   { id: 's7-4', time: '12:00 PM', title: 'Digital Painting (Cat 2)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
   { id: 's7-5', time: 'Same Session', title: 'Digital Painting (Cat 3)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
-  { id: 's7-6', time: 'Same Session', title: 'Digital Painting (Cat 4)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
 
   // ==========================================
   // PRE-FEST COMPLETED COMPETITIONS (OFF-STAGE)
@@ -124,11 +123,11 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's-comp-5', time: 'Completed Pre-Fest', title: 'Cartoon', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
   { id: 's-comp-6', time: 'Completed Pre-Fest', title: 'Poster Making', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
   { id: 's-comp-7', time: 'Completed Pre-Fest', title: 'Collage', category: 'Fine Arts', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-8', time: 'Completed Pre-Fest', title: 'English Essay Writing & Story Writing', category: 'English Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-9', time: 'Completed Pre-Fest', title: 'English Versification (Cat 1, 2, 3, 4)', category: 'English Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-10', time: 'Completed Pre-Fest', title: 'Malayalam Essay Writing & Story Writing', category: 'Malayalam Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-11', time: 'Completed Pre-Fest', title: 'Malayalam Versification (Cat 1, 2, 3, 4)', category: 'Malayalam Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
-  { id: 's-comp-12', time: 'Completed Pre-Fest', title: 'Hindi Essay, Story Writing & Versification (Cat 4)', category: 'Hindi Literary', stage: 'Literary Hall / Off-Stage', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-8', time: 'Completed Pre-Fest', title: 'English Essay Writing & Story Writing', category: 'English Literary', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-9', time: 'Completed Pre-Fest', title: 'English Versification (Cat 1, 2, 3, 4)', category: 'English Literary', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-10', time: 'Completed Pre-Fest', title: 'Malayalam Essay Writing & Story Writing', category: 'Malayalam Literary', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-11', time: 'Completed Pre-Fest', title: 'Malayalam Versification (Cat 1, 2, 3, 4)', category: 'Malayalam Literary', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
+  { id: 's-comp-12', time: 'Completed Pre-Fest', title: 'Hindi Essay, Story Writing & Versification (Cat 4)', category: 'Hindi Literary', stage: 'Mini Auditorium', day: 'Pre-Fest (Completed)', status: 'Completed' },
 ];
 
 // ==========================================

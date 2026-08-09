@@ -69,6 +69,9 @@ export const LeaderboardSection: React.FC = () => {
     .map((r, i) => {
       const winnerHouse = String(r.houseId || 'NONE').toUpperCase() as HouseId;
       const isHousePointResult = winnerHouse !== 'NONE' && String(winnerHouse) !== 'N/A' && r.points > 0;
+      const pos = r.position || '1st';
+      const medalIcon = pos === '1st' ? '🥇' : pos === '2nd' ? '🥈' : pos === '3rd' ? '🥉' : '🏅';
+      const posLabel = pos === '1st' ? '🥇 1st Place' : pos === '2nd' ? '🥈 2nd Place' : pos === '3rd' ? '🥉 3rd Place' : `🏅 ${pos}`;
 
       return {
         id: r.id,
@@ -82,8 +85,9 @@ export const LeaderboardSection: React.FC = () => {
         points: `+${r.points}`,
         participant: r.participantName,
         studentClass: r.studentClass,
-        icon: <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />,
-        iconBg: 'bg-[#F59E0B]/12',
+        position: pos,
+        positionLabel: posLabel,
+        medalIcon: medalIcon,
       };
     });
 
@@ -99,14 +103,20 @@ export const LeaderboardSection: React.FC = () => {
     const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.NOVA;
     const isIndividual = !row.isHousePointResult;
 
+    const posBadgeStyles: Record<string, string> = {
+      '1st': 'bg-amber-100 text-amber-900 border-amber-300 font-black',
+      '2nd': 'bg-slate-100 text-slate-800 border-slate-300 font-extrabold',
+      '3rd': 'bg-orange-100 text-orange-900 border-orange-300 font-extrabold',
+    };
+
     return (
       <div
         key={row.id}
         className="p-4 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/6 shadow-2xs hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
       >
         <div className="flex items-center gap-3.5">
-          <div className={`w-10 h-10 rounded-2xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0 border border-black/5`}>
-            {row.icon}
+          <div className="w-10 h-10 rounded-2xl bg-white border border-black/10 flex items-center justify-center shrink-0 text-xl shadow-2xs">
+            {row.medalIcon}
           </div>
 
           <div>
@@ -114,6 +124,9 @@ export const LeaderboardSection: React.FC = () => {
               <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
                 {row.competition}
               </h4>
+              <span className={`text-[11px] font-sans-manrope px-2.5 py-0.5 rounded-full border shrink-0 ${posBadgeStyles[row.position] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                {row.positionLabel}
+              </span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5F5F5F]">
                 {row.categoryType}
               </span>
@@ -569,7 +582,7 @@ export const LeaderboardSection: React.FC = () => {
             <div className="space-y-3 text-xs font-sans-manrope">
               <div className="p-3.5 rounded-2xl bg-white border border-black/8 space-y-1.5">
                 <h5 className="font-extrabold text-[#111111]">🥇 1st Position (Gold)</h5>
-                <p className="text-[#5F5F5F]">Solo Events: +10 Pts • Group/Team Events: +20-25 Pts</p>
+                <p className="text-[#5F5F5F]">Solo/Team Events: +10 Pts • Large Group Events: +20 Pts</p>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-white border border-black/8 space-y-1.5">

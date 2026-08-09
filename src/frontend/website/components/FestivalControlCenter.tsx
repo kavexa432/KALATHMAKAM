@@ -4,6 +4,7 @@ import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
 import { formatTime12Hour } from '../../../utils/timeUtils';
+import { cleanVenueName } from '../../../utils/venueUtils';
 
 export const FestivalControlCenter: React.FC = () => {
   const { events, houses, getHousePoints, liveFeed } = useFestival();
@@ -91,7 +92,7 @@ export const FestivalControlCenter: React.FC = () => {
                   {liveEvent?.eventName || 'Loading...'}
                 </h4>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1 font-semibold">
-                  📍 {liveEvent ? (liveEvent.stage ? `${liveEvent.stage} - ${liveEvent.venue}` : liveEvent.venue || 'TBA') : ''} • Category: {liveEvent?.category || ''}
+                  📍 {liveEvent ? cleanVenueName(liveEvent.venue, liveEvent.stage) : ''} • Category: {liveEvent?.category || ''}
                 </p>
               </div>
 

@@ -175,7 +175,12 @@ export const ResultsSection: React.FC = () => {
                       const posNum = idx + 1;
                       return (
                         <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-[#FAF8F5] border border-black/5">
-                          <span className="text-xl shrink-0">{MEDAL[posNum] || '🏅'}</span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-xl">{MEDAL[posNum] || '🏅'}</span>
+                            <span className="text-xs font-extrabold text-[#111111] bg-black/5 px-2 py-0.5 rounded-full">
+                              {p.position || `${posNum}${posNum === 1 ? 'st' : posNum === 2 ? 'nd' : posNum === 3 ? 'rd' : 'th'}`}
+                            </span>
+                          </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-sans-manrope font-extrabold text-sm text-[#111111] truncate">
                               {p.participantName}

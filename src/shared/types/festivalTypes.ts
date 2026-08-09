@@ -2,9 +2,9 @@ export type HouseId = 'NOVA' | 'VEGA' | 'ORION' | 'ASTRA' | 'NONE';
 
 /**
  * Determines how house points are calculated for a competition:
- *  - "group"      → 1st=20, 2nd=15, 3rd=10  (e.g. Mime, Group Dance, Group Song)
- *  - "team"       → 1st=20, 2nd=15, 3rd=10  (e.g. PPT — 2-member team representing one house)
- *  - "individual" → 1st=10, 2nd=7,  3rd=5   (e.g. Anchoring, Declamation, Western Music)
+ *  - "group"      → 1st=20, 2nd=15, 3rd=10  (e.g. Mime, Group Dance, Group Song — large groups)
+ *  - "team"       → 1st=10, 2nd=7,  3rd=5   (e.g. PPT — 2-member team per house, individual-scale marks)
+ *  - "individual" → 1st=10, 2nd=7,  3rd=5   (e.g. Anchoring, Turn Coat, Declamation — students compete individually but represent house)
  */
 export type HouseCompetitionType = 'group' | 'team' | 'individual';
 

@@ -49,6 +49,8 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
   const [placements, setPlacements] = useState<ResultDraftPlacement[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [editedFields, setEditedFields] = useState<Set<string>>(new Set());
+  // Track which positions have shared duplicates
+  const [sharedPositions, setSharedPositions] = useState<Set<number>>(new Set());
 
   const publishedResultEventIds = new Set(
     results
@@ -111,13 +113,13 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
   // Helper point calculator based on competition type and position
   const calculatePoints = (pos: number | string, compType?: string): number => {
     const p = Number(pos);
-    if (compType === 'group' || compType === 'team') {
-      // Group / team items: 1st=20, 2nd=15, 3rd=10
+    if (compType === 'group') {
+      // Large group items (Mime, Group Dance, Group Song): 1st=20, 2nd=15, 3rd=10
       if (p === 1) return 20;
       if (p === 2) return 15;
       if (p === 3) return 10;
     } else {
-      // Individual items: 1st=10, 2nd=7, 3rd=5
+      // team (PPT — 2 members) + individual (Anchoring, Turn Coat, Declamation): 1st=10, 2nd=7, 3rd=5
       if (p === 1) return 10;
       if (p === 2) return 7;
       if (p === 3) return 5;
@@ -246,6 +248,41 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
     setPlacements((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Toggle shared position: inserts or removes a duplicate row for that position
+  const handleToggleShared = (position: number) => {
+    const isCurrentlyShared = sharedPositions.has(position);
+    if (isCurrentlyShared) {
+      // Remove the shared duplicate (the second row with the same position)
+      setPlacements((prev) => {
+        const firstIdx = prev.findIndex((p) => p.position === position);
+        const secondIdx = prev.findIndex((p, i) => p.position === position && i > firstIdx);
+        if (secondIdx !== -1) return prev.filter((_, i) => i !== secondIdx);
+        return prev;
+      });
+      setSharedPositions((prev) => { const s = new Set(prev); s.delete(position); return s; });
+    } else {
+      // Insert a blank duplicate row immediately after the existing one
+      setPlacements((prev) => {
+        const insertAfter = prev.findLastIndex((p) => p.position === position);
+        const newRow: ResultDraftPlacement = {
+          position,
+          studentName: '',
+          studentClass: '',
+          house: 'NONE',
+          points: calculatePoints(position, selectedEvent?.competitionType),
+          confidence: 'high',
+          studentNameConfidence: 1.0,
+          houseConfidence: 1.0,
+          positionConfidence: 1.0,
+        };
+        const updated = [...prev];
+        updated.splice(insertAfter + 1, 0, newRow);
+        return updated;
+      });
+      setSharedPositions((prev) => new Set(prev).add(position));
+    }
+  };
+
   // Validate & Publish final results to Firebase
   const handleFinalPublish = async () => {
     if (!selectedEventId || placements.length === 0) return;
@@ -316,7 +353,7 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
                 Scan Competition Result Sheet
               </h2>
               <p className="font-sans-manrope text-xs text-white/70">
-                Camera Capture • Gemini AI Extraction • Teacher Review & Verification
+                OCR Fallback — Gemini AI Extraction • Use manual entry for fastest results
               </p>
             </div>
           </div>
@@ -332,7 +369,28 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
         {/* STEP 1: SELECT COMPETITION & CAPTURE */}
         {step === 'select' && (
           <div className="space-y-6 max-w-2xl mx-auto">
-            
+
+            {/* Manual entry nudge banner */}
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3">
+              <span className="text-lg shrink-0">✍️</span>
+              <div>
+                <p className="font-sans-manrope font-extrabold text-xs text-amber-900">
+                  Manual entry is faster and more accurate
+                </p>
+                <p className="font-sans-manrope text-[11px] text-amber-800 mt-0.5">
+                  OCR is a fallback for bulk sheets. For quick winner entry, use{' '}
+                  <button
+                    type="button"
+                    onClick={() => onBackToDashboard?.()}
+                    className="underline font-bold cursor-pointer"
+                  >
+                    Enter Winners manually
+                  </button>{' '}
+                  from the dashboard.
+                </p>
+              </div>
+            </div>
+
             <div className="bg-white p-5 sm:p-7 rounded-[28px] border border-black/10 shadow-sm space-y-5">
               <div className="flex items-center gap-2 border-b border-black/8 pb-3">
                 <FileText className="w-5 h-5 text-[#FF5E84]" />
@@ -624,12 +682,18 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
                   const isLowName = (item.studentNameConfidence ?? 1) < 0.85;
                   const isLowHouse = (item.houseConfidence ?? 1) < 0.85;
                   const isEdited = editedFields.has(`placement_${index}_studentName`) || editedFields.has(`placement_${index}_house`);
+                  // Detect if this is a shared duplicate row (same position appears before this index)
+                  const isSharedDuplicate = placements.findIndex((p) => p.position === item.position) !== index;
 
                   return (
                     <div
                       key={index}
                       className={`p-4 sm:p-5 rounded-[24px] bg-white border text-left transition-all ${
-                        isLowName || isLowHouse
+                        isSharedDuplicate
+                          ? item.position === 2
+                            ? 'border-blue-300 bg-blue-50/30 shadow-xs'
+                            : 'border-orange-300 bg-orange-50/30 shadow-xs'
+                          : isLowName || isLowHouse
                           ? 'border-amber-400 bg-amber-50/40 shadow-xs'
                           : 'border-black/10 shadow-xs'
                       }`}
@@ -641,10 +705,15 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
                           </span>
                           <h5 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
                             {item.position === 1 ? '1st Place' : item.position === 2 ? '2nd Place' : item.position === 3 ? '3rd Place' : `Position ${item.position}`}
+                            {isSharedDuplicate && (
+                              <span className={`ml-2 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${item.position === 2 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                                Shared
+                              </span>
+                            )}
                           </h5>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
                           {isEdited && (
                             <span className="text-[10px] font-extrabold text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
                               Edited by Admin
@@ -662,6 +731,32 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
                               <span>High Confidence</span>
                             </span>
                           )}
+
+                          {/* Shared position toggle — only for 2nd and 3rd */}
+                          {(item.position === 2 || item.position === 3) && (() => {
+                            // Only show on the FIRST occurrence of this position
+                            const firstIdx = placements.findIndex((p) => p.position === item.position);
+                            if (firstIdx !== index) return null;
+                            const isShared = sharedPositions.has(item.position);
+                            const is2nd = item.position === 2;
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => handleToggleShared(item.position)}
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-sans-manrope font-extrabold border transition-all cursor-pointer ${
+                                  isShared
+                                    ? is2nd
+                                      ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                      : 'bg-orange-100 text-orange-700 border-orange-300'
+                                    : is2nd
+                                    ? 'bg-[#FAF8F5] text-[#5F5F5F] border-black/10 hover:bg-blue-50 hover:text-blue-700'
+                                    : 'bg-[#FAF8F5] text-[#5F5F5F] border-black/10 hover:bg-orange-50 hover:text-orange-700'
+                                }`}
+                              >
+                                {isShared ? `✓ Shared ${is2nd ? '2nd' : '3rd'}` : `+ Shared ${is2nd ? '2nd' : '3rd'}`}
+                              </button>
+                            );
+                          })()}
 
                           {placements.length > 1 && (
                             <button

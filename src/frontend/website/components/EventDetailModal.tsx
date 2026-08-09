@@ -4,6 +4,7 @@ import { useFestival } from '../../../shared/context/FestivalContext';
 import type { EventModel } from '../../../shared/types/festivalTypes';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import { formatTime12Hour } from '../../../utils/timeUtils';
+import { cleanVenueName } from '../../../utils/venueUtils';
 
 interface EventDetailModalProps {
   event: EventModel | null;
@@ -79,7 +80,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
           <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-sans-manrope text-white/80">
             <span className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-[#FF5E84]" />
-              <strong>{event.stage ? `${event.stage} - ${event.venue}` : event.venue || 'TBA'}</strong>
+              <strong>{cleanVenueName(event.venue, event.stage)}</strong>
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-[#F59E0B]" />

@@ -15,6 +15,7 @@ import {
   FileSpreadsheet,
   Lock,
   Clock,
+  Trash2,
 } from 'lucide-react';
 import { useFestival } from '../../shared/context/FestivalContext';
 import { ResultApprovalQueue } from './components/ResultApprovalQueue';
@@ -23,6 +24,7 @@ import { UserManagementTab } from './components/UserManagementTab';
 import { ResultSheetOCRModal } from './components/ResultSheetOCRModal';
 import { EventQuickActionModal } from './components/EventQuickActionModal';
 import { ScanResultPage } from './pages/ScanResultPage';
+import { cleanVenueName } from '../../utils/venueUtils';
 import { formatTime12Hour } from '../../utils/timeUtils';
 import type { AnnouncementType, PriorityLevel, HouseId, EventModel } from '../../shared/types/festivalTypes';
 
@@ -39,7 +41,9 @@ export const Dashboard: React.FC = () => {
     houses,
     getHousePoints,
     auditLogs,
+    liveFeed,
     addAnnouncement,
+    deleteAnnouncement,
     submitResult,
     delayEvent,
   } = useFestival();
@@ -52,7 +56,6 @@ export const Dashboard: React.FC = () => {
   const [draftIdForReview, setDraftIdForReview] = useState<string | null>(null);
   const [quickModalOpen, setQuickModalOpen] = useState(false);
   const [selectedEventForModal, setSelectedEventForModal] = useState<EventModel | null>(null);
-  const [modalTab, setModalTab] = useState<'ocr' | 'manual'>('ocr');
   const [scheduleFilter, setScheduleFilter] = useState<'All' | 'Running' | 'Upcoming' | 'Needs Result Upload' | 'Completed'>('All');
 
   // Announcement State
@@ -225,13 +228,22 @@ export const Dashboard: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Primary OCR Result Sheet Button */}
+              {/* Primary Manual Entry Button */}
               <button
-                onClick={() => setActiveTab('ScanResult')}
+                onClick={() => setActiveTab('Results')}
                 className="gradient-btn-primary text-white font-sans-manrope font-bold text-xs px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md cursor-pointer hover:scale-105 transition-all"
               >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Upload Result Sheet (OCR)</span>
+                <Award className="w-4 h-4" />
+                <span>Enter Winners</span>
+              </button>
+
+              {/* Secondary OCR Button */}
+              <button
+                onClick={() => setActiveTab('ScanResult')}
+                className="bg-white border border-black/15 text-[#111111] font-sans-manrope font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-2 shadow-xs cursor-pointer hover:bg-black/5 transition-all"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-[#FF5E84]" />
+                <span>OCR Scan</span>
               </button>
 
               {isDev && (
@@ -289,11 +301,16 @@ export const Dashboard: React.FC = () => {
               className={`px-5 py-2.5 rounded-full font-sans-manrope font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
                 activeTab === 'ScanResult'
                   ? 'bg-[#111111] text-white shadow-sm'
-                  : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                  : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border border-black/5'
               }`}
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-amber-600" />
-              <span>Scan Result (OCR)</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-[#FF5E84]" />
+              <span>OCR Scan</span>
+              {activeTab !== 'ScanResult' && (
+                <span className="text-[9px] font-extrabold bg-black/6 text-[#5F5F5F] px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                  Fallback
+                </span>
+              )}
             </button>
 
             <button
@@ -420,7 +437,7 @@ export const Dashboard: React.FC = () => {
                     </h3>
                   </div>
                   <p className="font-sans-manrope text-xs text-[#5F5F5F]">
-                    Tap any competition card to trigger OCR result sheet upload or manual winner entry.
+                    Tap any competition card to enter winners manually — the fastest & most accurate method.
                   </p>
                 </div>
 
@@ -458,7 +475,7 @@ export const Dashboard: React.FC = () => {
                       CHRONOLOGICAL RESULTS QUEUE — WAITING FOR RESULT UPLOAD
                     </h4>
                     <p className="font-sans-manrope text-xs text-amber-800">
-                      Teachers simply upload official result sheets one after another (OCR) or enter winners manually. Results sync immediately to website.
+                      Enter winners manually for instant results — or use OCR as a fallback for bulk judge sheets. Results sync immediately to the website.
                     </p>
                   </div>
                 </div>
@@ -486,7 +503,6 @@ export const Dashboard: React.FC = () => {
                         onClick={() => {
                           if (isDone) return;
                           setSelectedEventForModal(evt);
-                          setModalTab('ocr');
                           setQuickModalOpen(true);
                         }}
                         className={`p-4 sm:p-5 rounded-2xl border border-black/8 shadow-2xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
@@ -523,7 +539,7 @@ export const Dashboard: React.FC = () => {
                             </div>
 
                             <div className="flex flex-wrap items-center gap-4 text-xs font-sans-manrope text-[#5F5F5F]">
-                              <span>📍 {evt.venue || 'Main Auditorium'} ({evt.stage || 'Stage 1'})</span>
+                              <span>📍 {cleanVenueName(evt.venue, evt.stage)}</span>
                               {evt.participantsExpected && <span>👥 {evt.participantsExpected} Participants</span>}
                             </div>
                           </div>
@@ -543,25 +559,22 @@ export const Dashboard: React.FC = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedEventForModal(evt);
-                                  setModalTab('ocr');
                                   setQuickModalOpen(true);
                                 }}
                                 className="px-4 py-2 rounded-full gradient-btn-primary text-white font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs hover:scale-105 transition-all cursor-pointer"
                               >
-                                <span>Upload Result Sheet</span>
+                                <span>Enter Winners</span>
                               </button>
 
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedEventForModal(evt);
-                                  setModalTab('manual');
-                                  setQuickModalOpen(true);
+                                  setActiveTab('ScanResult');
                                 }}
-                                className="px-4 py-2 rounded-full bg-white hover:bg-black/5 text-[#111111] border border-black/10 font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                                className="px-4 py-2 rounded-full bg-white hover:bg-black/5 text-[#111111] border border-black/10 font-sans-manrope font-bold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
                               >
-                                <span>Enter Winners Manually</span>
+                                <span>OCR Scan</span>
                               </button>
                             </>
                           )}
@@ -936,7 +949,149 @@ export const Dashboard: React.FC = () => {
         )}
 
         {activeTab === 'Results' && <ResultApprovalQueue />}
-        {activeTab === 'Announcements' && <ResultApprovalQueue />}
+        {activeTab === 'Announcements' && (
+          <div className="space-y-6 text-left">
+
+            {/* Broadcast Form */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/8 shadow-md space-y-5">
+              <div className="flex items-center gap-3 pb-4 border-b border-black/8">
+                <Bell className="w-5 h-5 text-[#FF5E84]" />
+                <div>
+                  <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
+                    Broadcast Announcement
+                  </h3>
+                  <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
+                    Posts instantly to the live activity ticker visible to all attendees on the website.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handlePostAnnouncement} className="space-y-4 max-w-2xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[#111111]">Announcement Type</label>
+                    <select
+                      value={announcementType}
+                      onChange={(e) => setAnnouncementType(e.target.value as AnnouncementType)}
+                      className="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold"
+                    >
+                      <option value="General Notice">General Notice</option>
+                      <option value="Announcement">Announcement</option>
+                      <option value="Result">Result Announcement</option>
+                      <option value="Stage Update">Stage Update</option>
+                      <option value="Schedule Change">Schedule Change</option>
+                      <option value="Emergency">Emergency Alert</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[#111111]">Priority Level</label>
+                    <select
+                      value={announcementPriority}
+                      onChange={(e) => setAnnouncementPriority(e.target.value as PriorityLevel)}
+                      className="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope font-bold"
+                    >
+                      <option value="Normal">Normal Priority</option>
+                      <option value="Low">Low Priority</option>
+                      <option value="Important">Important Priority</option>
+                      <option value="Critical">Critical Emergency</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#111111]">Announcement Content</label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="Enter message (e.g. Oppana results will be announced at 4:30 PM on Stage 1)..."
+                    value={announcementText}
+                    onChange={(e) => setAnnouncementText(e.target.value)}
+                    className="w-full px-3.5 py-3 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-sans-manrope resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <p className="text-[11px] text-[#5F5F5F] font-sans-manrope">
+                    Appears immediately on the public website live ticker.
+                  </p>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-full gradient-btn-primary text-white font-sans-manrope font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                    Broadcast →
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Live Feed List */}
+            <div className="bg-white rounded-3xl border border-black/8 shadow-md overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-black/8">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-[#F59E0B]" />
+                  <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                    Live Activity Feed
+                  </h4>
+                  <span className="text-[10px] font-bold text-[#5F5F5F] bg-black/6 px-2 py-0.5 rounded-full">
+                    {liveFeed.length} items
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#5F5F5F] font-sans-manrope hidden sm:block">
+                  Deleting an item removes it from the public ticker immediately.
+                </p>
+              </div>
+
+              {liveFeed.length === 0 ? (
+                <div className="px-6 py-12 text-center text-xs text-[#5F5F5F] font-sans-manrope">
+                  No announcements yet. Broadcast one above.
+                </div>
+              ) : (
+                <div className="divide-y divide-black/5">
+                  {liveFeed.map((item) => {
+                    const typeColors: Record<string, string> = {
+                      'Result': 'bg-emerald-100 text-emerald-700',
+                      'Emergency': 'bg-red-100 text-red-700',
+                      'Stage Update': 'bg-blue-100 text-blue-700',
+                      'Schedule Change': 'bg-amber-100 text-amber-700',
+                      'Announcement': 'bg-purple-100 text-purple-700',
+                      'General Notice': 'bg-black/6 text-[#5F5F5F]',
+                    };
+                    const badgeClass = typeColors[item.type] || 'bg-black/6 text-[#5F5F5F]';
+                    return (
+                      <div key={item.id} className="flex items-start justify-between gap-4 px-6 py-4 hover:bg-[#FAF8F5] transition-colors">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                            <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${badgeClass}`}>
+                              {item.type}
+                            </span>
+                            <span className="text-[10px] text-[#5F5F5F] font-sans-manrope">
+                              {item.timestamp}
+                            </span>
+                          </div>
+                          <p className="font-sans-manrope text-xs text-[#111111] leading-relaxed break-words min-w-0">
+                            {item.content}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Remove this announcement from the live ticker?')) {
+                              deleteAnnouncement(item.id);
+                            }
+                          }}
+                          className="shrink-0 w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Delete announcement"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
 
         {/* OCR Result Sheet Uploader Modal */}
         <ResultSheetOCRModal
@@ -953,7 +1108,6 @@ export const Dashboard: React.FC = () => {
           isOpen={quickModalOpen}
           onClose={() => setQuickModalOpen(false)}
           event={selectedEventForModal}
-          initialTab={modalTab}
         />
 
       </div>
