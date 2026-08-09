@@ -29,27 +29,24 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const handleGoogleClick = async () => {
     setGoogleLoading(true);
     setAccessDeniedMsg(null);
-    
-    try {
-      // On mobile this triggers a redirect (page reloads) — modal closes naturally.
-      // On desktop the popup resolves quickly and we close immediately.
-      loginWithGoogle().catch((err: any) => {
-        if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
-          setAccessDeniedMsg('Google Sign-In failed. Please try again in Chrome or Safari.');
-          setGoogleLoading(false);
-        }
-      });
 
-      // Close modal immediately on desktop (redirect handles mobile automatically)
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (!isMobile) {
-        onClose();
-        setGoogleLoading(false);
+    try {
+      const outcome = await loginWithGoogle();
+
+      if (outcome === 'redirecting') {
+        // Page will reload after Google redirect — keep spinner, modal disappears naturally
+        return;
       }
-      // On mobile: page will reload after redirect, modal disappears naturally
+
+      // Popup succeeded on desktop — close the modal
+      onClose();
     } catch (err: any) {
-      console.warn('Google Auth Error:', err);
-      setAccessDeniedMsg('Google Sign-In was blocked or cancelled. Please open the site directly in Chrome or Safari.');
+      // User closed the popup themselves — don't show an error
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+        setGoogleLoading(false);
+        return;
+      }
+      setAccessDeniedMsg('Sign-In failed. Make sure you are opening the site directly in Chrome or Safari (not an in-app browser).');
       setGoogleLoading(false);
     }
   };

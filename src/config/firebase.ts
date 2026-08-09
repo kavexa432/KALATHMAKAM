@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { browserLocalPersistence, getAuth, GoogleAuthProvider, setPersistence } from "firebase/auth";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -24,6 +24,9 @@ export const analytics = typeof window !== 'undefined'
 
 // Export Auth & Google Provider
 export const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch(() => {
+  // Some locked-down browsers may reject persistence; auth still works for the session.
+});
 export const googleProvider = new GoogleAuthProvider();
 
 // Export Firestore Database with IndexedDB Persistence

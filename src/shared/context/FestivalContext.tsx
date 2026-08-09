@@ -69,7 +69,7 @@ interface FestivalContextType {
   // Workflow Actions
   delayEvent: (eventId: string, minutes: number) => Promise<void>;
   login: (role: 'developer' | 'admin' | 'user') => void;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<'signed-in' | 'redirecting'>;
   loginCustomUser: (email: string) => void;
   logout: () => Promise<void>;
   submitResult: (newResult: Omit<EventResultModel, 'id' | 'createdAt' | 'status'>) => void;
@@ -682,62 +682,68 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Handle redirect result on page load — catches mobile signInWithRedirect returns
   useEffect(() => {
     getRedirectResult(auth)
-      .then((result) => {
+      .then(async (result) => {
         if (result?.user) {
-          const email = result.user.email || '';
-          const tempUser: UserModel = {
-            id: result.user.uid,
-            name: result.user.displayName || email.split('@')[0].toUpperCase(),
-            email,
-            role: 'user',
-            approved: false,
-            permissions: [],
-            status: 'Active',
-            avatarUrl: result.user.photoURL || undefined,
-            createdAt: new Date().toISOString(),
-          };
-          syncUserToFirestore(tempUser).catch(() => {});
+          // Use syncSignedInFirebaseUser so Firestore role lookup runs
+          // and admin/developer roles are properly restored after the redirect.
+          await syncSignedInFirebaseUser(result.user).catch(() => {});
         }
       })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Google Auth — redirect on mobile (more reliable), popup on desktop
-  const loginWithGoogle = async () => {
+  const syncSignedInFirebaseUser = async (fbUser: FirebaseUser) => {
+    const email = fbUser.email || '';
+    const tempUser: UserModel = {
+      id: fbUser.uid,
+      name: fbUser.displayName || email.split('@')[0].toUpperCase(),
+      email,
+      role: 'user',
+      approved: false,
+      permissions: [],
+      status: 'Active',
+      avatarUrl: fbUser.photoURL || undefined,
+      createdAt: new Date().toISOString(),
+    };
+    await syncUserToFirestore(tempUser);
+  };
+
+  // Google Auth — mobile gets redirect immediately; desktop tries popup first.
+  const loginWithGoogle = async (): Promise<'signed-in' | 'redirecting'> => {
     const provider = googleProvider;
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // Detect mobile or any Safari (desktop Safari also has popup issues)
+    const ua = navigator.userAgent;
+    const isMobileOrSafari =
+      /Android|iPhone|iPad|iPod/i.test(ua) ||
+      (/Safari/i.test(ua) && !/Chrome/i.test(ua));
 
-    if (isMobile) {
-      // Redirect is the only fully reliable method on mobile browsers
+    if (isMobileOrSafari) {
+      // Go straight to redirect — no popup attempt on mobile/Safari
+      sessionStorage.setItem('kalathmakam_auth_redirect_pending', '1');
       await signInWithRedirect(auth, provider);
-      return; // page reloads; getRedirectResult above handles the result
+      return 'redirecting';
     }
 
+    // Desktop non-Safari: try popup, fall back to redirect if blocked
     try {
       const result = await signInWithPopup(auth, provider);
       if (result?.user) {
-        const email = result.user.email || '';
-        const tempUser: UserModel = {
-          id: result.user.uid,
-          name: result.user.displayName || email.split('@')[0].toUpperCase(),
-          email,
-          role: 'user',
-          approved: false,
-          permissions: [],
-          status: 'Active',
-          avatarUrl: result.user.photoURL || undefined,
-          createdAt: new Date().toISOString(),
-        };
-        syncUserToFirestore(tempUser).catch(() => {});
+        await syncSignedInFirebaseUser(result.user);
       }
+      return 'signed-in';
     } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
-      throw err;
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        throw err;
+      }
+      // Popup was blocked or not supported — fall back to redirect
+      sessionStorage.setItem('kalathmakam_auth_redirect_pending', '1');
+      await signInWithRedirect(auth, provider);
+      return 'redirecting';
     }
   };
 
