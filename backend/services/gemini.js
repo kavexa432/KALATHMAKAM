@@ -7,11 +7,12 @@ function getApiKeys() {
   return keysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
 }
 
-// Models tried in order — falls back if one hits quota or is unavailable
+// Models tried in order — most capable/available first
 const MODELS_TO_TRY = [
-  'gemini-1.5-flash',
   'gemini-2.0-flash',
-  'gemini-1.5-pro',
+  'gemini-2.0-flash-lite',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
 ];
 
 async function extractResultsFromImage(file, eventName, category) {
@@ -25,7 +26,7 @@ async function extractResultsFromImage(file, eventName, category) {
     You are an expert OCR AI processing a handwritten or printed score sheet for a cultural festival competition.
     The competition is: "${eventName}" (Category: "${category}").
     
-    Extract the list of placed winners from the image. 
+    Extract the list of placed winners from the image.
     Map their position to an integer (1 = First, 2 = Second, 3 = Third).
     Extract their Student Name and Class.
     Extract their House strictly mapping to: 'NOVA', 'VEGA', 'ORION', 'ASTRA', or 'N/A' if missing/unclear.
@@ -93,7 +94,7 @@ async function extractResultsFromImage(file, eventName, category) {
         lastError = error;
         const msg = String(error).toLowerCase();
         const isQuota = msg.includes('429') || msg.includes('quota') || msg.includes('resource_exhausted') || msg.includes('too many requests');
-        const isUnavailable = msg.includes('not found') || msg.includes('no longer available') || msg.includes('not_found');
+        const isUnavailable = msg.includes('not found') || msg.includes('no longer available') || msg.includes('not_found') || msg.includes('404') || msg.includes('unsupported');
 
         console.warn(`[OCR] key[${apiKeys.indexOf(key)}] model[${model}] failed: ${error.message?.substring(0, 120)}`);
 
