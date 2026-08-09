@@ -41,6 +41,7 @@ import {
   initialAuditLogs,
   initialUsers,
   initialGallery,
+  initialEvents,
   houseEvents,
 } from '../data/festivalData';
 
@@ -393,7 +394,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           snapshot.forEach((d) => firestoreEvents.push({ id: d.id, ...d.data() } as EventModel));
 
           // Keep the canonical event catalogue local, but let Firestore drive live operational state.
-          const mergedEvents = houseEvents.map((localEvent) => {
+          const canonicalEvents = [...initialEvents, ...houseEvents];
+          const mergedEvents = canonicalEvents.map((localEvent) => {
             const firestoreEvent = firestoreEvents.find((event) => event.id === localEvent.id);
             const mergedEvent = firestoreEvent
               ? { ...localEvent, ...getOperationalEventFields(firestoreEvent) }

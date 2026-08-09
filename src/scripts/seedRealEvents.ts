@@ -1,64 +1,109 @@
 // @ts-nocheck
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, writeBatch, doc, getDocs } from 'firebase/firestore';
-import { initialEvents, initialStages } from '../shared/data/festivalData';
+import dotenv from 'dotenv';
+import { createRequire } from 'node:module';
+import { initialEvents, initialStages, houseEvents } from '../shared/data/festivalData';
+import { SCHEDULE_DATA } from '../data/scheduleData';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAfNogJDB5jCENkBHIhth8fnz-87vlKe3I",
-  authDomain: "kalathmakam-5783c.firebaseapp.com",
-  projectId: "kalathmakam-5783c",
-  storageBucket: "kalathmakam-5783c.firebasestorage.app",
-  messagingSenderId: "875256530698",
-  appId: "1:875256530698:web:8d67776ef5adf851a5dcf3"
+dotenv.config();
+
+const require = createRequire(`${process.cwd()}\\backend\\seed.cjs`);
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
+
+const serviceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+  throw new Error('Missing Firebase Admin credentials. Add FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY to .env.');
+}
 
-async function seed() {
-  console.log('Seeding Official 7-Stage Events and Stages into Firestore...');
-  try {
-    // 1. Clear old events
-    const eventsRef = collection(db, 'events');
-    const existingEvents = await getDocs(eventsRef);
-    console.log(`Deleting ${existingEvents.size} existing events...`);
-    const deleteBatch = writeBatch(db);
-    existingEvents.docs.forEach((d) => deleteBatch.delete(d.ref));
-    await deleteBatch.commit();
-    console.log('Deleted old events.');
+if (getApps().length === 0) {
+  initializeApp({
+    credential: cert(serviceAccount),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'kalathmakam-5783c.firebasestorage.app',
+  });
+}
 
-    // 2. Clear old stages
-    const stagesRef = collection(db, 'stages');
-    const existingStages = await getDocs(stagesRef);
-    console.log(`Deleting ${existingStages.size} existing stages...`);
-    const deleteStagesBatch = writeBatch(db);
-    existingStages.docs.forEach((d) => deleteStagesBatch.delete(d.ref));
-    await deleteStagesBatch.commit();
-    console.log('Deleted old stages.');
+const db = getFirestore();
 
-    // 3. Insert official initialEvents
-    const addEventsBatch = writeBatch(db);
-    initialEvents.forEach((evt) => {
-      const newRef = doc(eventsRef, evt.id);
-      addEventsBatch.set(newRef, evt);
-    });
-    await addEventsBatch.commit();
-    console.log(`Successfully seeded ${initialEvents.length} official events!`);
+const normalize = (value?: string | null) => (value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+const clean = (value: unknown) => JSON.parse(JSON.stringify(value));
 
-    // 4. Insert official initialStages
-    const addStagesBatch = writeBatch(db);
-    initialStages.forEach((stg) => {
-      const newRef = doc(stagesRef, stg.id);
-      addStagesBatch.set(newRef, stg);
-    });
-    await addStagesBatch.commit();
-    console.log(`Successfully seeded ${initialStages.length} official stages!`);
+const scheduleParticipants = new Map(
+  SCHEDULE_DATA
+    .filter((event) => event.title !== 'LUNCH BREAK' && typeof event.participants === 'number')
+    .map((event) => [
+      `${normalize(event.stage)}:${normalize(event.title)}`,
+      event.participants,
+    ])
+);
 
-    process.exit(0);
-  } catch (err) {
-    console.error('Error seeding events:', err);
-    process.exit(1);
+const allOfficialEvents = [...initialEvents, ...houseEvents].map((event) => {
+  const scheduleKey = `${normalize(`${event.stage}: ${event.venue}`)}:${normalize(event.eventName)}`;
+  const participants = scheduleParticipants.get(scheduleKey);
+  return clean(participants == null ? event : { ...event, participantsExpected: participants });
+});
+
+async function clearCollection(collectionName: string) {
+  const snapshot = await db.collection(collectionName).get();
+  let batch = db.batch();
+  let batchSize = 0;
+
+  for (const document of snapshot.docs) {
+    batch.delete(document.ref);
+    batchSize += 1;
+
+    if (batchSize === 450) {
+      await batch.commit();
+      batch = db.batch();
+      batchSize = 0;
+    }
+  }
+
+  if (batchSize > 0) {
+    await batch.commit();
+  }
+
+  return snapshot.size;
+}
+
+async function writeCollection(collectionName: string, records: Array<{ id: string }>) {
+  let batch = db.batch();
+  let batchSize = 0;
+
+  for (const record of records) {
+    batch.set(db.collection(collectionName).doc(record.id), clean(record));
+    batchSize += 1;
+
+    if (batchSize === 450) {
+      await batch.commit();
+      batch = db.batch();
+      batchSize = 0;
+    }
+  }
+
+  if (batchSize > 0) {
+    await batch.commit();
   }
 }
 
-seed();
+async function seed() {
+  console.log('Seeding official event catalogue into Firestore...');
+
+  const deletedEvents = await clearCollection('events');
+  const deletedStages = await clearCollection('stages');
+
+  await writeCollection('events', allOfficialEvents);
+  await writeCollection('stages', initialStages);
+
+  console.log(`Deleted ${deletedEvents} old events and ${deletedStages} old stages.`);
+  console.log(`Seeded ${allOfficialEvents.length} events and ${initialStages.length} stages.`);
+}
+
+seed().catch((err) => {
+  console.error('Error seeding events:', err);
+  process.exit(1);
+});

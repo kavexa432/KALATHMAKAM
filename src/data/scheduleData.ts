@@ -10,7 +10,7 @@ export interface ScheduleEvent {
   participants?: string | number | null;
 }
 
-export const DAYS_LIST = ['Monday 10/08 (Stages)', 'Tuesday 11/08 (Day 2)', 'Pre-Fest (Completed)'] as const;
+export const DAYS_LIST = ['Monday 10/08 (Stages)', 'Pre-Fest (Completed)'] as const;
 
 export const SCHEDULE_DATA: ScheduleEvent[] = [
   // ==========================================
@@ -31,14 +31,18 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's1-13', time: '06:10 PM', title: 'Folk Dance (Cat 3)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 3 },
 
   // ==========================================
-  // STAGE 2: Mini Auditorium (English) - Day 2, 11/8/2026
+  // STAGE 2: Mini Auditorium (English)
   // ==========================================
-  { id: 's2-1', time: '09:00 AM', title: 'English Recitation (Cat 1)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 16 },
-  { id: 's2-2', time: '10:00 AM', title: 'English Recitation (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 31 },
-  { id: 's2-3', time: '11:45 AM', title: 'Elocution (Cat 1)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 19 },
-  { id: 's2-4', time: '12:45 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming' },
-  { id: 's2-5', time: '01:30 PM', title: 'Elocution (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 36 },
-  { id: 's2-6', time: '03:30 PM', title: 'Declamation (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Tuesday 11/08 (Day 2)', status: 'Upcoming', participants: 8 },
+  { id: 's2-1', time: '09:00 AM', title: 'English Recitation (Cat 4)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 5 },
+  { id: 's2-2', time: '09:30 AM', title: 'English Recitation (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 16 },
+  { id: 's2-3', time: '11:00 AM', title: 'English Extempore (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 13 },
+  { id: 's2-4', time: '12:10 PM', title: 'English Extempore (Cat 4)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
+  { id: 's2-5', time: '01:00 PM - 01:30 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
+  { id: 's2-6', time: '01:30 PM', title: 'Anchoring (Cat 4)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
+  { id: 's2-7', time: '02:00 PM', title: 'Anchoring (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
+  { id: 's2-8', time: '02:45 PM', title: 'Turn Coat (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
+  { id: 's2-9', time: '03:30 PM', title: 'Turn Coat (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
+  { id: 's2-10', time: '04:00 PM', title: 'Western Music (Common)', category: 'Music', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
 
   // ==========================================
   // STAGE 3: KG Auditorium (Music)
@@ -101,11 +105,14 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's6-12', time: '03:00 PM', title: 'Arabic Recitation (Cat 2)', category: 'Arabic', stage: 'Stage 6: Kids Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 3 },
 
   // ==========================================
-  // STAGE 7: Computer Lab (Digital Painting only - PPT is a House Item, not individual)
+  // STAGE 7: Computer Lab
   // ==========================================
-  { id: 's7-4', time: '12:00 PM', title: 'Digital Painting (Cat 2)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
-  { id: 's7-5', time: 'Same Session', title: 'Digital Painting (Cat 3)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
-  { id: 's7-6', time: 'Same Session', title: 'Digital Painting (Cat 4)', category: 'IT', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
+  { id: 's7-1', time: '09:00 AM', title: 'PPT (Cat 2)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
+  { id: 's7-2', time: 'Same Session', title: 'PPT (Cat 3)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
+  { id: 's7-3', time: 'Same Session', title: 'PPT (Cat 4)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
+  { id: 's7-4', time: '12:00 PM', title: 'Digital Painting (Cat 2)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
+  { id: 's7-5', time: 'Same Session', title: 'Digital Painting (Cat 3)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
+  { id: 's7-6', time: 'Same Session', title: 'Digital Painting (Cat 4)', category: 'Computer', stage: 'Stage 7: Computer Lab', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
 
   // ==========================================
   // PRE-FEST COMPLETED COMPETITIONS (OFF-STAGE)
