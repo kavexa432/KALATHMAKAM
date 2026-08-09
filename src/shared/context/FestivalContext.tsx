@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   signInWithPopup,
   signInWithRedirect,
@@ -98,6 +98,33 @@ const FestivalContext = createContext<FestivalContextType | undefined>(undefined
 
 const LOCAL_USER_KEY = 'kalathmakam_current_user_v1';
 
+const normalizePositionLabel = (position: number | string): '1st' | '2nd' | '3rd' | string => {
+  const pos = Number(position);
+  if (pos === 1) return '1st';
+  if (pos === 2) return '2nd';
+  if (pos === 3) return '3rd';
+  return String(position);
+};
+
+const getOperationalEventFields = (event: Partial<EventModel>) =>
+  Object.fromEntries(
+    Object.entries({
+      status: event.status,
+      resultsPublished: event.resultsPublished,
+      winnerUploaded: event.winnerUploaded,
+      housePointsUpdated: event.housePointsUpdated,
+      delayMinutes: event.delayMinutes,
+      actualStartTime: event.actualStartTime,
+      actualEndTime: event.actualEndTime,
+      cancelled: event.cancelled,
+      postponed: event.postponed,
+      participantsActual: event.participantsActual,
+      resultId: event.resultId,
+      winnerHouse: event.winnerHouse,
+      updatedAt: event.updatedAt,
+    }).filter(([, value]) => value !== undefined)
+  );
+
 export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [festival] = useState<FestivalEdition>(currentFestival);
   const [houses] = useState<HouseModel[]>(initialHouses);
@@ -109,6 +136,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(initialAuditLogs);
   const [users, setUsers] = useState<UserModel[]>(initialUsers);
   const [gallery] = useState<GalleryItemModel[]>(initialGallery);
+  const publishedResultEventIdsRef = useRef<Set<string>>(new Set());
   
   // Keep backend awake ping
   useEffect(() => {
@@ -342,13 +370,29 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const firestoreEvents: EventModel[] = [];
           snapshot.forEach((d) => firestoreEvents.push({ id: d.id, ...d.data() } as EventModel));
 
-          // Merge local houseEvents with Firestore events.
-          // Firestore entries take precedence (e.g. resultsPublished flag updates).
-          const firestoreIds = new Set(firestoreEvents.map((e) => e.id));
-          const mergedEvents = [
-            ...firestoreEvents,
-            ...houseEvents.filter((he) => !firestoreIds.has(he.id)),
-          ];
+          // Keep the canonical event catalogue local, but let Firestore drive live operational state.
+          const localEventMap = new Map(houseEvents.map((event) => [event.id, event]));
+          const mergedEvents = houseEvents.map((localEvent) => {
+            const firestoreEvent = firestoreEvents.find((event) => event.id === localEvent.id);
+            const mergedEvent = firestoreEvent
+              ? { ...localEvent, ...getOperationalEventFields(firestoreEvent) }
+              : localEvent;
+            return publishedResultEventIdsRef.current.has(localEvent.id)
+              ? {
+                  ...mergedEvent,
+                  resultsPublished: true,
+                  winnerUploaded: true,
+                  housePointsUpdated: true,
+                }
+              : mergedEvent;
+          });
+
+          firestoreEvents.forEach((firestoreEvent) => {
+            const displayName = (firestoreEvent.eventName || (firestoreEvent as any).title || '').trim();
+            if (!localEventMap.has(firestoreEvent.id) && displayName) {
+              mergedEvents.push(firestoreEvent);
+            }
+          });
 
           // Sort events by date and time
           mergedEvents.sort((a, b) => {
@@ -363,6 +407,77 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return () => unsub();
     } catch (err) {
       console.error('Failed to subscribe to events:', err);
+    }
+  }, []);
+
+  // Listen to Firestore results so published backend/OCR results remove events from upload queues.
+  useEffect(() => {
+    try {
+      const unsub = onSnapshot(
+        collection(db, 'results'),
+        (snapshot) => {
+          const firestoreResults: EventResultModel[] = [];
+
+          snapshot.forEach((d) => {
+            const data = d.data() as any;
+
+            if (Array.isArray(data.results)) {
+              data.results.forEach((item: any, index: number) => {
+                const houseId = String(item.house || item.houseId || 'NONE').toUpperCase() as HouseId;
+                firestoreResults.push({
+                  id: `${d.id}-${index}`,
+                  eventId: data.eventId || d.id,
+                  festivalId: data.festivalId || '2k26',
+                  eventTitle: data.competitionName || data.eventTitle || data.eventName || 'Competition',
+                  category: data.category || 'General',
+                  participantName: item.studentName || item.participantName || '',
+                  studentClass: item.studentClass || '',
+                  houseId,
+                  houseName: houseId === 'NONE' ? 'Non-House / Individual' : houseId,
+                  position: normalizePositionLabel(item.position),
+                  points: Number(item.points) || 0,
+                  createdAt: data.publishedAt?.toDate?.().toISOString?.() || data.createdAt || new Date().toISOString(),
+                  status: data.published ? 'Published' : data.status || 'Published',
+                  judgeNotes: data.judgeNotes,
+                });
+              });
+              return;
+            }
+
+            firestoreResults.push({
+              id: d.id,
+              ...data,
+              status: data.status || (data.published ? 'Published' : 'Published'),
+            } as EventResultModel);
+          });
+
+          setResults(firestoreResults);
+
+          const publishedEventIds = new Set(
+            firestoreResults
+              .filter((result) => result.status === 'Published' || result.status === 'Verified')
+              .map((result) => result.eventId)
+          );
+          publishedResultEventIdsRef.current = publishedEventIds;
+
+          setEvents((prev) =>
+            prev.map((event) =>
+              publishedEventIds.has(event.id)
+                ? {
+                    ...event,
+                    resultsPublished: true,
+                    winnerUploaded: true,
+                    housePointsUpdated: true,
+                  }
+                : event
+            )
+          );
+        },
+        (err) => console.warn('Firestore results subscription notice:', err)
+      );
+      return () => unsub();
+    } catch (err) {
+      console.error('Failed to subscribe to results:', err);
     }
   }, []);
 
@@ -556,7 +671,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const eventRef = doc(db, 'events', eventId);
       const target = events.find((e) => e.id === eventId);
       if (target) {
-        const newDelay = (target.delayMinutes || 0) + minutes;
+        const newDelay = Math.max(0, (target.delayMinutes || 0) + minutes);
         await setDoc(eventRef, { delayMinutes: newDelay }, { merge: true });
         
         logAuditAction(

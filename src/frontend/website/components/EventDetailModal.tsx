@@ -35,7 +35,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
         return <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase animate-pulse">● LIVE NOW</span>;
       case 'Completed':
         if (evt.resultsPublished) {
-          return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Completed</span>;
+          return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Published</span>;
         } else {
           return <span className="bg-blue-500/15 text-blue-700 border border-blue-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Completed • Results Awaiting Publication</span>;
         }

@@ -100,7 +100,7 @@ export const LiveEventsSection: React.FC = () => {
           return (
             <span className="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
               <CheckCircle className="w-3 h-3" />
-              <span>Completed</span>
+              <span>Published</span>
             </span>
           );
         } else {

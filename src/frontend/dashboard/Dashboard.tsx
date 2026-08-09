@@ -121,6 +121,18 @@ export const Dashboard: React.FC = () => {
     );
   }
 
+  const publishedResultEventIds = new Set(
+    results
+      .filter((r) => r.status === 'Published' || r.status === 'Verified')
+      .map((r) => r.eventId)
+  );
+  const displayableEvents = events.filter((evt) => {
+    const displayName = (evt.eventName || (evt as any).title || '').trim();
+    return displayName.length > 0;
+  });
+  const eventHasPublishedResults = (evt: EventModel) =>
+    evt.resultsPublished || publishedResultEventIds.has(evt.id);
+  const eventsAwaitingResults = displayableEvents.filter((evt) => !eventHasPublishedResults(evt) && !evt.cancelled);
   const pendingResultsCount = results.filter((r) => r.status === 'Pending Review').length + resultDrafts.length;
 
   const handlePostAnnouncement = (e: React.FormEvent) => {
@@ -154,9 +166,13 @@ export const Dashboard: React.FC = () => {
     delayEvent(eventId, 15);
   };
 
-  const totalEvents = events.length;
-  const completedEvents = events.filter(e => e.status === 'Completed').length;
-  const runningEvents = events.filter(e => e.status === 'Running').length;
+  const handleUndoDelayEvent = (eventId: string) => {
+    delayEvent(eventId, -15);
+  };
+
+  const totalEvents = displayableEvents.length;
+  const completedEvents = displayableEvents.filter(eventHasPublishedResults).length;
+  const runningEvents = displayableEvents.filter(e => e.status === 'Running').length;
   const remainingEvents = totalEvents - completedEvents - runningEvents;
   const festivalProgress = totalEvents === 0 ? 0 : Math.round((completedEvents / totalEvents) * 100);
 
@@ -359,14 +375,14 @@ export const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Today's Competitions</span>
-                <div className="font-serif-cormorant font-bold text-4xl text-[#111111]">{events.length}</div>
+                <div className="font-serif-cormorant font-bold text-4xl text-[#111111]">{totalEvents}</div>
                 <span className="text-[11px] text-[#10B981] font-bold">● Live Stage Operations</span>
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Results Queue (Pending)</span>
                 <div className="font-serif-cormorant font-bold text-4xl text-[#F59E0B]">
-                  {events.filter((e) => !e.resultsPublished).length}
+                  {eventsAwaitingResults.length}
                 </div>
                 <span className="text-[11px] text-[#FF5E84] font-bold">Awaiting OCR / Winner Entry</span>
               </div>
@@ -374,7 +390,7 @@ export const Dashboard: React.FC = () => {
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
                 <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Completed Events</span>
                 <div className="font-serif-cormorant font-bold text-4xl text-[#3B82F6]">
-                  {events.filter((e) => e.resultsPublished || e.status === 'Completed').length}
+                  {completedEvents}
                 </div>
                 <span className="text-[11px] text-[#10B981] font-bold">Published Live</span>
               </div>
@@ -451,28 +467,34 @@ export const Dashboard: React.FC = () => {
 
               {/* Events List Cards */}
               <div className="space-y-3">
-                {events
+                {displayableEvents
                   .filter((evt) => {
                     if (scheduleFilter === 'All') return true;
                     if (scheduleFilter === 'Running') return evt.status === 'Running';
-                    if (scheduleFilter === 'Upcoming') return evt.status === 'Upcoming' || evt.status === 'Pending';
-                    if (scheduleFilter === 'Needs Result Upload') return !evt.resultsPublished;
-                    if (scheduleFilter === 'Completed') return evt.resultsPublished || evt.status === 'Completed';
+                    if (scheduleFilter === 'Upcoming') return !eventHasPublishedResults(evt) && (evt.status === 'Upcoming' || evt.status === 'Pending');
+                    if (scheduleFilter === 'Needs Result Upload') return !eventHasPublishedResults(evt) && !evt.cancelled;
+                    if (scheduleFilter === 'Completed') return eventHasPublishedResults(evt);
                     return true;
                   })
                   .map((evt) => {
-                    const isDone = evt.resultsPublished || evt.status === 'Completed';
+                    const isDone = eventHasPublishedResults(evt);
                     const isRunning = evt.status === 'Running';
+                    const displayName = evt.eventName || (evt as any).title || 'Untitled Event';
 
                     return (
                       <div
                         key={evt.id}
                         onClick={() => {
+                          if (isDone) return;
                           setSelectedEventForModal(evt);
                           setModalTab('ocr');
                           setQuickModalOpen(true);
                         }}
-                        className="p-4 sm:p-5 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/8 hover:border-[#FF5E84]/30 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                        className={`p-4 sm:p-5 rounded-2xl border border-black/8 shadow-2xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                          isDone
+                            ? 'bg-emerald-50/50'
+                            : 'bg-[#FAF8F5] hover:bg-white hover:border-[#FF5E84]/30 hover:shadow-md cursor-pointer'
+                        }`}
                       >
                         <div className="flex items-start gap-4">
                           <div className="w-14 h-14 rounded-2xl bg-white border border-black/10 flex flex-col items-center justify-center font-sans-manrope shrink-0 shadow-2xs">
@@ -483,7 +505,7 @@ export const Dashboard: React.FC = () => {
                           <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-sans-manrope font-extrabold text-base text-[#111111]">
-                                {evt.eventName}
+                                {displayName}
                               </span>
                               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans-manrope font-extrabold bg-black/5 text-[#5F5F5F]">
                                 {evt.category}
@@ -497,7 +519,7 @@ export const Dashboard: React.FC = () => {
                                     : 'bg-amber-500/15 text-amber-800 border border-amber-500/30'
                                 }`}
                               >
-                                {isDone ? '🏆 Completed' : isRunning ? '🟢 Running' : '🟡 Upcoming'}
+                                {isDone ? 'Published' : isRunning ? 'Running' : evt.status === 'Completed' ? 'Completed - Results Pending' : 'Upcoming'}
                               </span>
                             </div>
 
@@ -510,31 +532,40 @@ export const Dashboard: React.FC = () => {
 
                         {/* Card Action Buttons */}
                         <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedEventForModal(evt);
-                              setModalTab('ocr');
-                              setQuickModalOpen(true);
-                            }}
-                            className="px-4 py-2 rounded-full gradient-btn-primary text-white font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs hover:scale-105 transition-all cursor-pointer"
-                          >
-                            <span>📷 Upload Result Sheet</span>
-                          </button>
+                          {isDone ? (
+                            <span className="px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-sans-manrope font-extrabold text-xs flex items-center gap-1.5">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Results Published
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEventForModal(evt);
+                                  setModalTab('ocr');
+                                  setQuickModalOpen(true);
+                                }}
+                                className="px-4 py-2 rounded-full gradient-btn-primary text-white font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs hover:scale-105 transition-all cursor-pointer"
+                              >
+                                <span>Upload Result Sheet</span>
+                              </button>
 
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedEventForModal(evt);
-                              setModalTab('manual');
-                              setQuickModalOpen(true);
-                            }}
-                            className="px-4 py-2 rounded-full bg-white hover:bg-black/5 text-[#111111] border border-black/10 font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
-                          >
-                            <span>✍️ Enter Winners Manually</span>
-                          </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEventForModal(evt);
+                                  setModalTab('manual');
+                                  setQuickModalOpen(true);
+                                }}
+                                className="px-4 py-2 rounded-full bg-white hover:bg-black/5 text-[#111111] border border-black/10 font-sans-manrope font-extrabold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                              >
+                                <span>Enter Winners Manually</span>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     );
@@ -636,15 +667,13 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5">
-                  {events
-                    .filter((evt) => {
-                      const displayName = (evt.eventName || (evt as any).title || '').trim();
-                      return displayName.length > 0;
-                    })
+                  {displayableEvents
                     .slice(0, 50)
                     .map((evt) => {
                       const displayName = evt.eventName || (evt as any).title || 'Untitled Event';
                       const displayStage = evt.stage || evt.venue || 'Venue TBA';
+                      const isPublished = eventHasPublishedResults(evt);
+                      const statusText = isPublished ? 'Published' : evt.status;
 
                       return (
                         <tr key={evt.id} className="hover:bg-[#FAF8F5]">
@@ -656,22 +685,33 @@ export const Dashboard: React.FC = () => {
                           <td className="py-3.5 px-4 text-[#5F5F5F]">{displayStage}</td>
                           <td className="py-3.5 px-4">
                             <span className={`px-2 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                              isPublished ? 'bg-emerald-100 text-emerald-600' :
                               evt.status === 'Running' ? 'bg-red-100 text-red-600' :
                               evt.status === 'Results Pending' ? 'bg-amber-100 text-amber-600' :
                               evt.status === 'Completed' ? 'bg-emerald-100 text-emerald-600' :
                               'bg-blue-100 text-blue-600'
                             }`}>
-                              {evt.status}
+                              {statusText}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-right">
-                            {evt.status !== 'Completed' && (
-                              <button
-                                onClick={() => handleDelayEvent(evt.id)}
-                                className="px-3 py-1.5 rounded-md bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 font-bold transition-all"
-                              >
-                                Delay 15m
-                              </button>
+                            {!isPublished && evt.status !== 'Completed' && (
+                              <>
+                                <button
+                                  onClick={() => handleDelayEvent(evt.id)}
+                                  className="px-3 py-1.5 rounded-md bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 font-bold transition-all"
+                                >
+                                  Delay 15m
+                                </button>
+                                {(evt.delayMinutes || 0) > 0 && (
+                                  <button
+                                    onClick={() => handleUndoDelayEvent(evt.id)}
+                                    className="ml-2 px-3 py-1.5 rounded-md bg-white text-[#111111] hover:bg-black/5 border border-black/10 font-bold transition-all"
+                                  >
+                                    Undo 15m
+                                  </button>
+                                )}
+                              </>
                             )}
                             {evt.status === 'Results Pending' && (
                               <button
