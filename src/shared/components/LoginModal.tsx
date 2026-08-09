@@ -46,7 +46,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         onClose();
         setGoogleLoading(false);
       }
-      // On mobile: keep loading spinner briefly while redirect happens
+      // On mobile: page will reload after redirect, modal disappears naturally
     } catch (err: any) {
       console.warn('Google Auth Error:', err);
       setAccessDeniedMsg('Google Sign-In was blocked or cancelled. Please open the site directly in Chrome or Safari.');

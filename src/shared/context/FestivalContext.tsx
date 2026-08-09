@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -408,12 +410,44 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return index !== -1 ? index + 1 : 4;
   };
 
-  // Google Auth — popup on all devices (works on modern Android Chrome + iOS Safari)
+  // Handle redirect result on page load — catches mobile signInWithRedirect returns
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          const email = result.user.email || '';
+          const tempUser: UserModel = {
+            id: result.user.uid,
+            name: result.user.displayName || email.split('@')[0].toUpperCase(),
+            email,
+            role: 'user',
+            approved: false,
+            permissions: [],
+            status: 'Active',
+            avatarUrl: result.user.photoURL || undefined,
+            createdAt: new Date().toISOString(),
+          };
+          syncUserToFirestore(tempUser).catch(() => {});
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Google Auth — redirect on mobile (more reliable), popup on desktop
   const loginWithGoogle = async () => {
     const provider = googleProvider;
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      // Redirect is the only fully reliable method on mobile browsers
+      await signInWithRedirect(auth, provider);
+      return; // page reloads; getRedirectResult above handles the result
+    }
 
     try {
       const result = await signInWithPopup(auth, provider);
@@ -430,13 +464,10 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           avatarUrl: result.user.photoURL || undefined,
           createdAt: new Date().toISOString(),
         };
-        syncUserToFirestore(tempUser).catch((e) => console.warn('Firestore sync background error:', e));
+        syncUserToFirestore(tempUser).catch(() => {});
       }
     } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        return;
-      }
-      console.error('Google Sign-In error:', err);
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
       throw err;
     }
   };

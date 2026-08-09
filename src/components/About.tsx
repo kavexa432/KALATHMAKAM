@@ -17,11 +17,11 @@ export const About: React.FC = () => {
   const tabContent: Record<string, { title: string; subtitle: string; body: string; highlights: string[] }> = {
     history: {
       title: 'Legacy of Kalathmakam',
-      subtitle: 'Nurturing Young Virtuosos for Over a Decade',
-      body: 'Kalathmakam was instituted as the flagship annual arts extravaganza of MGM Model School, Ayiroor. Over the years, it has transformed into a prestigious stage where thousands of students discover their artistic calling in classical music, dance, literature, and fine arts.',
+      subtitle: 'Part of MGM\'s 41-Year Heritage of Excellence',
+      body: 'Kalathmakam is the flagship annual arts extravaganza of MGM Model School, Ayiroor — a school that has been shaping young minds for 41 years. This festival has grown into a prestigious stage where students discover their artistic calling in classical music, dance, literature, and fine arts.',
       highlights: [
-        'Over 12 years of rich artistic heritage in Varkala region.',
-        'Platform for 1500+ student participants annually.',
+        'Part of MGM Model School\'s 41-year legacy of academic and cultural excellence.',
+        'Platform for 1500+ student participants across all categories annually.',
         'Evaluated by renowned artists, writers, and Kerala Kalamandalam experts.',
       ],
     },
@@ -41,8 +41,8 @@ export const About: React.FC = () => {
       body: 'Our vision for 2K26 is to merge traditional Kerala art forms with modern editorial aesthetics, inspiring students to embrace cultural pride while pushing the boundaries of creative innovation.',
       highlights: [
         'Integrating green, sustainable eco-friendly stage designs.',
-        'Pioneering digital chest-number tracking and live stage scoring.',
-        'Fostering youth participation across 9 diverse art categories.',
+        'Pioneering digital result tracking and live stage scoring.',
+        'Fostering youth participation across diverse art categories.',
       ],
     },
     objectives: {
@@ -67,11 +67,11 @@ export const About: React.FC = () => {
     },
     school: {
       title: 'MGM Model School, Ayiroor',
-      subtitle: 'A Beacon of Educational & Cultural Excellence',
-      body: 'Situated near the scenic coastal town of Varkala, MGM Model School Ayiroor is renowned for its academic rigor and rich co-curricular ecosystem.',
+      subtitle: '41 Years of Educational & Cultural Excellence',
+      body: 'Situated near the scenic coastal town of Varkala in Thiruvananthapuram district, MGM Model School Ayiroor has been a beacon of quality education for 41 years, renowned for its academic rigor and rich co-curricular ecosystem.',
       highlights: [
-        'State-of-the-art auditoriums and open-air amphitheatre.',
-        'Dedicated fine arts faculty and guest masterclasses.',
+        '41 years of nurturing academic and artistic talent in the Varkala region.',
+        'State-of-the-art auditoriums and dedicated fine arts faculty.',
         'A legacy of producing top state-level Kalathilakams and Kalaprathibhas.',
       ],
     },
