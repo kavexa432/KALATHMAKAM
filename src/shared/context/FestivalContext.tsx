@@ -393,7 +393,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           snapshot.forEach((d) => firestoreEvents.push({ id: d.id, ...d.data() } as EventModel));
 
           // Keep the canonical event catalogue local, but let Firestore drive live operational state.
-          const localEventMap = new Map(houseEvents.map((event) => [event.id, event]));
           const mergedEvents = houseEvents.map((localEvent) => {
             const firestoreEvent = firestoreEvents.find((event) => event.id === localEvent.id);
             const mergedEvent = firestoreEvent
@@ -407,13 +406,6 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                   housePointsUpdated: true,
                 }
               : mergedEvent;
-          });
-
-          firestoreEvents.forEach((firestoreEvent) => {
-            const displayName = (firestoreEvent.eventName || (firestoreEvent as any).title || '').trim();
-            if (!localEventMap.has(firestoreEvent.id) && displayName) {
-              mergedEvents.push(firestoreEvent);
-            }
           });
 
           // Sort events by date and time
@@ -504,12 +496,24 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
 
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadPublishedResults();
+      }
+    };
+
     loadPublishedResults();
-    const interval = window.setInterval(loadPublishedResults, 10000);
+    const interval = window.setInterval(loadPublishedResults, 5000);
+    window.addEventListener('focus', loadPublishedResults);
+    window.addEventListener('online', loadPublishedResults);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
 
     return () => {
       cancelled = true;
       window.clearInterval(interval);
+      window.removeEventListener('focus', loadPublishedResults);
+      window.removeEventListener('online', loadPublishedResults);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
     };
   }, []);
 
