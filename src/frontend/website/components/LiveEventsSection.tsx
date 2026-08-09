@@ -66,7 +66,7 @@ const CATEGORY_TILES: CategoryTile[] = [
 ];
 
 export const LiveEventsSection: React.FC = () => {
-  const { events } = useFestival();
+  const { events, results } = useFestival();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryTile, setSelectedCategoryTile] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -76,6 +76,11 @@ export const LiveEventsSection: React.FC = () => {
   const isSearchActive = searchQuery.trim().length > 0 || selectedCategoryTile !== null;
 
   const publicEvents = events.filter((e) => e.publishToWebsite);
+  const publishedResultEventIds = new Set(
+    results
+      .filter((r) => r.status === 'Published' || r.status === 'Verified')
+      .map((r) => r.eventId)
+  );
 
   const handleCategoryTileClick = (tileId: string) => {
     if (selectedCategoryTile === tileId) {
@@ -96,7 +101,7 @@ export const LiveEventsSection: React.FC = () => {
           </span>
         );
       case 'Completed':
-        if (event.resultsPublished) {
+        if (publishedResultEventIds.has(event.id)) {
           return (
             <span className="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
               <CheckCircle className="w-3 h-3" />

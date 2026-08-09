@@ -130,8 +130,7 @@ export const Dashboard: React.FC = () => {
     const displayName = (evt.eventName || (evt as any).title || '').trim();
     return displayName.length > 0;
   });
-  const eventHasPublishedResults = (evt: EventModel) =>
-    evt.resultsPublished || publishedResultEventIds.has(evt.id);
+  const eventHasPublishedResults = (evt: EventModel) => publishedResultEventIds.has(evt.id);
   const eventsAwaitingResults = displayableEvents.filter((evt) => !eventHasPublishedResults(evt) && !evt.cancelled);
   const pendingResultsCount = results.filter((r) => r.status === 'Pending Review').length + resultDrafts.length;
 

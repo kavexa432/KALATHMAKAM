@@ -26,15 +26,15 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
 
   if (!event) return null;
 
-  const eventResults = results.filter((r) => r.eventId === event.id && r.status === 'Published');
+  const eventResults = results.filter((r) => r.eventId === event.id && (r.status === 'Published' || r.status === 'Verified'));
 
-  const getStatusBadge = (status: string, evt: EventModel) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Ongoing':
       case 'LIVE NOW':
         return <span className="bg-red-500/15 text-red-600 border border-red-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase animate-pulse">● LIVE NOW</span>;
       case 'Completed':
-        if (evt.resultsPublished) {
+        if (eventResults.length > 0) {
           return <span className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Published</span>;
         } else {
           return <span className="bg-blue-500/15 text-blue-700 border border-blue-500/30 text-xs font-bold px-3 py-1 rounded-full uppercase">Completed • Results Awaiting Publication</span>;
@@ -66,7 +66,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
           </button>
 
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            {getStatusBadge(event.status, event)}
+            {getStatusBadge(event.status)}
             <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
               Category: {event.category}
             </span>

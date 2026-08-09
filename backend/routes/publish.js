@@ -103,7 +103,13 @@ router.post('/', verifyAdmin, async (req, res) => {
       }
 
       const eventData = eventDoc.data();
-      if (eventData.resultsPublished) {
+      const aggregateResultDoc = await transaction.get(db.collection('results').doc(eventId));
+      const eventResultDocs = await transaction.get(db.collection('results').where('eventId', '==', eventId));
+      const hasPublishedResults =
+        (aggregateResultDoc.exists && isPublishedResultRecord(aggregateResultDoc.data())) ||
+        eventResultDocs.docs.some((resultDoc) => isPublishedResultRecord(resultDoc.data()));
+
+      if (hasPublishedResults) {
         throw new Error(`Idempotency Block: Results for event "${eventData.eventName || eventId}" are already published.`);
       }
 

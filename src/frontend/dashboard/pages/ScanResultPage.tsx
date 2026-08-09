@@ -27,7 +27,7 @@ interface ScanResultPageProps {
 }
 
 export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboard }) => {
-  const { events } = useFestival();
+  const { events, results } = useFestival();
 
   // Workflow steps: 'select' -> 'preview' -> 'processing' -> 'review' -> 'success'
   const [step, setStep] = useState<'select' | 'preview' | 'processing' | 'review' | 'success'>('select');
@@ -50,8 +50,14 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
   const [warnings, setWarnings] = useState<string[]>([]);
   const [editedFields, setEditedFields] = useState<Set<string>>(new Set());
 
+  const publishedResultEventIds = new Set(
+    results
+      .filter((r) => r.status === 'Published' || r.status === 'Verified')
+      .map((r) => r.eventId)
+  );
+
   // Filter events eligible for result upload (not yet published)
-  const eligibleEvents = events.filter((e) => !e.resultsPublished && !e.cancelled);
+  const eligibleEvents = events.filter((e) => !publishedResultEventIds.has(e.id) && !e.cancelled);
   const selectedEvent = events.find((e) => e.id === selectedEventId);
 
   // Search & category filter state for the competition picker

@@ -33,7 +33,7 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
   draftId,
   onClose,
 }) => {
-  const { events, resultDrafts } = useFestival();
+  const { events, results, resultDrafts } = useFestival();
   
   const [step, setStep] = useState<'upload' | 'processing' | 'review' | 'success' | 'draft-success'>('upload');
   const [processingStatus, setProcessingStatus] = useState('Reading image...');
@@ -175,8 +175,14 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
     }
   };
 
+  const publishedResultEventIds = new Set(
+    results
+      .filter((r) => r.status === 'Published' || r.status === 'Verified')
+      .map((r) => r.eventId)
+  );
+
   // Filter events to only show those that are active or completed, but not published yet
-  const eligibleEvents = events.filter(e => !e.resultsPublished && !e.cancelled);
+  const eligibleEvents = events.filter(e => !publishedResultEventIds.has(e.id) && !e.cancelled);
   const selectedEventInfo = events.find(e => e.id === selectedEventId);
 
   return (
