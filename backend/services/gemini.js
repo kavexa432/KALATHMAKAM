@@ -2,11 +2,11 @@ const { GoogleGenAI } = require('@google/genai');
 const { resultSchema } = require('../schemas/resultSchema');
 
 const DEFAULT_MODELS = [
-  'gemini-3.6-flash',
-  'gemini-3.5-flash',
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash-preview-05-20', // Most capable, best for OCR
+  'gemini-2.0-flash',               // Fast, reliable, widely available
+  'gemini-2.0-flash-lite',          // Lightweight fallback
+  'gemini-1.5-flash',               // Stable fallback
+  'gemini-1.5-flash-8b',            // Last resort
 ];
 
 function getApiKeys() {
