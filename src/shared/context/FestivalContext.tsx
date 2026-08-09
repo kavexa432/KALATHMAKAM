@@ -108,13 +108,15 @@ const normalizePositionLabel = (position: number | string): '1st' | '2nd' | '3rd
   return String(position);
 };
 
+const isPublishedResultRecord = (record: any) => {
+  const status = String(record?.status || '').toLowerCase();
+  return record?.published === true || status === 'published' || status === 'verified';
+};
+
 const getOperationalEventFields = (event: Partial<EventModel>) =>
   Object.fromEntries(
     Object.entries({
       status: event.status,
-      resultsPublished: event.resultsPublished,
-      winnerUploaded: event.winnerUploaded,
-      housePointsUpdated: event.housePointsUpdated,
       delayMinutes: event.delayMinutes,
       actualStartTime: event.actualStartTime,
       actualEndTime: event.actualEndTime,
@@ -157,7 +159,12 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               winnerUploaded: true,
               housePointsUpdated: true,
             }
-          : event
+          : {
+              ...event,
+              resultsPublished: false,
+              winnerUploaded: false,
+              housePointsUpdated: false,
+            }
       )
     );
   };
@@ -436,6 +443,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           snapshot.forEach((d) => {
             const data = d.data() as any;
+            if (!isPublishedResultRecord(data)) return;
 
             if (Array.isArray(data.results)) {
               data.results.forEach((item: any, index: number) => {

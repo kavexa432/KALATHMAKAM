@@ -32,6 +32,11 @@ function normalizePositionLabel(position) {
   return String(position);
 }
 
+function isPublishedResultRecord(record) {
+  const status = String(record?.status || '').toLowerCase();
+  return record?.published === true || status === 'published' || status === 'verified';
+}
+
 // GET /api/publish - public published results feed for static hosted frontend fallback
 router.get('/', async (_req, res) => {
   try {
@@ -40,6 +45,7 @@ router.get('/', async (_req, res) => {
 
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
+      if (!isPublishedResultRecord(data)) return;
 
       if (Array.isArray(data.results)) {
         data.results.forEach((item, index) => {
