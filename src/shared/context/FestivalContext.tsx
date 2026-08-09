@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -679,19 +677,10 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return index !== -1 ? index + 1 : 4;
   };
 
-  // Handle redirect result on page load — catches mobile signInWithRedirect returns
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result?.user) {
-          // Use syncSignedInFirebaseUser so Firestore role lookup runs
-          // and admin/developer roles are properly restored after the redirect.
-          await syncSignedInFirebaseUser(result.user).catch(() => {});
-        }
-      })
-      .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Note: signInWithRedirect is NOT used — it causes "missing initial state" errors
+  // on Android Chrome due to storage partitioning. signInWithPopup works on all
+  // devices when triggered by a real user tap (button gesture).
+
 
   const syncSignedInFirebaseUser = async (fbUser: FirebaseUser) => {
     const email = fbUser.email || '';
@@ -709,42 +698,22 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await syncUserToFirestore(tempUser);
   };
 
-  // Google Auth — mobile gets redirect immediately; desktop tries popup first.
+  // Google Auth — always uses signInWithPopup on all devices.
+  // signInWithRedirect is intentionally avoided: Chrome's storage partitioning
+  // (privacy feature) wipes sessionStorage during cross-site redirects,
+  // causing "missing initial state" errors on Android.
+  // signInWithPopup works on mobile when triggered by a real button tap.
   const loginWithGoogle = async (): Promise<'signed-in' | 'redirecting'> => {
     const provider = googleProvider;
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    // Detect mobile or any Safari (desktop Safari also has popup issues)
-    const ua = navigator.userAgent;
-    const isMobileOrSafari =
-      /Android|iPhone|iPad|iPod/i.test(ua) ||
-      (/Safari/i.test(ua) && !/Chrome/i.test(ua));
-
-    if (isMobileOrSafari) {
-      // Go straight to redirect — no popup attempt on mobile/Safari
-      sessionStorage.setItem('kalathmakam_auth_redirect_pending', '1');
-      await signInWithRedirect(auth, provider);
-      return 'redirecting';
+    const result = await signInWithPopup(auth, provider);
+    if (result?.user) {
+      await syncSignedInFirebaseUser(result.user);
     }
-
-    // Desktop non-Safari: try popup, fall back to redirect if blocked
-    try {
-      const result = await signInWithPopup(auth, provider);
-      if (result?.user) {
-        await syncSignedInFirebaseUser(result.user);
-      }
-      return 'signed-in';
-    } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        throw err;
-      }
-      // Popup was blocked or not supported — fall back to redirect
-      sessionStorage.setItem('kalathmakam_auth_redirect_pending', '1');
-      await signInWithRedirect(auth, provider);
-      return 'redirecting';
-    }
+    return 'signed-in';
   };
 
   const login = (role: 'developer' | 'admin' | 'user') => {

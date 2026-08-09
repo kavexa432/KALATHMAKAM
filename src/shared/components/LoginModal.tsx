@@ -31,22 +31,22 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setAccessDeniedMsg(null);
 
     try {
-      const outcome = await loginWithGoogle();
-
-      if (outcome === 'redirecting') {
-        // Page will reload after Google redirect — keep spinner, modal disappears naturally
-        return;
-      }
-
-      // Popup succeeded on desktop — close the modal
+      await loginWithGoogle();
+      // signInWithPopup resolved — close modal, user is now signed in
       onClose();
     } catch (err: any) {
-      // User closed the popup themselves — don't show an error
+      // User deliberately closed the Google chooser — no error
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         setGoogleLoading(false);
         return;
       }
-      setAccessDeniedMsg('Sign-In failed. Make sure you are opening the site directly in Chrome or Safari (not an in-app browser).');
+      // Popup was blocked (e.g., in-app browser, browser settings)
+      if (err?.code === 'auth/popup-blocked') {
+        setAccessDeniedMsg('Popup blocked. Please open this site directly in Chrome or Safari — not inside WhatsApp, Instagram, or other apps.');
+        setGoogleLoading(false);
+        return;
+      }
+      setAccessDeniedMsg(`Sign-In failed: ${err?.message || 'Unknown error'}. Try opening the site in Chrome or Safari.`);
       setGoogleLoading(false);
     }
   };
