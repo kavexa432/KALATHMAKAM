@@ -99,28 +99,34 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
     setError(null);
     setProcessingStatus('Uploading result sheet to backend...');
 
-    const targetEvent = events.find(e => e.id === selectedEventId);
-    
     try {
       const formData = new FormData();
       formData.append('resultSheet', selectedFile);
-      formData.append('eventName', targetEvent?.eventName || '');
-      formData.append('category', targetEvent?.category || '');
+      formData.append('eventId', selectedEventId);
 
       setProcessingStatus('Gemini Vision extracting results...');
 
       const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
 
-      const response = await fetch(`${API_URL}/api/ocr`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData,
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+      let response: Response;
+      try {
+        response = await fetch(`${API_URL}/api/ocr`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
-        const errData = await response.json();
+        const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error || 'Failed to process OCR');
       }
 
@@ -131,7 +137,9 @@ export const ResultSheetOCRModal: React.FC<ResultSheetOCRModalProps> = ({
       setStep('draft-success');
     } catch (err: any) {
       console.error('OCR Error:', err);
-      setError(err.message || 'An unexpected error occurred during OCR.');
+      setError(err.name === 'AbortError'
+        ? 'OCR timed out. Please try again with a clearer/smaller image, or enter winners manually.'
+        : err.message || 'An unexpected error occurred during OCR.');
       setStep('upload');
     }
   };

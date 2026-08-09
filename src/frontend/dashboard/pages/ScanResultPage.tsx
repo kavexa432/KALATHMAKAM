@@ -156,7 +156,7 @@ export const ScanResultPage: React.FC<ScanResultPageProps> = ({ onBackToDashboar
 
       // 60 second timeout — Gemini can be slow on large images
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
 
       let response: Response;
       try {

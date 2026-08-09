@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { extractResultsFromImage } = require('../services/gemini');
+const { extractResultsFromImage, getApiKeys, getModelsToTry } = require('../services/gemini');
 const { verifyAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -17,6 +17,26 @@ const upload = multer({
       cb(new Error('Invalid file type. Only images and PDFs are allowed.'));
     }
   }
+});
+
+const getStorageExtension = (file) => {
+  if (file.mimetype === 'application/pdf') return 'pdf';
+  if (file.mimetype === 'image/png') return 'png';
+  if (file.mimetype === 'image/webp') return 'webp';
+  return 'jpg';
+};
+
+// GET /api/ocr/health - quick deployment/config check
+router.get('/health', (_req, res) => {
+  const keyCount = getApiKeys().length;
+  res.json({
+    success: true,
+    configured: keyCount > 0,
+    keyCount,
+    models: getModelsToTry(),
+    maxUploadMb: 10,
+    acceptedTypes: ['image/*', 'application/pdf'],
+  });
 });
 
 // POST /api/ocr
@@ -52,7 +72,7 @@ router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => 
 
     // Save uploaded file to Firebase Storage (private bucket path)
     const draftId = `draft-${Date.now()}`;
-    const storagePath = `resultSheets/2026/${eventId}/${draftId}.jpg`;
+    const storagePath = `resultSheets/2026/${eventId}/${draftId}.${getStorageExtension(file)}`;
     let tempSignedUrl = '';
 
     try {
@@ -89,6 +109,7 @@ router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => 
       version: 1,
       results: extractedData.results || [],
       warnings: extractedData.warnings || [],
+      modelUsed: extractedData.modelUsed || null,
       status: 'Pending Review',
       createdBy: req.user?.email || 'admin',
       createdAt: new Date().toISOString(),
@@ -98,7 +119,7 @@ router.post('/', verifyAdmin, upload.single('resultSheet'), async (req, res) => 
     
     await db.collection('resultDrafts').doc(draftId).set(draftData);
 
-    res.json({ draftId, ...draftData, sourceImageUrl: tempSignedUrl || undefined });
+    res.json({ success: true, draftId, ...draftData, sourceImageUrl: tempSignedUrl || undefined });
   } catch (error) {
     console.error('OCR Route Error:', error);
     res.status(500).json({ error: error.message || 'Failed to process OCR.' });
