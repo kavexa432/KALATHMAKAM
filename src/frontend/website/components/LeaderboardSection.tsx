@@ -54,27 +54,107 @@ export const LeaderboardSection: React.FC = () => {
   const leadPointsDiff = leaderHouse.points - (secondHouse ? secondHouse.points : 0);
   const maxPoints = Math.max(...standings.map((s) => s.points), 1);
 
-  // Recent Wins data from Firebase results
-  const recentWinsData = results.map((r, i) => ({
-      id: r.id,
-      time: `${11 - (i % 5)}:${45 - (i % 8) * 5} AM`,
-      date: '05 Aug, 2026',
-      categoryTag: r.category.includes('Solo') ? 'Music' : r.category.includes('Dance') ? 'Dance' : 'Literary',
-      competition: r.eventTitle,
-      categoryType: r.category,
-      winnerHouse: r.houseId as HouseId,
-      points: `+${r.points}`,
-      participant: r.participantName,
-      studentClass: r.studentClass,
-      icon: <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />,
-      iconBg: 'bg-[#F59E0B]/12',
-    }));
+  const getCategoryTag = (category: string, eventTitle: string) => {
+    const value = `${category} ${eventTitle}`.toLowerCase();
+    if (value.includes('music') || value.includes('song') || value.includes('mappila')) return 'Music';
+    if (value.includes('dance') || value.includes('bharat') || value.includes('mohini') || value.includes('kuchi')) return 'Dance';
+    if (value.includes('literary') || value.includes('essay') || value.includes('story') || value.includes('versification')) return 'Literary';
+    if (value.includes('fine') || value.includes('art') || value.includes('drawing') || value.includes('painting') || value.includes('poster') || value.includes('cartoon') || value.includes('collage')) return 'Fine Arts';
+    return 'Other';
+  };
+
+  // Recent result data from Firebase results
+  const recentWinsData = results
+    .filter((r) => r.status === 'Published' || r.status === 'Verified')
+    .map((r, i) => {
+      const winnerHouse = String(r.houseId || 'NONE').toUpperCase() as HouseId;
+      const isHousePointResult = winnerHouse !== 'NONE' && String(winnerHouse) !== 'N/A' && r.points > 0;
+
+      return {
+        id: r.id,
+        time: `${11 - (i % 5)}:${45 - (i % 8) * 5} AM`,
+        date: '05 Aug, 2026',
+        categoryTag: getCategoryTag(r.category, r.eventTitle),
+        competition: r.eventTitle,
+        categoryType: r.category,
+        winnerHouse,
+        isHousePointResult,
+        points: `+${r.points}`,
+        participant: r.participantName,
+        studentClass: r.studentClass,
+        icon: <Trophy className="w-3.5 h-3.5 text-[#F59E0B]" />,
+        iconBg: 'bg-[#F59E0B]/12',
+      };
+    });
 
   const categoryFilters = ['All', 'Music', 'Dance', 'Literary', 'Fine Arts'];
 
   const filteredWinsData = activeCategoryFilter === 'All'
     ? recentWinsData
     : recentWinsData.filter((w) => w.categoryTag === activeCategoryFilter);
+  const housePointWinsData = filteredWinsData.filter((w) => w.isHousePointResult);
+  const individualWinsData = filteredWinsData.filter((w) => !w.isHousePointResult);
+
+  const renderResultRow = (row: typeof recentWinsData[number]) => {
+    const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.NOVA;
+    const isIndividual = !row.isHousePointResult;
+
+    return (
+      <div
+        key={row.id}
+        className="p-4 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/6 shadow-2xs hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+      >
+        <div className="flex items-center gap-3.5">
+          <div className={`w-10 h-10 rounded-2xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0 border border-black/5`}>
+            {row.icon}
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                {row.competition}
+              </h4>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5F5F5F]">
+                {row.categoryType}
+              </span>
+              {isIndividual && (
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                  Individual result
+                </span>
+              )}
+            </div>
+            <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
+              Winner: <strong className="text-[#111111] font-semibold">{row.participant}</strong> - {row.studentClass}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5">
+          {isIndividual ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-black/8 text-xs font-extrabold text-[#5F5F5F]">
+              Non-House
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-black/8 text-xs font-extrabold">
+              <img
+                src={houseEmblems[row.winnerHouse as HouseId]}
+                alt={row.winnerHouse}
+                className="w-4 h-4 object-contain mix-blend-multiply"
+              />
+              <span style={{ color: houseColor.primary }}>{row.winnerHouse}</span>
+            </span>
+          )}
+
+          <div className="text-right">
+            <span className={`font-sans-manrope font-black text-sm ${isIndividual ? 'text-[#5F5F5F]' : 'text-emerald-600'}`}>
+              {isIndividual ? 'No house pts' : row.points}
+            </span>
+            <span className="block text-[10px] text-[#5F5F5F] font-medium">{row.time}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section id="leaderboard" className="relative py-14 sm:py-16 bg-[#FAF8F5]">
@@ -297,55 +377,46 @@ export const LeaderboardSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Wins Modern Feed Cards List */}
-            <div className="space-y-3">
+            {/* Results Comparison Feed */}
+            <div className="space-y-5">
               {filteredWinsData.length > 0 ? (
-                filteredWinsData.map((row) => {
-                  const houseColor = houseColors[row.winnerHouse as HouseId] || houseColors.VEGA;
-
-                  return (
-                    <div
-                      key={row.id}
-                      className="p-4 rounded-2xl bg-[#FAF8F5] hover:bg-white border border-black/6 shadow-2xs hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className={`w-10 h-10 rounded-2xl ${row.iconBg || 'bg-pink-50'} flex items-center justify-center shrink-0 border border-black/5`}>
-                          {row.icon}
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
-                              {row.competition}
-                            </h4>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5F5F5F]">
-                              {row.categoryType}
-                            </span>
-                          </div>
-                          <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
-                            Winner: <strong className="text-[#111111] font-semibold">{row.participant}</strong> • {row.studentClass}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-black/8 text-xs font-extrabold">
-                          <img
-                            src={houseEmblems[row.winnerHouse as HouseId]}
-                            alt={row.winnerHouse}
-                            className="w-4 h-4 object-contain mix-blend-multiply"
-                          />
-                          <span style={{ color: houseColor.primary }}>{row.winnerHouse}</span>
-                        </span>
-
-                        <div className="text-right">
-                          <span className="font-sans-manrope font-black text-emerald-600 text-sm">{row.points}</span>
-                          <span className="block text-[10px] text-[#5F5F5F] font-medium">{row.time}</span>
-                        </div>
-                      </div>
+                <>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="font-sans-manrope font-extrabold text-xs text-[#111111] uppercase tracking-wider">
+                        House Point Winners
+                      </h4>
+                      <span className="text-[10px] text-[#10B981] font-extrabold bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+                        Counts in leaderboard
+                      </span>
                     </div>
-                  );
-                })
+                    {housePointWinsData.length > 0 ? (
+                      housePointWinsData.map(renderResultRow)
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-black/5 text-xs font-sans-manrope text-[#5F5F5F]">
+                        No house-point results in this filter yet.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5 pt-2 border-t border-black/8">
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="font-sans-manrope font-extrabold text-xs text-[#111111] uppercase tracking-wider">
+                        Individual Winners
+                      </h4>
+                      <span className="text-[10px] text-blue-700 font-extrabold bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+                        Not house-wise
+                      </span>
+                    </div>
+                    {individualWinsData.length > 0 ? (
+                      individualWinsData.map(renderResultRow)
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-black/5 text-xs font-sans-manrope text-[#5F5F5F]">
+                        No individual/non-house results in this filter yet.
+                      </div>
+                    )}
+                  </div>
+                </>
               ) : (
                 <div className="p-8 text-center bg-[#FAF8F5] rounded-2xl border border-black/5 space-y-2">
                   <Trophy className="w-8 h-8 text-[#F59E0B] mx-auto opacity-70" />
