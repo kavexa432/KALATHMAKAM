@@ -7,7 +7,7 @@ import { auth } from '../../../config/firebase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
+const MEDAL: Record<string, string> = { '1st': '🥇', '2nd': '🥈', '3rd': '🥉' };
 
 export const ResultsSection: React.FC = () => {
   const { results, events, currentUser } = useFestival();
@@ -170,15 +170,14 @@ export const ResultsSection: React.FC = () => {
 
                   {/* Placements */}
                   <div className="px-5 py-3 space-y-2 flex-1">
-                    {placements.map((p, idx) => {
+                    {placements.map((p) => {
                       const hInfo = houseColors[p.houseId as HouseId] || houseColors.NOVA;
-                      const posNum = idx + 1;
                       return (
                         <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-[#FAF8F5] border border-black/5">
                           <div className="flex items-center gap-1.5 shrink-0">
-                            <span className="text-xl">{MEDAL[posNum] || '🏅'}</span>
+                            <span className="text-xl">{MEDAL[p.position] || '🏅'}</span>
                             <span className="text-xs font-extrabold text-[#111111] bg-black/5 px-2 py-0.5 rounded-full">
-                              {p.position || `${posNum}${posNum === 1 ? 'st' : posNum === 2 ? 'nd' : posNum === 3 ? 'rd' : 'th'}`}
+                              {p.position}
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
@@ -194,7 +193,7 @@ export const ResultsSection: React.FC = () => {
                             </div>
                           </div>
                           <span className="font-sans-manrope font-extrabold text-xs text-[#FF5E84] shrink-0">
-                            +{p.points} pts
+                            {p.houseId !== 'NONE' && p.points > 0 ? `+${p.points} pts` : ''}
                           </span>
                         </div>
                       );

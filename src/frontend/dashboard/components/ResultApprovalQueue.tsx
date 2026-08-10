@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Lock, Trash2 } from 'lucide-react';
+import { Award, Plus, CheckCircle, Eye, Sparkles, AlertTriangle, Lock, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
@@ -20,13 +20,40 @@ interface PlacementRow {
 }
 
 export const ResultApprovalQueue: React.FC = () => {
-  const { results, resultDrafts, events, publishEventWinners, verifyResult, publishResult, deleteResult } = useFestival();
+  const { results, resultDrafts, events, publishEventWinners, verifyResult, publishResult, deleteResult, addEvent } = useFestival();
   const [manualOpen] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  const selectedEvt = events.find((e) => e.id === selectedEventId);
+  // Custom competition state
+  const [addCompOpen, setAddCompOpen] = useState(false);
+  const [newCompName, setNewCompName] = useState('');
+  const [newCompCategory, setNewCompCategory] = useState('');
+  const [newCompLevel, setNewCompLevel] = useState('');
+  const [newCompAddedMsg, setNewCompAddedMsg] = useState('');
+  const [isAddingComp, setIsAddingComp] = useState(false);
+
+  const handleAddCustomCompetition = async () => {
+    if (!newCompName.trim() || !newCompCategory || !newCompLevel) return;
+    setIsAddingComp(true);
+    try {
+      await addEvent(newCompName.trim(), newCompCategory, newCompLevel);
+      setNewCompAddedMsg(`✅ "${newCompName.trim()} (${newCompLevel})" added successfully!`);
+      setNewCompName('');
+      setNewCompCategory('');
+      setNewCompLevel('');
+      setTimeout(() => setNewCompAddedMsg(''), 3000);
+    } catch (err: any) {
+      alert('Failed to add competition: ' + err.message);
+    } finally {
+      setIsAddingComp(false);
+    }
+  };
+
+  const allSelectableEvents = events;
+
+  const selectedEvt = allSelectableEvents.find((e) => e.id === selectedEventId);
   const compType = selectedEvt?.competitionType || 'individual';
   const isNonHouse = !selectedEvt?.houseWise;
 
@@ -48,15 +75,26 @@ export const ResultApprovalQueue: React.FC = () => {
     { position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' },
   ]);
 
+  // Shared position state
+  const [shared2nd, setShared2nd] = useState<PlacementRow>({ position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' });
+  const [shared3rd, setShared3rd] = useState<PlacementRow>({ position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' });
+  const [show2nd, setShow2nd] = useState(false);
+  const [show3rd, setShow3rd] = useState(false);
+
   const handleEventChange = (evtId: string) => {
     setSelectedEventId(evtId);
-    const evt = events.find((e) => e.id === evtId);
+    const evt = allSelectableEvents.find((e) => e.id === evtId);
     const nonHouse = !evt?.houseWise;
+    const h = defaultHouse(nonHouse);
     setPlacements([
-      { position: '1st', studentName: '', studentClass: '', houseId: defaultHouse(nonHouse) },
-      { position: '2nd', studentName: '', studentClass: '', houseId: defaultHouse(nonHouse) },
-      { position: '3rd', studentName: '', studentClass: '', houseId: defaultHouse(nonHouse) },
+      { position: '1st', studentName: '', studentClass: '', houseId: h },
+      { position: '2nd', studentName: '', studentClass: '', houseId: h },
+      { position: '3rd', studentName: '', studentClass: '', houseId: h },
     ]);
+    setShared2nd({ position: '2nd', studentName: '', studentClass: '', houseId: h });
+    setShared3rd({ position: '3rd', studentName: '', studentClass: '', houseId: h });
+    setShow2nd(false);
+    setShow3rd(false);
   };
 
   const updatePlacement = (idx: number, field: keyof PlacementRow, value: string) => {
@@ -68,6 +106,9 @@ export const ResultApprovalQueue: React.FC = () => {
     if (!selectedEvt) return;
 
     const filled = placements.filter((p) => p.studentName.trim());
+    // Add shared 2nd and 3rd if toggled on and filled
+    if (show2nd && shared2nd.studentName.trim()) filled.push(shared2nd);
+    if (show3rd && shared3rd.studentName.trim()) filled.push(shared3rd);
     if (filled.length === 0) return;
 
     setSubmitting(true);
@@ -90,6 +131,10 @@ export const ResultApprovalQueue: React.FC = () => {
         { position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' },
         { position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' },
       ]);
+      setShared2nd({ position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' });
+      setShared3rd({ position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' });
+      setShow2nd(false);
+      setShow3rd(false);
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err: any) {
       alert('Submit failed: ' + err.message);
@@ -112,6 +157,87 @@ export const ResultApprovalQueue: React.FC = () => {
 
         {manualOpen && (
           <div className="px-5 pb-5 border-t border-black/6">
+
+            {/* ── Add New Competition ── */}
+            <div className="mt-4 rounded-xl border border-dashed border-[#F59E0B]/50 bg-amber-50/40 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setAddCompOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-amber-50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-[#F59E0B]" />
+                  <span className="font-sans-manrope font-extrabold text-xs text-[#111111]">Add New Competition / Category</span>
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                    Connected to Database
+                  </span>
+                </div>
+                {addCompOpen ? <ChevronUp className="w-4 h-4 text-[#5F5F5F]" /> : <ChevronDown className="w-4 h-4 text-[#5F5F5F]" />}
+              </button>
+
+              {addCompOpen && (
+                <div className="px-4 pb-4 space-y-3 border-t border-amber-100">
+                  <p className="text-[11px] text-amber-800 font-sans-manrope mt-3">
+                    Add a competition not in the list. It will be saved to the database and appear in the dropdown below for result entry.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Competition Name</label>
+                      <input
+                        type="text"
+                        value={newCompName}
+                        onChange={(e) => setNewCompName(e.target.value)}
+                        placeholder="e.g. Hindi Story Writing"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Category</label>
+                      <select
+                        value={newCompCategory}
+                        onChange={(e) => setNewCompCategory(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]"
+                      >
+                        <option value="">Select Arts Type...</option>
+                        <option value="Dance">Dance</option>
+                        <option value="Music">Music</option>
+                        <option value="Drama">Drama / Theatre</option>
+                        <option value="Literary">Literary</option>
+                        <option value="Art">Fine Arts</option>
+                        <option value="House Item">House Item</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-extrabold text-[#5F5F5F] uppercase tracking-wider">Level / Section</label>
+                      <select
+                        value={newCompLevel}
+                        onChange={(e) => setNewCompLevel(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]"
+                      >
+                        <option value="">Select Level...</option>
+                        <option value="Cat I">Cat I (LP)</option>
+                        <option value="Cat II">Cat II (UP)</option>
+                        <option value="Cat III">Cat III (HS)</option>
+                        <option value="Cat IV">Cat IV (HSS)</option>
+                        <option value="General">General (All)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddCustomCompetition}
+                    disabled={!newCompName.trim() || !newCompCategory || !newCompLevel || isAddingComp}
+                    className="px-5 py-2 rounded-xl bg-[#F59E0B] hover:bg-amber-500 text-white font-sans-manrope font-bold text-xs cursor-pointer transition-colors disabled:opacity-40"
+                  >
+                    {isAddingComp ? 'Adding...' : '+ Add to List'}
+                  </button>
+                  {newCompAddedMsg && (
+                    <p className="text-[11px] font-bold text-emerald-700">{newCompAddedMsg}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
 
               {/* Competition selector */}
@@ -125,7 +251,7 @@ export const ResultApprovalQueue: React.FC = () => {
                   required
                 >
                   <option value="" disabled className="bg-white text-[#111111]">-- Select Competition --</option>
-                  {events.map((e) => (
+                  {allSelectableEvents.map((e) => (
                     <option key={e.id} value={e.id} className="bg-white text-[#111111]">{e.eventName}</option>
                   ))}
                 </select>
@@ -145,44 +271,90 @@ export const ResultApprovalQueue: React.FC = () => {
               {/* 3-position rows */}
               <div className="space-y-3">
                 {placements.map((row, idx) => (
-                  <div key={row.position} className="p-3.5 rounded-xl bg-[#FAF8F5] border border-black/8 space-y-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">{MEDAL[row.position]}</span>
-                      <span className="font-sans-manrope font-extrabold text-xs text-[#111111]">
-                        {row.position === '1st' ? '1st Place' : row.position === '2nd' ? '2nd Place' : '3rd Place'}
-                      </span>
-                      <span className="ml-auto text-[10px] font-bold text-[#FF5E84]">
-                        <Lock className="w-2.5 h-2.5 inline mr-0.5" />+{getPoints(row.position)} pts
-                      </span>
+                  <div key={row.position} className="space-y-2">
+                    <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-black/8 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{MEDAL[row.position]}</span>
+                        <span className="font-sans-manrope font-extrabold text-xs text-[#111111]">
+                          {row.position === '1st' ? '1st Place' : row.position === '2nd' ? '2nd Place' : '3rd Place'}
+                        </span>
+                        <span className="ml-auto text-[10px] font-bold text-[#FF5E84]">
+                          <Lock className="w-2.5 h-2.5 inline mr-0.5" />+{getPoints(row.position)} pts
+                        </span>
+                        {/* Shared toggle for 2nd and 3rd */}
+                        {row.position === '2nd' && (
+                          <button type="button" onClick={() => setShow2nd(v => !v)}
+                            className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold border cursor-pointer transition-all ${show2nd ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-[#5F5F5F] border-black/10 hover:bg-blue-50 hover:text-blue-700'}`}>
+                            {show2nd ? '✓ Shared 2nd' : '+ Shared 2nd'}
+                          </button>
+                        )}
+                        {row.position === '3rd' && (
+                          <button type="button" onClick={() => setShow3rd(v => !v)}
+                            className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold border cursor-pointer transition-all ${show3rd ? 'bg-orange-100 text-orange-700 border-orange-300' : 'bg-white text-[#5F5F5F] border-black/10 hover:bg-orange-50 hover:text-orange-700'}`}>
+                            {show3rd ? '✓ Shared 3rd' : '+ Shared 3rd'}
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="text" placeholder="Student Name" value={row.studentName}
+                          onChange={(e) => updatePlacement(idx, 'studentName', e.target.value)}
+                          className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
+                        <input type="text" placeholder="Class (e.g. 9A)" value={row.studentClass}
+                          onChange={(e) => updatePlacement(idx, 'studentClass', e.target.value)}
+                          className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
+                        <select value={row.houseId} onChange={(e) => updatePlacement(idx, 'houseId', e.target.value)}
+                          disabled={isNonHouse} style={{ colorScheme: 'light' }}
+                          className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50">
+                          {HOUSES.map((h) => (<option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>))}
+                        </select>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <input
-                        type="text"
-                        placeholder="Student Name"
-                        value={row.studentName}
-                        onChange={(e) => updatePlacement(idx, 'studentName', e.target.value)}
-                        className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Class (e.g. 9A)"
-                        value={row.studentClass}
-                        onChange={(e) => updatePlacement(idx, 'studentClass', e.target.value)}
-                        className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]"
-                      />
-                      <select
-                        value={row.houseId}
-                        onChange={(e) => updatePlacement(idx, 'houseId', e.target.value)}
-                        disabled={isNonHouse}
-                        className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50"
-                        style={{ colorScheme: 'light' }}
-                      >
-                        {HOUSES.map((h) => (
-                          <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {/* Shared 2nd row */}
+                    {row.position === '2nd' && show2nd && (
+                      <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 space-y-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">🥈</span>
+                          <span className="font-sans-manrope font-extrabold text-xs text-blue-800">Shared 2nd Place — Second Student</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <input type="text" placeholder="Student Name" value={shared2nd.studentName}
+                            onChange={(e) => setShared2nd(p => ({ ...p, studentName: e.target.value }))}
+                            className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
+                          <input type="text" placeholder="Class (e.g. 9A)" value={shared2nd.studentClass}
+                            onChange={(e) => setShared2nd(p => ({ ...p, studentClass: e.target.value }))}
+                            className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
+                          <select value={shared2nd.houseId} onChange={(e) => setShared2nd(p => ({ ...p, houseId: e.target.value as HouseId }))}
+                            disabled={isNonHouse} style={{ colorScheme: 'light' }}
+                            className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50">
+                            {HOUSES.map((h) => (<option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Shared 3rd row */}
+                    {row.position === '3rd' && show3rd && (
+                      <div className="p-3.5 rounded-xl bg-orange-50 border border-orange-200 space-y-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">🥉</span>
+                          <span className="font-sans-manrope font-extrabold text-xs text-orange-800">Shared 3rd Place — Second Student</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <input type="text" placeholder="Student Name" value={shared3rd.studentName}
+                            onChange={(e) => setShared3rd(p => ({ ...p, studentName: e.target.value }))}
+                            className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
+                          <input type="text" placeholder="Class (e.g. 9A)" value={shared3rd.studentClass}
+                            onChange={(e) => setShared3rd(p => ({ ...p, studentClass: e.target.value }))}
+                            className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
+                          <select value={shared3rd.houseId} onChange={(e) => setShared3rd(p => ({ ...p, houseId: e.target.value as HouseId }))}
+                            disabled={isNonHouse} style={{ colorScheme: 'light' }}
+                            className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50">
+                            {HOUSES.map((h) => (<option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -288,7 +460,7 @@ export const ResultApprovalQueue: React.FC = () => {
                           {r.houseId}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-extrabold">{r.position} <span className="text-[#FF5E84]">+{r.points}pts</span></td>
+                      <td className="py-3 px-4 font-extrabold">{r.position} {r.houseId !== 'NONE' && r.points > 0 && <span className="text-[#FF5E84]">+{r.points}pts</span>}</td>
                       <td className="py-3 px-4">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           r.status === 'Published' ? 'bg-emerald-100 text-emerald-700' :

@@ -67,6 +67,7 @@ interface FestivalContextType {
   
   // Workflow Actions
   delayEvent: (eventId: string, minutes: number) => Promise<void>;
+  addEvent: (eventName: string, category: string, catLevel: string) => Promise<void>;
   login: (role: 'developer' | 'admin' | 'user') => void;
   loginWithGoogle: () => Promise<'signed-in' | 'redirecting'>;
   loginCustomUser: (email: string) => void;
@@ -817,6 +818,44 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
+  const addEvent = async (eventName: string, category: string, catLevel: string) => {
+    const newEvent: EventModel = {
+      id: `evt-custom-${Date.now()}`,
+      eventName: `${eventName} (${catLevel})`,
+      category,
+      type: 'Individual',
+      language: 'Common',
+      houseWise: false,
+      competitionType: 'individual',
+      stage: null,
+      venue: null,
+      date: '2026-08-10',
+      scheduledStartTime: '09:00',
+      durationMinutes: 30,
+      delayMinutes: 0,
+      actualStartTime: null,
+      actualEndTime: null,
+      cancelled: false,
+      postponed: false,
+      status: 'Upcoming',
+      publishToWebsite: true,
+      resultsPublished: false,
+      winnerUploaded: false,
+      housePointsUpdated: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setEvents((prev) => [...prev, newEvent]);
+    setDoc(doc(db, 'events', newEvent.id), newEvent).catch(console.error);
+    logAuditAction(
+      currentUser?.name || 'Admin',
+      currentUser?.role || 'admin',
+      'Added Custom Event',
+      newEvent.eventName,
+      `Category: ${category}, Level: ${catLevel}`
+    );
+  };
+
   const delayEvent = async (eventId: string, minutes: number) => {
     try {
       const eventRef = doc(db, 'events', eventId);
@@ -1273,6 +1312,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         getHouseRank,
         getHouseMedals,
         delayEvent,
+        addEvent,
         login,
         loginWithGoogle,
         loginCustomUser,
