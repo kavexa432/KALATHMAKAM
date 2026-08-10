@@ -300,7 +300,7 @@ export const ResultApprovalQueue: React.FC = () => {
                           onChange={(e) => updatePlacement(idx, 'studentName', e.target.value)}
                           className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
                         <input type="text" placeholder="Class (e.g. 9A)" value={row.studentClass}
-                          onChange={(e) => updatePlacement(idx, 'studentClass', e.target.value)}
+                          onChange={(e) => updatePlacement(idx, 'studentClass', e.target.value.toUpperCase())}
                           className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
                         <select value={row.houseId} onChange={(e) => updatePlacement(idx, 'houseId', e.target.value)}
                           disabled={isNonHouse} style={{ colorScheme: 'light' }}
@@ -322,7 +322,7 @@ export const ResultApprovalQueue: React.FC = () => {
                             onChange={(e) => setShared2nd(p => ({ ...p, studentName: e.target.value }))}
                             className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
                           <input type="text" placeholder="Class (e.g. 9A)" value={shared2nd.studentClass}
-                            onChange={(e) => setShared2nd(p => ({ ...p, studentClass: e.target.value }))}
+                            onChange={(e) => setShared2nd(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
                             className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
                           <select value={shared2nd.houseId} onChange={(e) => setShared2nd(p => ({ ...p, houseId: e.target.value as HouseId }))}
                             disabled={isNonHouse} style={{ colorScheme: 'light' }}
@@ -345,7 +345,7 @@ export const ResultApprovalQueue: React.FC = () => {
                             onChange={(e) => setShared3rd(p => ({ ...p, studentName: e.target.value }))}
                             className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
                           <input type="text" placeholder="Class (e.g. 9A)" value={shared3rd.studentClass}
-                            onChange={(e) => setShared3rd(p => ({ ...p, studentClass: e.target.value }))}
+                            onChange={(e) => setShared3rd(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
                             className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
                           <select value={shared3rd.houseId} onChange={(e) => setShared3rd(p => ({ ...p, houseId: e.target.value as HouseId }))}
                             disabled={isNonHouse} style={{ colorScheme: 'light' }}
