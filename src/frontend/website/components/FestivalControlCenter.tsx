@@ -9,12 +9,17 @@ import { cleanVenueName } from '../../../utils/venueUtils';
 export const FestivalControlCenter: React.FC = () => {
   const { events, houses, getHousePoints, liveFeed } = useFestival();
 
-  // Find active live event or fallback to next upcoming
-  const liveEvent = events.find((e) => e.status === 'Running') || events.find((e) => e.status === 'Upcoming');
+  // Only consider today's scheduled stage events (not house items) for the live display
+  const todayEvents = events.filter(
+    (e) => e.date === '2026-08-10' && e.category !== 'House Item' && e.category !== 'Ceremony' && !e.cancelled
+  );
+
+  // Find active live event or fallback to next upcoming today
+  const liveEvent = todayEvents.find((e) => e.status === 'Running') || todayEvents.find((e) => e.status === 'Upcoming');
   
   // Find the event that comes immediately after the live event on the same stage
   const nextEvent = liveEvent 
-    ? events.find((e) => e.stage === liveEvent.stage && e.status === 'Upcoming' && e.id !== liveEvent.id)
+    ? todayEvents.find((e) => e.stage === liveEvent.stage && e.status === 'Upcoming' && e.id !== liveEvent.id)
     : undefined;
 
   const latestNotice = liveFeed[0];
