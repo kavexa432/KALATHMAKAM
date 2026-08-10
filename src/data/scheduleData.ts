@@ -38,7 +38,7 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's2-6', time: '01:30 PM', title: 'Anchoring (Cat 4)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
   { id: 's2-7', time: '02:00 PM', title: 'Anchoring (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
   { id: 's2-8', time: '02:45 PM', title: 'Turn Coat (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
-  { id: 's2-9', time: '03:30 PM', title: 'Turn Coat (Cat 3 — Session 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
+  { id: 's2-9', time: '03:30 PM', title: 'Turn Coat (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
   { id: 's2-10', time: '04:00 PM', title: 'Western Music (Common)', category: 'Music', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
 
   // STAGE 3: KG Auditorium (Music)

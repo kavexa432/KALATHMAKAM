@@ -24,6 +24,7 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
   event,
 }) => {
   const { publishEventWinners } = useFestival();
+  const isHouseItem = event?.category === 'House Item';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -80,9 +81,17 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
 
   const handlePublishWinners = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!w1Name && !w2Name && !w3Name) {
-      alert('Please enter at least the 1st place winner details.');
-      return;
+    
+    if (isHouseItem) {
+      if (w1House === 'NONE' && w2House === 'NONE' && w3House === 'NONE') {
+        alert('Please select a house for at least one winner.');
+        return;
+      }
+    } else {
+      if (!w1Name && !w2Name && !w3Name) {
+        alert('Please enter at least the 1st place winner details.');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -96,11 +105,13 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
       points: number;
     }> = [];
 
-    if (w1Name) winnersPayload.push({ position: '1st', studentName: w1Name, studentClass: w1Class, houseId: w1House, points: Number(w1Points) || 10 });
-    if (w2Name) winnersPayload.push({ position: '2nd', studentName: w2Name, studentClass: w2Class, houseId: w2House, points: Number(w2Points) || 7 });
-    if (shared2nd && w2bName) winnersPayload.push({ position: '2nd', studentName: w2bName, studentClass: w2bClass, houseId: w2bHouse, points: Number(w2Points) || 7 });
-    if (w3Name) winnersPayload.push({ position: '3rd', studentName: w3Name, studentClass: w3Class, houseId: w3House, points: Number(w3Points) || 5 });
-    if (shared3rd && w3bName) winnersPayload.push({ position: '3rd', studentName: w3bName, studentClass: w3bClass, houseId: w3bHouse, points: Number(w3Points) || 5 });
+    const getName = (name: string, house: string) => name || (isHouseItem ? `${house} House Team` : name);
+
+    if (w1Name || (isHouseItem && w1House !== 'NONE')) winnersPayload.push({ position: '1st', studentName: getName(w1Name, w1House), studentClass: w1Class, houseId: w1House, points: Number(w1Points) || 10 });
+    if (w2Name || (isHouseItem && w2House !== 'NONE')) winnersPayload.push({ position: '2nd', studentName: getName(w2Name, w2House), studentClass: w2Class, houseId: w2House, points: Number(w2Points) || 7 });
+    if (shared2nd && (w2bName || (isHouseItem && w2bHouse !== 'NONE'))) winnersPayload.push({ position: '2nd', studentName: getName(w2bName, w2bHouse), studentClass: w2bClass, houseId: w2bHouse, points: Number(w2Points) || 7 });
+    if (w3Name || (isHouseItem && w3House !== 'NONE')) winnersPayload.push({ position: '3rd', studentName: getName(w3Name, w3House), studentClass: w3Class, houseId: w3House, points: Number(w3Points) || 5 });
+    if (shared3rd && (w3bName || (isHouseItem && w3bHouse !== 'NONE'))) winnersPayload.push({ position: '3rd', studentName: getName(w3bName, w3bHouse), studentClass: w3bClass, houseId: w3bHouse, points: Number(w3Points) || 5 });
 
     try {
       await publishEventWinners(event.id, judgeName, winnersPayload);
@@ -203,8 +214,8 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-sans-manrope text-xs">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-[#111111] mb-1">Student Name</label>
-                  <input type="text" required placeholder="Student Name" value={w1Name} onChange={(e) => setW1Name(e.target.value)}
+                  <label className="block text-[11px] font-bold text-[#111111] mb-1">{isHouseItem ? 'Participant(s) (Optional)' : 'Student Name'}</label>
+                  <input type="text" required={!isHouseItem} placeholder={isHouseItem ? 'Leave blank for team' : 'Student Name'} value={w1Name} onChange={(e) => setW1Name(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]" />
                 </div>
                 <div>
@@ -244,8 +255,8 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-sans-manrope text-xs">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-[#111111] mb-1">Student Name</label>
-                  <input type="text" placeholder="Student Name" value={w2Name} onChange={(e) => setW2Name(e.target.value)}
+                  <label className="block text-[11px] font-bold text-[#111111] mb-1">{isHouseItem ? 'Participant(s) (Optional)' : 'Student Name'}</label>
+                  <input type="text" placeholder={isHouseItem ? 'Leave blank for team' : 'Student Name'} value={w2Name} onChange={(e) => setW2Name(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]" />
                 </div>
                 <div>
@@ -270,8 +281,8 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                   <span className="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider">Shared 2nd — Second Student</span>
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-sans-manrope text-xs">
                     <div className="sm:col-span-2">
-                      <label className="block text-[11px] font-bold text-[#111111] mb-1">Student Name</label>
-                      <input type="text" placeholder="Student Name" value={w2bName} onChange={(e) => setW2bName(e.target.value)}
+                      <label className="block text-[11px] font-bold text-[#111111] mb-1">{isHouseItem ? 'Participant(s) (Optional)' : 'Student Name'}</label>
+                      <input type="text" placeholder={isHouseItem ? 'Leave blank for team' : 'Student Name'} value={w2bName} onChange={(e) => setW2bName(e.target.value)}
                         className="w-full px-3 py-2 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-[#111111]" />
                     </div>
                     <div>
@@ -313,8 +324,8 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-sans-manrope text-xs">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-[#111111] mb-1">Student Name</label>
-                  <input type="text" placeholder="Student Name" value={w3Name} onChange={(e) => setW3Name(e.target.value)}
+                  <label className="block text-[11px] font-bold text-[#111111] mb-1">{isHouseItem ? 'Participant(s) (Optional)' : 'Student Name'}</label>
+                  <input type="text" placeholder={isHouseItem ? 'Leave blank for team' : 'Student Name'} value={w3Name} onChange={(e) => setW3Name(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-[#FAF8F5] border border-black/10 text-xs font-bold text-[#111111]" />
                 </div>
                 <div>
@@ -339,8 +350,8 @@ export const EventQuickActionModal: React.FC<EventQuickActionModalProps> = ({
                   <span className="text-[10px] font-extrabold text-orange-700 uppercase tracking-wider">Shared 3rd — Second Student</span>
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-sans-manrope text-xs">
                     <div className="sm:col-span-2">
-                      <label className="block text-[11px] font-bold text-[#111111] mb-1">Student Name</label>
-                      <input type="text" placeholder="Student Name" value={w3bName} onChange={(e) => setW3bName(e.target.value)}
+                      <label className="block text-[11px] font-bold text-[#111111] mb-1">{isHouseItem ? 'Participant(s) (Optional)' : 'Student Name'}</label>
+                      <input type="text" placeholder={isHouseItem ? 'Leave blank for team' : 'Student Name'} value={w3bName} onChange={(e) => setW3bName(e.target.value)}
                         className="w-full px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-xs font-bold text-[#111111]" />
                     </div>
                     <div>

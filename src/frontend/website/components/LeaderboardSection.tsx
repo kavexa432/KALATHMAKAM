@@ -582,17 +582,17 @@ export const LeaderboardSection: React.FC = () => {
             <div className="space-y-3 text-xs font-sans-manrope">
               <div className="p-3.5 rounded-2xl bg-white border border-black/8 space-y-1.5">
                 <h5 className="font-extrabold text-[#111111]">🥇 1st Position (Gold)</h5>
-                <p className="text-[#5F5F5F]">Solo/Team Events: +10 Pts • Large Group Events: +20 Pts</p>
+                <p className="text-[#5F5F5F]">Individual & Team House Items (PPT, Anchoring, Turn Coat, Declamation): +10 Pts • Large Group Items (Mime, Group Dance, Oppana): +20 Pts</p>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-white border border-black/8 space-y-1.5">
                 <h5 className="font-extrabold text-[#111111]">🥈 2nd Position (Silver)</h5>
-                <p className="text-[#5F5F5F]">Solo Events: +7 Pts • Group/Team Events: +15 Pts</p>
+                <p className="text-[#5F5F5F]">Individual & Team House Items: +7 Pts • Large Group Items: +15 Pts</p>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-white border border-black/8 space-y-1.5">
                 <h5 className="font-extrabold text-[#111111]">🥉 3rd Position (Bronze)</h5>
-                <p className="text-[#5F5F5F]">Solo Events: +5 Pts • Group/Team Events: +10 Pts</p>
+                <p className="text-[#5F5F5F]">Individual & Team House Items: +5 Pts • Large Group Items: +10 Pts</p>
               </div>
             </div>
 
