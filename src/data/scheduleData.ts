@@ -30,19 +30,7 @@ export const SCHEDULE_DATA: ScheduleEvent[] = [
   { id: 's1-12', time: '05:05 PM', title: 'Folk Dance (Cat 2)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 11 },
   { id: 's1-13', time: '06:10 PM', title: 'Folk Dance (Cat 3)', category: 'Dance', stage: 'Stage 1: Main Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 3 },
 
-  // ==========================================
-  // STAGE 2: Mini Auditorium (English)
-  // ==========================================
-  { id: 's2-1', time: '09:00 AM', title: 'English Recitation (Cat 4)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 5 },
-  { id: 's2-2', time: '09:30 AM', title: 'English Recitation (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 16 },
-  { id: 's2-3', time: '11:00 AM', title: 'English Extempore (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 13 },
-  { id: 's2-4', time: '12:10 PM', title: 'English Extempore (Cat 4)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
-  { id: 's2-5', time: '01:00 PM - 01:30 PM', title: 'LUNCH BREAK', category: 'Break', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming' },
-  { id: 's2-6', time: '01:30 PM', title: 'Anchoring (Cat 4)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
-  { id: 's2-7', time: '02:00 PM', title: 'Anchoring (Cat 2)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
-  { id: 's2-8', time: '02:45 PM', title: 'Turn Coat (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 8 },
-  { id: 's2-9', time: '03:30 PM', title: 'Turn Coat (Cat 3)', category: 'English', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
-  { id: 's2-10', time: '04:00 PM', title: 'Western Music (Common)', category: 'Music', stage: 'Stage 2: Mini Auditorium', day: 'Monday 10/08 (Stages)', status: 'Upcoming', participants: 4 },
+
 
   // ==========================================
   // STAGE 3: KG Auditorium (Music)
