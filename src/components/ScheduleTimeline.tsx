@@ -14,7 +14,7 @@ export const ScheduleTimeline: React.FC = () => {
 
   const ALL_SCHEDULE = [...SCHEDULE_DATA, ...DAY2_SCHEDULE_DATA];
   const filteredScheduleByDay = ALL_SCHEDULE.filter((item) => item.day === activeDay);
-  const uniqueStages = Array.from(new Set(filteredScheduleByDay.map(item => item.stage)));
+  const uniqueStages = Array.from(new Set(filteredScheduleByDay.map(item => item.stage).filter(Boolean)));
 
   const isMorningItem = (timeStr: string) => {
     if (timeStr.includes('Completed Pre-Fest')) return true;
@@ -28,12 +28,15 @@ export const ScheduleTimeline: React.FC = () => {
   };
 
   const filteredSchedule = filteredScheduleByDay.filter((item) => {
-    const matchesStage = activeStage === 'All Venues' || item.stage === activeStage;
+    // Lunch breaks (no stage) always pass stage filter — they belong to whatever context they're in
+    const isBreak = item.category === 'Break';
+    const matchesStage = activeStage === 'All Venues' || item.stage === activeStage || isBreak;
     if (!matchesStage) return false;
     if (sessionFilter === 'Morning') return isMorningItem(item.time);
     if (sessionFilter === 'Afternoon') return !isMorningItem(item.time);
     return true;
   });
+
 
   const visibleItems = showAll ? filteredSchedule : filteredSchedule.slice(0, INITIAL_VISIBLE);
   const hiddenCount = filteredSchedule.length - INITIAL_VISIBLE;
@@ -229,11 +232,13 @@ export const ScheduleTimeline: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Sub-row: venue (always visible, compact) */}
-                      <div className="flex items-center gap-1.5 px-4 pb-2.5 -mt-1">
-                        <MapPin className="w-2.5 h-2.5 text-[#FF8A00] shrink-0" />
-                        <span className="text-[11px] font-sans-manrope text-[#5F5F5F] truncate">{item.stage}</span>
-                      </div>
+                      {/* Sub-row: venue (only shown when stage is set) */}
+                      {item.stage && (
+                        <div className="flex items-center gap-1.5 px-4 pb-2.5 -mt-1">
+                          <MapPin className="w-2.5 h-2.5 text-[#FF8A00] shrink-0" />
+                          <span className="text-[11px] font-sans-manrope text-[#5F5F5F] truncate">{item.stage}</span>
+                        </div>
+                      )}
 
                       {/* Expanded details */}
                       {isExpanded && hasDetails && (
