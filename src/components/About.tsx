@@ -50,7 +50,7 @@ export const About: React.FC = () => {
       subtitle: 'Excellence, Integrity, and Celebration',
       body: 'We strive to maintain pristine standards of evaluation while ensuring a joyous, festive atmosphere where every student feels celebrated.',
       highlights: [
-        'Transparent 3-judge panel scoring system.',
+        'Transparent 2-judge panel scoring system.',
         'High-value rolling trophies and merit certificates.',
         'Promoting literary prowess in Malayalam, English, and Hindi.',
       ],
@@ -67,10 +67,10 @@ export const About: React.FC = () => {
     },
     school: {
       title: 'MGM Model School, Ayiroor',
-      subtitle: '41 Years of Educational & Cultural Excellence',
-      body: 'Situated near the scenic coastal town of Varkala in Thiruvananthapuram district, MGM Model School Ayiroor has been a beacon of quality education for 41 years, renowned for its academic rigor and rich co-curricular ecosystem.',
+      subtitle: '42 Years of Educational & Cultural Excellence',
+      body: 'Situated near the scenic coastal town of Varkala in Thiruvananthapuram district, MGM Model School Ayiroor has been a beacon of quality education for 42 years, renowned for its academic rigor and rich co-curricular ecosystem.',
       highlights: [
-        '41 years of nurturing academic and artistic talent in the Varkala region.',
+        '42 years of nurturing academic and artistic talent in the Varkala region.',
         'State-of-the-art auditoriums and dedicated fine arts faculty.',
         'A legacy of producing top state-level Kalathilakams and Kalaprathibhas.',
       ],

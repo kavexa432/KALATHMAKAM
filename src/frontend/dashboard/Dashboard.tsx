@@ -879,70 +879,123 @@ export const Dashboard: React.FC = () => {
         )}
 
         {/* System Reports & Analytics */}
-        {activeTab === 'Reports' && isDev && (
-          <div className="bg-[#FAF8F5] rounded-3xl p-8 border border-black/8 shadow-md text-left space-y-6">
-            <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
-              System Reports & Festival Analytics
-            </h3>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className="p-4 rounded-2xl bg-white border border-black/8">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Events Completed</span>
-                <div className="font-serif-cormorant font-bold text-3xl text-[#111111]">18</div>
+        {activeTab === 'Reports' && isDev && (() => {
+          const reportCompleted = displayableEvents.filter(eventHasPublishedResults).length;
+          const reportPending = eventsAwaitingResults.length;
+          const reportDrafts = resultDrafts.length;
+          const reportAdmins = users.filter((u) => u.role === 'admin' || u.role === 'Admin' || u.role === 'developer' || u.role === 'Developer').length;
+          const houseData = (['NOVA', 'VEGA', 'ORION', 'ASTRA'] as const).map((id) => ({
+            id,
+            pts: getHousePoints(id),
+            color: id === 'NOVA' ? '#EF4444' : id === 'VEGA' ? '#F59E0B' : id === 'ORION' ? '#3B82F6' : '#10B981',
+          })).sort((a, b) => b.pts - a.pts);
+          const maxPts = Math.max(...houseData.map((h) => h.pts), 1);
+          return (
+            <div className="bg-[#FAF8F5] rounded-3xl p-8 border border-black/8 shadow-md text-left space-y-6">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111]">
+                  System Reports &amp; Festival Analytics
+                </h3>
+                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200">● LIVE DATA</span>
               </div>
-              <div className="p-4 rounded-2xl bg-white border border-black/8">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Pending</span>
-                <div className="font-serif-cormorant font-bold text-3xl text-[#F59E0B]">5</div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white border border-black/8">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Images Uploaded</span>
-                <div className="font-serif-cormorant font-bold text-3xl text-[#3B82F6]">302</div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white border border-black/8">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Total Users</span>
-                <div className="font-serif-cormorant font-bold text-3xl text-[#111111]">{users.length}</div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white border border-black/8">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Active Admins</span>
-                <div className="font-serif-cormorant font-bold text-3xl text-[#10B981]">
-                  {users.filter((u) => u.role === 'admin' || u.role === 'Admin' || u.role === 'developer' || u.role === 'Developer').length}
-                </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white border border-black/8">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Today's Logins</span>
-                <div className="font-serif-cormorant font-bold text-3xl text-[#7A3CF5]">{auditLogs.length + 8}</div>
-              </div>
-            </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-black/8">
-              <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111] mb-3">
-                House Championship Distribution
-              </h4>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold w-20">NOVA</span>
-                  <div className="flex-1 h-[#1px] rounded-full bg-red-500" style={{ width: '85%' }} />
-                  <span className="text-xs font-bold">450 Pts</span>
+              {/* Real Stats Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="p-4 rounded-2xl bg-white border border-black/8">
+                  <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Events Completed</span>
+                  <div className="font-serif-cormorant font-bold text-3xl text-[#111111]">{reportCompleted}</div>
+                  <span className="text-[10px] text-emerald-600 font-bold">of {displayableEvents.length} total</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold w-20">VEGA</span>
-                  <div className="flex-1 h-[#1px] rounded-full bg-amber-500" style={{ width: '80%' }} />
-                  <span className="text-xs font-bold">430 Pts</span>
+                <div className="p-4 rounded-2xl bg-white border border-black/8">
+                  <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Awaiting Results</span>
+                  <div className="font-serif-cormorant font-bold text-3xl text-[#F59E0B]">{reportPending}</div>
+                  <span className="text-[10px] text-amber-600 font-bold">events need upload</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold w-20">ORION</span>
-                  <div className="flex-1 h-[#1px] rounded-full bg-blue-500" style={{ width: '75%' }} />
-                  <span className="text-xs font-bold">400 Pts</span>
+                <div className="p-4 rounded-2xl bg-white border border-black/8">
+                  <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">OCR Drafts</span>
+                  <div className="font-serif-cormorant font-bold text-3xl text-[#3B82F6]">{reportDrafts}</div>
+                  <span className="text-[10px] text-blue-600 font-bold">pending review</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold w-20">ASTRA</span>
-                  <div className="flex-1 h-[#1px] rounded-full bg-emerald-500" style={{ width: '70%' }} />
-                  <span className="text-xs font-bold">395 Pts</span>
+                <div className="p-4 rounded-2xl bg-white border border-black/8">
+                  <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Total Users</span>
+                  <div className="font-serif-cormorant font-bold text-3xl text-[#111111]">{users.length}</div>
+                  <span className="text-[10px] text-[#5F5F5F] font-bold">in Firebase Auth</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white border border-black/8">
+                  <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Admins</span>
+                  <div className="font-serif-cormorant font-bold text-3xl text-[#10B981]">{reportAdmins}</div>
+                  <span className="text-[10px] text-emerald-600 font-bold">approved accounts</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white border border-black/8">
+                  <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Audit Events</span>
+                  <div className="font-serif-cormorant font-bold text-3xl text-[#7A3CF5]">{auditLogs.length}</div>
+                  <span className="text-[10px] text-purple-600 font-bold">actions logged</span>
                 </div>
               </div>
+
+              {/* Live House Championship */}
+              <div className="p-6 rounded-2xl bg-white border border-black/8">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111]">
+                    House Championship — Live Standings
+                  </h4>
+                  <span className="text-[10px] text-[#5F5F5F] font-sans-manrope">
+                    {results.filter((r) => r.status === 'Published').length} results published
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {houseData.map((house, i) => (
+                    <div key={house.id} className="flex items-center gap-3">
+                      <span className="text-xs font-extrabold w-14 font-sans-manrope">
+                        {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '  '} {house.id}
+                      </span>
+                      <div className="flex-1 h-2 bg-black/6 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${(house.pts / maxPts) * 100}%`, backgroundColor: house.color }}
+                        />
+                      </div>
+                      <span className="text-xs font-extrabold font-sans-manrope w-20 text-right">
+                        {house.pts > 0 ? `${house.pts} Pts` : '—'}
+                      </span>
+                    </div>
+                  ))}
+                  {houseData.every((h) => h.pts === 0) && (
+                    <p className="text-xs text-[#5F5F5F] font-sans-manrope text-center py-4">
+                      No house points yet — publish results to see standings here.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Published Results */}
+              <div className="p-6 rounded-2xl bg-white border border-black/8">
+                <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111] mb-3">Recent Published Results</h4>
+                {results.filter((r) => r.status === 'Published').length === 0 ? (
+                  <p className="text-xs text-[#5F5F5F] font-sans-manrope">No results published yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {results
+                      .filter((r) => r.status === 'Published')
+                      .slice(0, 10)
+                      .map((r) => (
+                        <div key={r.id} className="flex items-center justify-between text-xs font-sans-manrope py-2 border-b border-black/5 last:border-0">
+                          <div>
+                            <span className="font-bold text-[#111111]">{r.eventTitle}</span>
+                            <span className="text-[#5F5F5F] ml-2">{r.category}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[#111111]">{r.position} — {r.participantName}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">{r.houseId}</span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {activeTab === 'ScanResult' && (
           <ScanResultPage onBackToDashboard={() => setActiveTab('Overview')} />

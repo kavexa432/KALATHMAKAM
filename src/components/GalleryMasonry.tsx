@@ -48,48 +48,58 @@ export const GalleryMasonry: React.FC = () => {
           })}
         </div>
 
-        {/* Masonry Columns */}
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          <AnimatePresence>
-            {filteredItems.map((item, idx) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4, delay: idx * 0.05 }}
-                className="break-inside-avoid relative rounded-[24px] overflow-hidden glass-card group cursor-pointer"
-                onClick={() => setLightboxImage(item)}
-              >
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+        {/* Masonry Columns or Empty State */}
+        {filteredItems.length > 0 ? (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+            <AnimatePresence>
+              {filteredItems.map((item, idx) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.4, delay: idx * 0.05 }}
+                  className="break-inside-avoid relative rounded-[24px] overflow-hidden glass-card group cursor-pointer"
+                  onClick={() => setLightboxImage(item)}
+                >
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
 
-                {/* Gradient Hover Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6 flex flex-col justify-end text-white">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-sans-manrope font-bold uppercase tracking-wider text-[#FF5E84] bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                      {item.category}
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                      <Maximize2 className="w-4 h-4 text-white" />
+                  {/* Gradient Hover Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6 flex flex-col justify-end text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-sans-manrope font-bold uppercase tracking-wider text-[#FF5E84] bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                        {item.category}
+                      </span>
+                      <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <Maximize2 className="w-4 h-4 text-white" />
+                      </div>
                     </div>
+                    <h4 className="font-serif-cormorant text-xl font-bold">
+                      {item.title}
+                    </h4>
+                    <p className="font-sans-manrope text-xs text-white/80 line-clamp-1 mt-1">
+                      {item.caption}
+                    </p>
                   </div>
-                  <h4 className="font-serif-cormorant text-xl font-bold">
-                    {item.title}
-                  </h4>
-                  <p className="font-sans-manrope text-xs text-white/80 line-clamp-1 mt-1">
-                    {item.caption}
-                  </p>
-                </div>
 
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <div className="text-center py-20 space-y-4">
+            <div className="text-6xl">📸</div>
+            <h3 className="font-serif-cormorant text-2xl font-bold text-[#111111]">Photos Coming Soon</h3>
+            <p className="font-sans-manrope text-sm text-[#5F5F5F] max-w-sm mx-auto">
+              Festival snapshots will be uploaded here live during and after the event. Check back soon!
+            </p>
+          </div>
+        )}
 
       </div>
 
