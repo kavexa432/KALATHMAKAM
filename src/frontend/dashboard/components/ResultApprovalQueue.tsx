@@ -13,7 +13,7 @@ const HOUSES: { value: HouseId | 'NONE'; label: string }[] = [
 ];
 
 interface PlacementRow {
-  position: '1st' | '2nd' | '3rd';
+  position: '1st' | '2nd' | '3rd' | 'Consolation';
   studentName: string;
   studentClass: string;
   houseId: HouseId | 'NONE';
@@ -25,7 +25,6 @@ export const ResultApprovalQueue: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
-  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // Custom competition state
   const [addCompOpen, setAddCompOpen] = useState(false);
@@ -52,43 +51,6 @@ export const ResultApprovalQueue: React.FC = () => {
     }
   };
 
-  const bulkDeleteByEventName = async (eventNamePattern: string) => {
-    const matchingResults = results.filter(r => 
-      r.eventTitle.toLowerCase().includes(eventNamePattern.toLowerCase())
-    );
-    
-    if (matchingResults.length === 0) {
-      alert(`No results found matching "${eventNamePattern}"`);
-      return;
-    }
-    
-    if (!window.confirm(`Delete ${matchingResults.length} results for "${eventNamePattern}"?\n\nThis will remove:\n${matchingResults.map(r => `• ${r.participantName} (${r.position} in ${r.eventTitle})`).join('\n')}\n\nThis cannot be undone!`)) {
-      return;
-    }
-    
-    setBulkDeleting(true);
-    let successCount = 0;
-    let errorCount = 0;
-    
-    for (const result of matchingResults) {
-      try {
-        await deleteResult(result.id);
-        successCount++;
-      } catch (error) {
-        console.error(`Failed to delete result ${result.id}:`, error);
-        errorCount++;
-      }
-    }
-    
-    setBulkDeleting(false);
-    
-    if (errorCount === 0) {
-      alert(`✅ Successfully deleted all ${successCount} results for "${eventNamePattern}"`);
-    } else {
-      alert(`⚠️ Deleted ${successCount} results, but ${errorCount} failed. Check console for details.`);
-    }
-  };
-
   const allSelectableEvents = events;
 
   const selectedEvt = allSelectableEvents.find((e) => e.id === selectedEventId);
@@ -103,7 +65,8 @@ export const ResultApprovalQueue: React.FC = () => {
   ].includes(selectedEvt.id);
 
   // Points based on competition type
-  const getPoints = (pos: '1st' | '2nd' | '3rd') => {
+  const getPoints = (pos: '1st' | '2nd' | '3rd' | 'Consolation') => {
+    if (pos === 'Consolation') return 0;
     if (compType === 'group') {
       // Large group items (Mime, Group Dance, Group Song): 1st=20, 2nd=15, 3rd=10
       return pos === '1st' ? 20 : pos === '2nd' ? 15 : 10;
@@ -190,7 +153,7 @@ export const ResultApprovalQueue: React.FC = () => {
           studentName: isHouseGroupEvent ? `${p.houseId} House Team` : p.studentName.trim(),
           studentClass: isHouseGroupEvent ? 'Group' : p.studentClass.trim(),
           houseId: p.houseId as HouseId,
-          points: p.position === 'Consolation' ? 0 : getPoints(p.position as '1st' | '2nd' | '3rd'),
+          points: getPoints(p.position),
         }))
       );
       setSuccessMsg(`✅ Results published for ${selectedEvt.eventName}!`);
