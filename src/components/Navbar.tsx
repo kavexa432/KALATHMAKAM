@@ -13,7 +13,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenRegister }) => {
   const navLinks = [
     { name: 'Home', href: '#home', id: 'home' },
     { name: 'About', href: '#about', id: 'about' },
-    { name: 'Events', href: '#events', id: 'events' },
+    { name: 'Results', href: '#results', id: 'results' },
     { name: 'Schedule', href: '#schedule', id: 'schedule' },
     { name: 'Gallery', href: '#gallery', id: 'gallery' },
     { name: 'Committee', href: '#committee', id: 'committee' },

@@ -20,10 +20,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
   const navLinks = [
     { name: 'Home', href: '#home', id: 'home' },
     { name: 'About', href: '#about', id: 'about' },
-    { name: 'Events', href: '#events', id: 'events' },
-    { name: 'Schedule', href: '#schedule', id: 'schedule' },
     { name: 'Results', href: '#results', id: 'results' },
     { name: 'Leaderboard', href: '#leaderboard', id: 'leaderboard' },
+    { name: 'Schedule', href: '#schedule', id: 'schedule' },
     { name: 'Gallery', href: '#gallery', id: 'gallery' },
     { name: 'Contact', href: '#contact', id: 'contact' },
   ];

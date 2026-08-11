@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs font-sans-manrope text-gray-400">
               <li><a href="#home" className="hover:text-[#FF5E84] transition-colors">Home</a></li>
               <li><a href="#about" className="hover:text-[#FF5E84] transition-colors">About Kalathmakam</a></li>
-              <li><a href="#events" className="hover:text-[#FF5E84] transition-colors">Competitions & Bento Grid</a></li>
+              <li><a href="#results" className="hover:text-[#FF5E84] transition-colors">Verified Results</a></li>
               <li><a href="#schedule" className="hover:text-[#FF5E84] transition-colors">3-Day Timeline</a></li>
               <li><a href="#gallery" className="hover:text-[#FF5E84] transition-colors">Photo Highlights</a></li>
               <li><a href="#committee" className="hover:text-[#FF5E84] transition-colors">Executive Committee</a></li>
@@ -67,10 +67,10 @@ export const Footer: React.FC = () => {
               Ayiroor P.O, Varkala, Thiruvananthapuram, Kerala 695310, India.
             </p>
             <p className="text-xs font-sans-manrope text-gray-400">
-              Phone: +91 94470 12345 / 0470 2695200
+              Phone: +91 90722 88314
             </p>
             <p className="text-xs font-sans-manrope text-gray-400">
-              Email: kalathmakam2k26@mgmayiroor.ac.in
+              Email: kavexa432@gmail.com
             </p>
           </div>
 

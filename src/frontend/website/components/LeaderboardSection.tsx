@@ -94,8 +94,8 @@ export const LeaderboardSection: React.FC = () => {
   const categoryFilters = ['All', 'Music', 'Dance', 'Literary', 'Fine Arts'];
 
   const filteredWinsData = activeCategoryFilter === 'All'
-    ? recentWinsData
-    : recentWinsData.filter((w) => w.categoryTag === activeCategoryFilter);
+    ? recentWinsData.slice(0, 8) // Show only 8 most recent results
+    : recentWinsData.filter((w) => w.categoryTag === activeCategoryFilter).slice(0, 8);
   const housePointWinsData = filteredWinsData.filter((w) => w.isHousePointResult);
   const individualWinsData = filteredWinsData.filter((w) => !w.isHousePointResult);
 
@@ -257,12 +257,12 @@ export const LeaderboardSection: React.FC = () => {
             const isFirstRank = index === 0;
 
             const rankBadge = index === 0
-              ? { text: 'Rank #1', bg: 'bg-[#F59E0B]', textColor: 'text-white' }
+              ? { text: '1st', bg: 'bg-[#F59E0B]', textColor: 'text-white', border: 'border-[#F59E0B]' }
               : index === 1
-              ? { text: 'Rank #2', bg: 'bg-slate-100', textColor: 'text-slate-700' }
+              ? { text: '2nd', bg: 'bg-slate-200', textColor: 'text-slate-800', border: 'border-slate-300' }
               : index === 2
-              ? { text: 'Rank #3', bg: 'bg-amber-100', textColor: 'text-amber-800' }
-              : { text: 'Rank #4', bg: 'bg-slate-100', textColor: 'text-slate-600' };
+              ? { text: '3rd', bg: 'bg-amber-200', textColor: 'text-amber-900', border: 'border-amber-300' }
+              : { text: '4th', bg: 'bg-slate-100', textColor: 'text-slate-600', border: 'border-slate-200' };
 
             return (
               <div
@@ -310,7 +310,7 @@ export const LeaderboardSection: React.FC = () => {
                   </div>
 
                   {/* Rank Pill Badge Top Right */}
-                  <span className={`text-[10px] font-sans-manrope font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${rankBadge.bg} ${rankBadge.textColor}`}>
+                  <span className={`text-base font-sans-manrope font-black px-3 py-1.5 rounded-full uppercase tracking-wider border-2 ${rankBadge.bg} ${rankBadge.textColor} ${rankBadge.border} shadow-sm`}>
                     {rankBadge.text}
                   </span>
                 </div>

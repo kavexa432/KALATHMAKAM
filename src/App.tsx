@@ -3,7 +3,6 @@ import { FestivalProvider } from './shared/context/FestivalContext';
 import { Navbar } from './frontend/website/components/Navbar';
 import { Hero } from './frontend/website/components/Hero';
 import { FestivalControlCenter } from './frontend/website/components/FestivalControlCenter';
-import { LiveEventsSection } from './frontend/website/components/LiveEventsSection';
 import { LeaderboardSection } from './frontend/website/components/LeaderboardSection';
 import { ResultsSection } from './frontend/website/components/ResultsSection';
 import { ScheduleTimeline } from './components/ScheduleTimeline';
@@ -55,28 +54,25 @@ export function AppContent() {
         {/* 2. Festival Control Center Widget */}
         <FestivalControlCenter />
 
-        {/* 3. Today's Live Events & Category Filter */}
-        <LiveEventsSection />
+        {/* 3. Latest Verified Results & Individual Achievements */}
+        <ResultsSection />
 
         {/* 4. House Championship Leaderboard & Score Graph */}
         <LeaderboardSection />
 
-        {/* 5. Latest Verified Results & Individual Achievements */}
-        <ResultsSection />
-
-        {/* 6. Program Schedule Timeline */}
+        {/* 5. Program Schedule Timeline */}
         <ScheduleTimeline />
 
-        {/* 7. Editorial About Kalathmakam */}
+        {/* 6. Editorial About Kalathmakam */}
         <About />
 
-        {/* 8. Categorized Gallery Masonry */}
+        {/* 7. Categorized Gallery Masonry */}
         <GalleryMasonry />
 
-        {/* 11. Contact & Map Section */}
+        {/* 8. Contact & Map Section */}
         <ContactSection />
 
-        {/* 12. Mission Control CMS Dashboard (for Admins & Developers) */}
+        {/* 9. Mission Control CMS Dashboard (for Admins & Developers) */}
         <Dashboard />
       </main>
 

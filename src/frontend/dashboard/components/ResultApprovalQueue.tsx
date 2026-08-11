@@ -20,11 +20,12 @@ interface PlacementRow {
 }
 
 export const ResultApprovalQueue: React.FC = () => {
-  const { results, resultDrafts, events, publishEventWinners, verifyResult, publishResult, deleteResult, addEvent } = useFestival();
+  const { results, resultDrafts, events, publishEventWinners, verifyResult, publishResult, deleteResult, addEvent, cleanupConflictingEvents } = useFestival();
   const [manualOpen] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // Custom competition state
   const [addCompOpen, setAddCompOpen] = useState(false);
@@ -51,11 +52,55 @@ export const ResultApprovalQueue: React.FC = () => {
     }
   };
 
+  const bulkDeleteByEventName = async (eventNamePattern: string) => {
+    const matchingResults = results.filter(r => 
+      r.eventTitle.toLowerCase().includes(eventNamePattern.toLowerCase())
+    );
+    
+    if (matchingResults.length === 0) {
+      alert(`No results found matching "${eventNamePattern}"`);
+      return;
+    }
+    
+    if (!window.confirm(`Delete ${matchingResults.length} results for "${eventNamePattern}"?\n\nThis will remove:\n${matchingResults.map(r => `• ${r.participantName} (${r.position} in ${r.eventTitle})`).join('\n')}\n\nThis cannot be undone!`)) {
+      return;
+    }
+    
+    setBulkDeleting(true);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const result of matchingResults) {
+      try {
+        await deleteResult(result.id);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to delete result ${result.id}:`, error);
+        errorCount++;
+      }
+    }
+    
+    setBulkDeleting(false);
+    
+    if (errorCount === 0) {
+      alert(`✅ Successfully deleted all ${successCount} results for "${eventNamePattern}"`);
+    } else {
+      alert(`⚠️ Deleted ${successCount} results, but ${errorCount} failed. Check console for details.`);
+    }
+  };
+
   const allSelectableEvents = events;
 
   const selectedEvt = allSelectableEvents.find((e) => e.id === selectedEventId);
   const compType = selectedEvt?.competitionType || 'individual';
   const isNonHouse = !selectedEvt?.houseWise;
+  
+  // Special group competitions with no individual student names
+  const isHouseGroupEvent = selectedEvt && [
+    'evt-house-groupsong',
+    'evt-house-patrioticsong', 
+    'evt-house-nationalanthem'
+  ].includes(selectedEvt.id);
 
   // Points based on competition type
   const getPoints = (pos: '1st' | '2nd' | '3rd') => {
@@ -70,16 +115,20 @@ export const ResultApprovalQueue: React.FC = () => {
   const defaultHouse = (isNonHouse: boolean): HouseId | 'NONE' => isNonHouse ? 'NONE' : 'NOVA';
 
   const [placements, setPlacements] = useState<PlacementRow[]>([
-    { position: '1st', studentName: '', studentClass: '', houseId: 'NONE' },
-    { position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' },
-    { position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' },
+    { position: '1st', studentName: '', studentClass: '', houseId: 'NOVA' },
+    { position: '2nd', studentName: '', studentClass: '', houseId: 'NOVA' },
+    { position: '3rd', studentName: '', studentClass: '', houseId: 'NOVA' },
   ]);
 
   // Shared position state
-  const [shared2nd, setShared2nd] = useState<PlacementRow>({ position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' });
-  const [shared3rd, setShared3rd] = useState<PlacementRow>({ position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' });
+  const [shared1st, setShared1st] = useState<PlacementRow>({ position: '1st', studentName: '', studentClass: '', houseId: 'NOVA' });
+  const [shared2nd, setShared2nd] = useState<PlacementRow>({ position: '2nd', studentName: '', studentClass: '', houseId: 'NOVA' });
+  const [shared3rd, setShared3rd] = useState<PlacementRow>({ position: '3rd', studentName: '', studentClass: '', houseId: 'NOVA' });
+  const [consolation, setConsolation] = useState<PlacementRow>({ position: 'Consolation', studentName: '', studentClass: '', houseId: 'NOVA' });
+  const [show1st, setShow1st] = useState(false);
   const [show2nd, setShow2nd] = useState(false);
   const [show3rd, setShow3rd] = useState(false);
+  const [showConsolation, setShowConsolation] = useState(false);
 
   const handleEventChange = (evtId: string) => {
     setSelectedEventId(evtId);
@@ -91,10 +140,14 @@ export const ResultApprovalQueue: React.FC = () => {
       { position: '2nd', studentName: '', studentClass: '', houseId: h },
       { position: '3rd', studentName: '', studentClass: '', houseId: h },
     ]);
+    setShared1st({ position: '1st', studentName: '', studentClass: '', houseId: h });
     setShared2nd({ position: '2nd', studentName: '', studentClass: '', houseId: h });
     setShared3rd({ position: '3rd', studentName: '', studentClass: '', houseId: h });
+    setConsolation({ position: 'Consolation', studentName: '', studentClass: '', houseId: h });
+    setShow1st(false);
     setShow2nd(false);
     setShow3rd(false);
+    setShowConsolation(false);
   };
 
   const updatePlacement = (idx: number, field: keyof PlacementRow, value: string) => {
@@ -105,10 +158,26 @@ export const ResultApprovalQueue: React.FC = () => {
     e.preventDefault();
     if (!selectedEvt) return;
 
-    const filled = placements.filter((p) => p.studentName.trim());
-    // Add shared 2nd and 3rd if toggled on and filled
-    if (show2nd && shared2nd.studentName.trim()) filled.push(shared2nd);
-    if (show3rd && shared3rd.studentName.trim()) filled.push(shared3rd);
+    let filled: PlacementRow[];
+    
+    if (isHouseGroupEvent) {
+      // For house group events, we only need house selection (no student names)
+      filled = placements.filter((p) => p.houseId && p.houseId !== 'NONE');
+      // Add shared positions if enabled and have house selected
+      if (show1st && shared1st.houseId && shared1st.houseId !== 'NONE') filled.push(shared1st);
+      if (show2nd && shared2nd.houseId && shared2nd.houseId !== 'NONE') filled.push(shared2nd);
+      if (show3rd && shared3rd.houseId && shared3rd.houseId !== 'NONE') filled.push(shared3rd);
+      if (showConsolation && consolation.houseId && consolation.houseId !== 'NONE') filled.push(consolation);
+    } else {
+      // For regular events, we need student names
+      filled = placements.filter((p) => p.studentName.trim());
+      // Add shared positions if enabled and filled
+      if (show1st && shared1st.studentName.trim()) filled.push(shared1st);
+      if (show2nd && shared2nd.studentName.trim()) filled.push(shared2nd);
+      if (show3rd && shared3rd.studentName.trim()) filled.push(shared3rd);
+      if (showConsolation && consolation.studentName.trim()) filled.push(consolation);
+    }
+    
     if (filled.length === 0) return;
 
     setSubmitting(true);
@@ -118,23 +187,27 @@ export const ResultApprovalQueue: React.FC = () => {
         '',
         filled.map((p) => ({
           position: p.position,
-          studentName: p.studentName.trim(),
-          studentClass: p.studentClass.trim(),
+          studentName: isHouseGroupEvent ? `${p.houseId} House Team` : p.studentName.trim(),
+          studentClass: isHouseGroupEvent ? 'Group' : p.studentClass.trim(),
           houseId: p.houseId as HouseId,
-          points: getPoints(p.position),
+          points: p.position === 'Consolation' ? 0 : getPoints(p.position as '1st' | '2nd' | '3rd'),
         }))
       );
       setSuccessMsg(`✅ Results published for ${selectedEvt.eventName}!`);
       setSelectedEventId('');
       setPlacements([
-        { position: '1st', studentName: '', studentClass: '', houseId: 'NONE' },
-        { position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' },
-        { position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' },
+        { position: '1st', studentName: '', studentClass: '', houseId: 'NOVA' },
+        { position: '2nd', studentName: '', studentClass: '', houseId: 'NOVA' },
+        { position: '3rd', studentName: '', studentClass: '', houseId: 'NOVA' },
       ]);
-      setShared2nd({ position: '2nd', studentName: '', studentClass: '', houseId: 'NONE' });
-      setShared3rd({ position: '3rd', studentName: '', studentClass: '', houseId: 'NONE' });
+      setShared1st({ position: '1st', studentName: '', studentClass: '', houseId: 'NOVA' });
+      setShared2nd({ position: '2nd', studentName: '', studentClass: '', houseId: 'NOVA' });
+      setShared3rd({ position: '3rd', studentName: '', studentClass: '', houseId: 'NOVA' });
+      setConsolation({ position: 'Consolation', studentName: '', studentClass: '', houseId: 'NOVA' });
+      setShow1st(false);
       setShow2nd(false);
       setShow3rd(false);
+      setShowConsolation(false);
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err: any) {
       alert('Submit failed: ' + err.message);
@@ -231,6 +304,14 @@ export const ResultApprovalQueue: React.FC = () => {
                   >
                     {isAddingComp ? 'Adding...' : '+ Add to List'}
                   </button>
+                  <button
+                    type="button"
+                    onClick={cleanupConflictingEvents}
+                    className="px-5 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-sans-manrope font-bold text-xs cursor-pointer transition-colors"
+                    title="Remove custom competitions that conflict with house events"
+                  >
+                    🧹 Cleanup Conflicts
+                  </button>
                   {newCompAddedMsg && (
                     <p className="text-[11px] font-bold text-emerald-700">{newCompAddedMsg}</p>
                   )}
@@ -257,12 +338,17 @@ export const ResultApprovalQueue: React.FC = () => {
                 </select>
                 {selectedEvt && (
                   <p className="text-[10px] text-[#5F5F5F] mt-1">
-                    {selectedEvt.category}
+                    <span className="font-bold text-blue-600">Event ID: {selectedEvt.id}</span>
+                    <span className="ml-2">{selectedEvt.category}</span>
                     {selectedEvt.competitionType && (
                       <span className="ml-2 text-[#FF5E84] font-bold">
                         ({compType === 'group' ? 'Group: 20/15/10 pts' : compType === 'team' ? 'Team (PPT): 10/7/5 pts' : 'Individual: 10/7/5 pts'})
                       </span>
                     )}
+                    <span className="ml-2 text-blue-600 font-bold">
+                      · {selectedEvt.houseWise ? 'House Competition' : 'Individual Competition'}
+                    </span>
+                    {isHouseGroupEvent && <span className="ml-2 text-purple-600 font-bold">· House Group Event (No student names)</span>}
                     {isNonHouse && <span className="ml-2 text-amber-600 font-bold">· Non-house event</span>}
                   </p>
                 )}
@@ -281,7 +367,13 @@ export const ResultApprovalQueue: React.FC = () => {
                         <span className="ml-auto text-[10px] font-bold text-[#FF5E84]">
                           <Lock className="w-2.5 h-2.5 inline mr-0.5" />+{getPoints(row.position)} pts
                         </span>
-                        {/* Shared toggle for 2nd and 3rd */}
+                        {/* Shared toggle for 1st, 2nd and 3rd */}
+                        {row.position === '1st' && (
+                          <button type="button" onClick={() => setShow1st(v => !v)}
+                            className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold border cursor-pointer transition-all ${show1st ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-white text-[#5F5F5F] border-black/10 hover:bg-amber-50 hover:text-amber-700'}`}>
+                            {show1st ? '✓ Shared 1st' : '+ Shared 1st'}
+                          </button>
+                        )}
                         {row.position === '2nd' && (
                           <button type="button" onClick={() => setShow2nd(v => !v)}
                             className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold border cursor-pointer transition-all ${show2nd ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-[#5F5F5F] border-black/10 hover:bg-blue-50 hover:text-blue-700'}`}>
@@ -295,20 +387,65 @@ export const ResultApprovalQueue: React.FC = () => {
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input type="text" placeholder="Student Name" value={row.studentName}
-                          onChange={(e) => updatePlacement(idx, 'studentName', e.target.value)}
-                          className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
-                        <input type="text" placeholder="Class (e.g. 9A)" value={row.studentClass}
-                          onChange={(e) => updatePlacement(idx, 'studentClass', e.target.value.toUpperCase())}
-                          className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
+                      <div className={`grid ${isHouseGroupEvent ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
+                        {!isHouseGroupEvent && (
+                          <>
+                            <input type="text" placeholder="Student Name" value={row.studentName}
+                              onChange={(e) => updatePlacement(idx, 'studentName', e.target.value)}
+                              className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
+                            <input type="text" placeholder="Class (e.g. 9A)" value={row.studentClass}
+                              onChange={(e) => updatePlacement(idx, 'studentClass', e.target.value.toUpperCase())}
+                              className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope text-[#111111]" />
+                          </>
+                        )}
                         <select value={row.houseId} onChange={(e) => updatePlacement(idx, 'houseId', e.target.value)}
-                          disabled={isNonHouse} style={{ colorScheme: 'light' }}
-                          className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50">
-                          {HOUSES.map((h) => (<option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>))}
+                          style={{ colorScheme: 'light' }}
+                          className="px-3 py-2 rounded-xl bg-white border border-black/10 text-xs font-sans-manrope font-bold text-[#111111]">
+                          {isNonHouse ? 
+                            [{ value: 'NONE', label: '⚪ No House (Individual)' }].map((h) => (
+                              <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                            )) :
+                            HOUSES.filter(h => h.value !== 'NONE').map((h) => (
+                              <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                            ))
+                          }
                         </select>
                       </div>
                     </div>
+
+                    {/* Shared 1st row */}
+                    {row.position === '1st' && show1st && (
+                      <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 space-y-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">🥇</span>
+                          <span className="font-sans-manrope font-extrabold text-xs text-amber-800">Shared 1st Place — Second Student</span>
+                        </div>
+                        <div className={`grid ${isHouseGroupEvent ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
+                          {!isHouseGroupEvent && (
+                            <>
+                              <input type="text" placeholder="Student Name" value={shared1st.studentName}
+                                onChange={(e) => setShared1st(p => ({ ...p, studentName: e.target.value }))}
+                                className="px-3 py-2 rounded-xl bg-white border border-amber-200 text-xs font-sans-manrope text-[#111111]" />
+                              <input type="text" placeholder="Class (e.g. 9A)" value={shared1st.studentClass}
+                                onChange={(e) => setShared1st(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
+                                className="px-3 py-2 rounded-xl bg-white border border-amber-200 text-xs font-sans-manrope text-[#111111]" />
+                            </>
+                          )}
+                          <select value={shared1st.houseId} onChange={(e) => setShared1st(p => ({ ...p, houseId: e.target.value as HouseId }))}
+                            style={{ colorScheme: 'light' }}
+                            className="px-3 py-2 rounded-xl bg-white border border-amber-200 text-xs font-sans-manrope font-bold text-[#111111]">
+                            {isNonHouse ? 
+                              [{ value: 'NONE', label: '⚪ No House (Individual)' }].map((h) => (
+                                <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                              )) :
+                              HOUSES.filter(h => h.value !== 'NONE').map((h) => (
+                                <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                              ))
+                            }
+                          </select>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Shared 2nd row */}
                     {row.position === '2nd' && show2nd && (
@@ -317,17 +454,28 @@ export const ResultApprovalQueue: React.FC = () => {
                           <span className="text-base">🥈</span>
                           <span className="font-sans-manrope font-extrabold text-xs text-blue-800">Shared 2nd Place — Second Student</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <input type="text" placeholder="Student Name" value={shared2nd.studentName}
-                            onChange={(e) => setShared2nd(p => ({ ...p, studentName: e.target.value }))}
-                            className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
-                          <input type="text" placeholder="Class (e.g. 9A)" value={shared2nd.studentClass}
-                            onChange={(e) => setShared2nd(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
-                            className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
+                        <div className={`grid ${isHouseGroupEvent ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
+                          {!isHouseGroupEvent && (
+                            <>
+                              <input type="text" placeholder="Student Name" value={shared2nd.studentName}
+                                onChange={(e) => setShared2nd(p => ({ ...p, studentName: e.target.value }))}
+                                className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
+                              <input type="text" placeholder="Class (e.g. 9A)" value={shared2nd.studentClass}
+                                onChange={(e) => setShared2nd(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
+                                className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope text-[#111111]" />
+                            </>
+                          )}
                           <select value={shared2nd.houseId} onChange={(e) => setShared2nd(p => ({ ...p, houseId: e.target.value as HouseId }))}
-                            disabled={isNonHouse} style={{ colorScheme: 'light' }}
-                            className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50">
-                            {HOUSES.map((h) => (<option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>))}
+                            style={{ colorScheme: 'light' }}
+                            className="px-3 py-2 rounded-xl bg-white border border-blue-200 text-xs font-sans-manrope font-bold text-[#111111]">
+                            {isNonHouse ? 
+                              [{ value: 'NONE', label: '⚪ No House (Individual)' }].map((h) => (
+                                <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                              )) :
+                              HOUSES.filter(h => h.value !== 'NONE').map((h) => (
+                                <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                              ))
+                            }
                           </select>
                         </div>
                       </div>
@@ -340,23 +488,78 @@ export const ResultApprovalQueue: React.FC = () => {
                           <span className="text-base">🥉</span>
                           <span className="font-sans-manrope font-extrabold text-xs text-orange-800">Shared 3rd Place — Second Student</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <input type="text" placeholder="Student Name" value={shared3rd.studentName}
-                            onChange={(e) => setShared3rd(p => ({ ...p, studentName: e.target.value }))}
-                            className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
-                          <input type="text" placeholder="Class (e.g. 9A)" value={shared3rd.studentClass}
-                            onChange={(e) => setShared3rd(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
-                            className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
+                        <div className={`grid ${isHouseGroupEvent ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
+                          {!isHouseGroupEvent && (
+                            <>
+                              <input type="text" placeholder="Student Name" value={shared3rd.studentName}
+                                onChange={(e) => setShared3rd(p => ({ ...p, studentName: e.target.value }))}
+                                className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
+                              <input type="text" placeholder="Class (e.g. 9A)" value={shared3rd.studentClass}
+                                onChange={(e) => setShared3rd(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
+                                className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope text-[#111111]" />
+                            </>
+                          )}
                           <select value={shared3rd.houseId} onChange={(e) => setShared3rd(p => ({ ...p, houseId: e.target.value as HouseId }))}
-                            disabled={isNonHouse} style={{ colorScheme: 'light' }}
-                            className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope font-bold text-[#111111] disabled:opacity-50">
-                            {HOUSES.map((h) => (<option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>))}
+                            style={{ colorScheme: 'light' }}
+                            className="px-3 py-2 rounded-xl bg-white border border-orange-200 text-xs font-sans-manrope font-bold text-[#111111]">
+                            {isNonHouse ? 
+                              [{ value: 'NONE', label: '⚪ No House (Individual)' }].map((h) => (
+                                <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                              )) :
+                              HOUSES.filter(h => h.value !== 'NONE').map((h) => (
+                                <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                              ))
+                            }
                           </select>
                         </div>
                       </div>
                     )}
                   </div>
                 ))}
+              </div>
+
+              {/* Consolation Prize Button & Row */}
+              <div className="pt-2 border-t border-black/8">
+                <button type="button" onClick={() => setShowConsolation(v => !v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-extrabold border cursor-pointer transition-all ${showConsolation ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-white text-[#5F5F5F] border-black/10 hover:bg-purple-50 hover:text-purple-700'}`}>
+                  {showConsolation ? '✓ Consolation Prize Added' : '+ Add Consolation Prize'}
+                </button>
+                
+                {showConsolation && (
+                  <div className="mt-3 p-3.5 rounded-xl bg-purple-50 border border-purple-200 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🎖️</span>
+                      <span className="font-sans-manrope font-extrabold text-xs text-purple-800">Consolation Prize (No Points)</span>
+                    </div>
+                    <div className={`grid ${isHouseGroupEvent ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
+                      {!isHouseGroupEvent && (
+                        <>
+                          <input type="text" placeholder="Student Name" value={consolation.studentName}
+                            onChange={(e) => setConsolation(p => ({ ...p, studentName: e.target.value }))}
+                            className="px-3 py-2 rounded-xl bg-white border border-purple-200 text-xs font-sans-manrope text-[#111111]" />
+                          <input type="text" placeholder="Class (e.g. 9A)" value={consolation.studentClass}
+                            onChange={(e) => setConsolation(p => ({ ...p, studentClass: e.target.value.toUpperCase() }))}
+                            className="px-3 py-2 rounded-xl bg-white border border-purple-200 text-xs font-sans-manrope text-[#111111]" />
+                        </>
+                      )}
+                      <select value={consolation.houseId} onChange={(e) => setConsolation(p => ({ ...p, houseId: e.target.value as HouseId }))}
+                        style={{ colorScheme: 'light' }}
+                        className="px-3 py-2 rounded-xl bg-white border border-purple-200 text-xs font-sans-manrope font-bold text-[#111111]">
+                        {isNonHouse ? 
+                          [{ value: 'NONE', label: '⚪ No House (Individual)' }].map((h) => (
+                            <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                          )) :
+                          HOUSES.filter(h => h.value !== 'NONE').map((h) => (
+                            <option key={h.value} value={h.value} className="bg-white text-[#111111]">{h.label}</option>
+                          ))
+                        }
+                      </select>
+                    </div>
+                    <p className="text-[10px] text-purple-700 font-bold">
+                      ℹ️ Consolation prizes are for recognition only and award 0 house points
+                    </p>
+                  </div>
+                )}
               </div>
 
               {successMsg && (
@@ -482,9 +685,9 @@ export const ResultApprovalQueue: React.FC = () => {
                           </button>
                         )}
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (window.confirm(`Delete result for ${r.participantName} (${r.position} in ${r.eventTitle})?\n\nThis will retract the result and post a live notice to attendees.`)) {
-                              deleteResult(r.id);
+                              await deleteResult(r.id);
                             }
                           }}
                           className="px-3 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] cursor-pointer"

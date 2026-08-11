@@ -17,10 +17,10 @@ export const About: React.FC = () => {
   const tabContent: Record<string, { title: string; subtitle: string; body: string; highlights: string[] }> = {
     history: {
       title: 'Legacy of Kalathmakam',
-      subtitle: 'Part of MGM\'s 41-Year Heritage of Excellence',
-      body: 'Kalathmakam is the flagship annual arts extravaganza of MGM Model School, Ayiroor — a school that has been shaping young minds for 41 years. This festival has grown into a prestigious stage where students discover their artistic calling in classical music, dance, literature, and fine arts.',
+      subtitle: 'Part of MGM\'s 42-Year Heritage of Excellence',
+      body: 'Kalathmakam is the flagship annual arts extravaganza of MGM Model School, Ayiroor — a school that has been shaping young minds for 42 years. This festival has grown into a prestigious stage where students discover their artistic calling in classical music, dance, literature, and fine arts.',
       highlights: [
-        'Part of MGM Model School\'s 41-year legacy of academic and cultural excellence.',
+        'Part of MGM Model School\'s 42-year legacy of academic and cultural excellence.',
         'Platform for 1500+ student participants across all categories annually.',
         'Evaluated by renowned artists, writers, and Kerala Kalamandalam experts.',
       ],

@@ -69,8 +69,8 @@ export const ContactSection: React.FC = () => {
                     <Phone className="w-5 h-5" />
                   </div>
                   <div>
-                    <strong className="text-[#111111] block font-bold">Helpline Numbers</strong>
-                    <span>+91 94470 12345 / +91 0470 2695200</span>
+                    <strong className="text-[#111111] block font-bold">Helpline Number</strong>
+                    <span>+91 90722 88314</span>
                   </div>
                 </div>
 
@@ -80,7 +80,7 @@ export const ContactSection: React.FC = () => {
                   </div>
                   <div>
                     <strong className="text-[#111111] block font-bold">Email Address</strong>
-                    <span>kalathmakam2k26@mgmayiroor.ac.in</span>
+                    <span>kavexa432@gmail.com</span>
                   </div>
                 </div>
 
