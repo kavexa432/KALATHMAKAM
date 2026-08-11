@@ -75,16 +75,17 @@ interface FestivalContextType {
   submitResult: (newResult: Omit<EventResultModel, 'id' | 'createdAt' | 'status'>) => void;
   verifyResult: (resultId: string) => void;
   publishResult: (resultId: string) => void;
-  deleteResult: (resultId: string) => void;
+  deleteResult: (resultId: string) => Promise<void>;
+  cleanupConflictingEvents: () => Promise<void>;
   publishEventWinners: (
     eventId: string,
     judgeNotes: string,
     winners: Array<{
-      position: '1st' | '2nd' | '3rd';
+      position: '1st' | '2nd' | '3rd' | 'Consolation' | 'Participation' | string;
       studentName: string;
       studentClass: string;
       houseId: HouseId;
-      points: number;
+      points?: number; // optional — recomputed automatically if omitted
     }>
   ) => Promise<void>;
   addAnnouncement: (content: string, type: AnnouncementType, priority: PriorityLevel, houseId?: HouseId, points?: number) => void;
@@ -509,11 +510,28 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           const canonicalEvents = [...initialEvents, ...houseEvents];
           const canonicalById = new Map(canonicalEvents.map((event) => [event.id, event]));
-          const sourceEvents = firestoreEvents.length > 0 ? firestoreEvents : canonicalEvents;
+          
+          // Create a name-to-canonical mapping to detect conflicts
+          const canonicalByName = new Map(canonicalEvents.map((event) => [event.eventName.toLowerCase(), event]));
+          
+          // Filter out Firestore events that conflict with canonical house events
+          const filteredFirestoreEvents = firestoreEvents.filter((fsEvent) => {
+            const canonicalEvent = canonicalByName.get(fsEvent.eventName?.toLowerCase());
+            // If there's a canonical event with same name that's a house event, exclude the Firestore version
+            if (canonicalEvent && canonicalEvent.houseWise && canonicalEvent.category === 'House Item') {
+              console.warn(`Excluding Firestore event "${fsEvent.eventName}" (${fsEvent.id}) - conflicts with canonical house event ${canonicalEvent.id}`);
+              return false;
+            }
+            return true;
+          });
+          
+          const sourceEvents = filteredFirestoreEvents.length > 0 
+            ? [...canonicalEvents, ...filteredFirestoreEvents] 
+            : canonicalEvents;
 
           const mergedEvents = sourceEvents.map((sourceEvent) => {
             const localEvent = canonicalById.get(sourceEvent.id) || sourceEvent;
-            const firestoreEvent = firestoreEvents.find((event) => event.id === localEvent.id);
+            const firestoreEvent = filteredFirestoreEvents.find((event) => event.id === localEvent.id);
             const rawMerged = firestoreEvent
               ? { ...localEvent, ...getOperationalEventFields(firestoreEvent) }
               : localEvent;
@@ -877,6 +895,40 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const cleanupConflictingEvents = async () => {
+    try {
+      const canonicalEvents = [...initialEvents, ...houseEvents];
+      const canonicalByName = new Map(canonicalEvents.map((event) => [event.eventName.toLowerCase(), event]));
+      
+      // Find Firestore events that conflict with canonical house events
+      const conflictingEvents = events.filter((event) => {
+        if (event.id.startsWith('evt-custom-')) {
+          const canonicalEvent = canonicalByName.get(event.eventName?.toLowerCase());
+          return canonicalEvent && canonicalEvent.houseWise && canonicalEvent.category === 'House Item';
+        }
+        return false;
+      });
+      
+      // Delete conflicting events from Firestore
+      for (const conflictEvent of conflictingEvents) {
+        await deleteDoc(doc(db, 'events', conflictEvent.id));
+        console.log(`Deleted conflicting event: ${conflictEvent.eventName} (${conflictEvent.id})`);
+      }
+      
+      if (conflictingEvents.length > 0) {
+        logAuditAction(
+          currentUser?.name || 'System',
+          currentUser?.role || 'admin',
+          'Cleaned Conflicting Events',
+          'System Maintenance',
+          `Removed ${conflictingEvents.length} custom events that conflicted with canonical house events`
+        );
+      }
+    } catch (e) {
+      console.error('Failed to cleanup conflicting events:', e);
+    }
+  };
+
   // Result Workflow Actions
   const submitResult = (newResultData: Omit<EventResultModel, 'id' | 'createdAt' | 'status'>) => {
     // Determine correct points based on the event's competitionType
@@ -974,73 +1026,141 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
-  const deleteResult = (resultId: string) => {
+  const deleteResult = async (resultId: string) => {
     const target = results.find((r) => r.id === resultId);
     if (!target) return;
 
-    // Remove from local state
-    setResults((prev) => prev.filter((r) => r.id !== resultId));
+    try {
+      // Remove from local state first
+      setResults((prev) => prev.filter((r) => r.id !== resultId));
 
-    // If this was the only result for the event, mark event as no longer having results
-    const remainingForEvent = results.filter((r) => r.id !== resultId && r.eventId === target.eventId);
-    if (remainingForEvent.length === 0) {
-      setEvents((prev) =>
-        prev.map((e) =>
-          e.id === target.eventId
-            ? { ...e, resultsPublished: false, winnerUploaded: false, housePointsUpdated: false }
-            : e
-        )
+      // If this was the only result for the event, mark event as no longer having results
+      const remainingForEvent = results.filter((r) => r.id !== resultId && r.eventId === target.eventId);
+      if (remainingForEvent.length === 0) {
+        setEvents((prev) =>
+          prev.map((e) =>
+            e.id === target.eventId
+              ? { ...e, resultsPublished: false, winnerUploaded: false, housePointsUpdated: false }
+              : e
+          )
+        );
+        
+        try {
+          await setDoc(doc(db, 'events', target.eventId), { 
+            resultsPublished: false, 
+            winnerUploaded: false, 
+            housePointsUpdated: false 
+          }, { merge: true });
+        } catch (eventError: any) {
+          console.warn('Failed to update event status, but result deleted locally:', eventError.message);
+        }
+      }
+
+      // Try to delete from Firestore
+      try {
+        await deleteDoc(doc(db, 'results', resultId));
+        console.log(`Successfully deleted result ${resultId} from Firestore`);
+      } catch (firestoreError: any) {
+        console.warn('Failed to delete from Firestore, but removed locally:', firestoreError.message);
+        
+        // Show user-friendly error if quota exceeded
+        if (firestoreError.code === 'resource-exhausted') {
+          alert('⚠️ Firebase quota exceeded. Result removed locally but may reappear after page refresh. Consider upgrading Firebase plan or try again later.');
+        } else {
+          alert(`⚠️ Delete partially failed: ${firestoreError.message}. Result removed from local view.`);
+        }
+      }
+
+      // Post a live activity feed notice so attendees see it was retracted
+      const deletionNotice: LiveActivityFeedItem = {
+        id: `feed-del-${Date.now()}`,
+        festivalId: '2k26',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'Stage Update',
+        priority: 'Important',
+        content: `⚠️ Result retracted: ${target.eventTitle} — ${target.position} place (${target.participantName}) has been removed by admin. Leaderboard updated.`,
+        houseId: target.houseId || 'NONE',
+        points: 0,
+        read: false,
+      };
+      setLiveFeed((prev) => [deletionNotice, ...prev]);
+
+      // Announce via the live feed
+      addAnnouncement(
+        `⚠️ Result Retracted: ${target.eventTitle} — ${target.position} place result for ${target.participantName} (${target.houseId || 'No House'}) has been removed. Scores have been updated.`,
+        'Stage Update',
+        'Important'
       );
-      setDoc(doc(db, 'events', target.eventId), { resultsPublished: false, winnerUploaded: false, housePointsUpdated: false }, { merge: true }).catch(console.error);
+
+      logAuditAction(
+        currentUser?.name || 'Admin',
+        currentUser?.role || 'admin',
+        'Deleted Result',
+        target.eventTitle,
+        `Removed ${target.position} place result for ${target.participantName} (${target.houseId || 'No House'}, -${target.points} pts)`
+      );
+      
+    } catch (error: any) {
+      console.error('Delete result failed:', error);
+      
+      // Restore the result to local state if complete deletion failed
+      setResults((prev) => [...prev, target]);
+      
+      // Show user-friendly error message
+      if (error.code === 'resource-exhausted') {
+        alert('❌ Cannot delete result: Firebase quota exceeded. Please try again later or upgrade your Firebase plan.');
+      } else {
+        alert(`❌ Delete failed: ${error.message}`);
+      }
     }
+  };
 
-    // Delete from Firestore
-    deleteDoc(doc(db, 'results', resultId)).catch(console.error);
-
-    // Post a live activity feed notice so attendees see it was retracted
-    const deletionNotice: LiveActivityFeedItem = {
-      id: `feed-del-${Date.now()}`,
-      festivalId: '2k26',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      type: 'Stage Update',
-      priority: 'Important',
-      content: `⚠️ Result retracted: ${target.eventTitle} — ${target.position} place (${target.participantName}) has been removed by admin. Leaderboard updated.`,
-      houseId: target.houseId,
-      points: 0,
-      read: false,
-    };
-    setLiveFeed((prev) => [deletionNotice, ...prev]);
-
-    // Announce via the live feed
-    addAnnouncement(
-      `⚠️ Result Retracted: ${target.eventTitle} — ${target.position} place result for ${target.participantName} (${target.houseId}) has been removed. Scores have been updated.`,
-      'Stage Update',
-      'Important'
-    );
-
-    logAuditAction(
-      currentUser?.name || 'Admin',
-      currentUser?.role || 'admin',
-      'Deleted Result',
-      target.eventTitle,
-      `Removed ${target.position} place result for ${target.participantName} (${target.houseId}, -${target.points} pts)`
-    );
+  /**
+   * Canonical Kalathmakam 2026 points formula.
+   *   group      → 1st=20, 2nd=15, 3rd=10  (Mime, Fusion Dance, Group Dance,
+   *                  Kaikottikali, Thiruvathira, Oppana, Group Song, Patriotic Song,
+   *                  National Anthem, One Act Play, PPT Cat II/III)
+   *   individual → 1st=10, 2nd=7,  3rd=5   (Anchoring, Declamation, Turn Coat,
+   *                  Western Music — solo reps for their house)
+   *   Consolation / Participation / non-house → 0 pts always
+   */
+  const calcHousePoints = (
+    position: string,
+    houseId: string,
+    competitionType: 'group' | 'individual' | 'team' | string | undefined
+  ): number => {
+    if (houseId === 'NONE') return 0;
+    if (position === 'Consolation' || position === 'Participation') return 0;
+    const type = competitionType || 'individual';
+    if (type === 'group') {
+      if (position === '1st') return 20;
+      if (position === '2nd') return 15;
+      if (position === '3rd') return 10;
+    } else {
+      // 'individual' or 'team' — same scale per the rules
+      if (position === '1st') return 10;
+      if (position === '2nd') return 7;
+      if (position === '3rd') return 5;
+    }
+    return 0;
   };
 
   const publishEventWinners = async (
     eventId: string,
     judgeNotes: string,
     winners: Array<{
-      position: '1st' | '2nd' | '3rd';
+      position: '1st' | '2nd' | '3rd' | 'Consolation' | 'Participation' | string;
       studentName: string;
       studentClass: string;
       houseId: HouseId;
-      points: number;
+      points?: number;
     }>
   ) => {
     const targetEvent = events.find((e) => e.id === eventId);
     const eventTitle = targetEvent?.eventName || 'Competition';
     const category = targetEvent?.category || 'General';
+
+    const compType = targetEvent?.competitionType;
 
     const newResults: EventResultModel[] = winners.map((w) => ({
       id: `res-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -1053,7 +1173,8 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       houseId: w.houseId,
       houseName: w.houseId,
       position: w.position,
-      points: w.points,
+      // Always recompute from official formula — ignore any caller-supplied points
+      points: calcHousePoints(w.position, w.houseId, compType),
       createdAt: new Date().toISOString(),
       status: 'Published',
       judgeNotes,
@@ -1321,6 +1442,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         verifyResult,
         publishResult,
         deleteResult,
+        cleanupConflictingEvents,
         publishEventWinners,
         addAnnouncement,
         deleteAnnouncement,
