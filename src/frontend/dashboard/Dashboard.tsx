@@ -16,6 +16,7 @@ import {
   Lock,
   Clock,
   Trash2,
+  Users,
 } from 'lucide-react';
 import { useFestival } from '../../shared/context/FestivalContext';
 import { ResultApprovalQueue } from './components/ResultApprovalQueue';
@@ -24,6 +25,7 @@ import { UserManagementTab } from './components/UserManagementTab';
 import { ResultSheetOCRModal } from './components/ResultSheetOCRModal';
 import { EventQuickActionModal } from './components/EventQuickActionModal';
 import { ScanResultPage } from './pages/ScanResultPage';
+import { VisitorAnalytics } from './components/VisitorAnalytics';
 import { cleanVenueName } from '../../utils/venueUtils';
 import { formatTime12Hour } from '../../utils/timeUtils';
 import type { AnnouncementType, PriorityLevel, HouseId, EventModel } from '../../shared/types/festivalTypes';
@@ -49,7 +51,7 @@ export const Dashboard: React.FC = () => {
   } = useFestival();
 
   const [activeTab, setActiveTab] = useState<
-    'Overview' | 'LiveControl' | 'ScanResult' | 'Results' | 'Leaderboard' | 'Announcements' | 'Schedules' | 'Reports' | 'UserManagement' | 'Settings' | 'QRScan' | 'AuditLogs'
+    'Overview' | 'LiveControl' | 'ScanResult' | 'Results' | 'Leaderboard' | 'Announcements' | 'Schedules' | 'Reports' | 'UserManagement' | 'Settings' | 'QRScan' | 'AuditLogs' | 'VisitorAnalytics'
   >('Overview');
 
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
@@ -379,6 +381,21 @@ export const Dashboard: React.FC = () => {
               >
                 <BarChart2 className="w-3.5 h-3.5 text-[#7A3CF5]" />
                 <span>Reports & Analytics</span>
+              </button>
+            )}
+
+            {/* ONLY Developer sees Visitor Analytics */}
+            {isDev && (
+              <button
+                onClick={() => setActiveTab('VisitorAnalytics')}
+                className={`px-5 py-2.5 rounded-full font-sans-manrope font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+                  activeTab === 'VisitorAnalytics'
+                    ? 'bg-[#111111] text-white shadow-sm'
+                    : 'bg-[#FAF8F5] text-[#5F5F5F] hover:text-[#111111] border border-black/5'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5 text-blue-500" />
+                <span>Visitor Analytics</span>
               </button>
             )}
           </div>
@@ -996,6 +1013,13 @@ export const Dashboard: React.FC = () => {
             </div>
           );
         })()}
+
+        {/* Visitor Analytics — Developer Only */}
+        {activeTab === 'VisitorAnalytics' && isDev && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/8 shadow-md">
+            <VisitorAnalytics />
+          </div>
+        )}
 
         {activeTab === 'ScanResult' && (
           <ScanResultPage onBackToDashboard={() => setActiveTab('Overview')} />

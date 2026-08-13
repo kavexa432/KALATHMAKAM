@@ -14,9 +14,13 @@ import { Dashboard } from './frontend/dashboard/Dashboard';
 import { LoginModal } from './shared/components/LoginModal';
 import { PromoModal } from './components/PromoModal';
 import { RegisterModal } from './components/RegisterModal';
+import { useVisitorTracking } from './shared/hooks/useVisitorTracking';
 import type { EventItem } from './data/eventsData';
 
 export function AppContent() {
+  // Track visitors automatically (IP + count) — no user prompts
+  useVisitorTracking();
+
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [promoModalOpen, setPromoModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
