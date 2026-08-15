@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, TrendingUp, Globe, RefreshCw } from 'lucide-react';
+import { Users, TrendingUp, Globe, RefreshCw, ExternalLink } from 'lucide-react';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 
@@ -135,9 +135,20 @@ export const VisitorAnalytics: React.FC = () => {
       {/* Visitors Table */}
       <div className="bg-white rounded-2xl border border-black/8 shadow-md overflow-hidden">
         <div className="px-6 py-4 border-b border-black/8">
-          <h4 className="font-sans-manrope font-bold text-sm text-[#111111] uppercase tracking-wider">
-            Recent Visitors (Last 100)
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4 className="font-sans-manrope font-bold text-sm text-[#111111] uppercase tracking-wider">
+              Recent Visitors (Last 100)
+            </h4>
+            <a
+              href="https://www.opentracker.net/feature/ip-tracker"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Open IP Tracker Tool
+            </a>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -158,6 +169,9 @@ export const VisitorAnalytics: React.FC = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-extrabold text-gray-600 uppercase tracking-wider">
                   Language
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-extrabold text-gray-600 uppercase tracking-wider">
+                  Track Location
                 </th>
               </tr>
             </thead>
@@ -182,17 +196,34 @@ export const VisitorAnalytics: React.FC = () => {
                     <td className="px-6 py-4 text-xs text-gray-500 font-medium">
                       {visitor.browserInfo?.language || 'Unknown'}
                     </td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={`https://www.opentracker.net/feature/ip-tracker?ip=${visitor.ip}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold transition-colors shadow-sm"
+                        title={`Track location for ${visitor.ip}`}
+                      >
+                        <Globe className="w-3.5 h-3.5" />
+                        Track IP
+                      </a>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
                     No visitor data yet. Visitors will appear here automatically.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Info Banner */}
+        <div className="px-6 py-3 bg-blue-50 border-t border-blue-200 text-xs text-blue-800">
+          <strong>💡 Tip:</strong> Click "Track IP" button to see accurate location, ISP, and network details for any visitor on OpenTracker.
         </div>
       </div>
 

@@ -34,9 +34,15 @@ export const LeaderboardSection: React.FC = () => {
       
       // Calculate recent points delta & wins for this house from results
       const houseResults = results.filter((r) => r.houseId === houseId && r.status === 'Published');
-      const recentDelta = houseResults.slice(0, 3).reduce((sum, r) => sum + r.points, 0);
+      // Sort by createdAt timestamp to get the actual most recent win
+      const sortedResults = [...houseResults].sort((a, b) => {
+        const timeA = new Date(a.createdAt || '').getTime();
+        const timeB = new Date(b.createdAt || '').getTime();
+        return timeB - timeA; // Most recent first
+      });
+      const recentDelta = sortedResults.slice(0, 3).reduce((sum, r) => sum + r.points, 0);
       const totalWins = houseResults.length;
-      const latestWin = houseResults.length > 0 ? houseResults[0].eventTitle : 'None yet';
+      const latestWin = sortedResults.length > 0 ? sortedResults[0].eventTitle : 'None yet';
 
       return {
         ...h,

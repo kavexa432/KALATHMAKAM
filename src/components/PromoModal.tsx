@@ -86,7 +86,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
         <div className="p-6 bg-[#FAF8F5] flex items-center justify-between text-xs font-sans-manrope text-[#5F5F5F]">
           <div className="flex items-center gap-2">
             <Volume2 className="w-4 h-4 text-[#FF5E84]" />
-            <span>Grand Arts Fest 2K26 • Jan 22 - 24, 2026</span>
+            <span>Grand Arts Fest 2K26 • 18th August 2026</span>
           </div>
           <button
             onClick={onClose}
