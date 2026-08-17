@@ -15,8 +15,8 @@ export const currentFestival: FestivalEdition = {
   id: '2k26',
   year: '2026',
   theme: 'Where Art Breathes, Talent Flourishes',
-  startDate: '2026-08-10',
-  endDate: '2026-08-12',
+  startDate: '2026-08-18',
+  endDate: '2026-08-20',
   status: 'Live',
 };
 

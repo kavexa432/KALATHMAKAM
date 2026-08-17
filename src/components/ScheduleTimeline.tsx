@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DAYS_LIST, SCHEDULE_DATA, DAY2_SCHEDULE_DATA } from '../data/scheduleData';
+import { DAYS_LIST, SCHEDULE_DATA, DAY2_SCHEDULE_DATA, DAY3_SCHEDULE_DATA, PREFEST_SCHEDULE_DATA } from '../data/scheduleData';
 import { Clock, MapPin, CheckCircle, Radio, Calendar, ChevronDown } from 'lucide-react';
 
 export const ScheduleTimeline: React.FC = () => {
@@ -12,7 +12,7 @@ export const ScheduleTimeline: React.FC = () => {
 
   const INITIAL_VISIBLE = 8;
 
-  const ALL_SCHEDULE = [...SCHEDULE_DATA, ...DAY2_SCHEDULE_DATA];
+  const ALL_SCHEDULE = [...SCHEDULE_DATA, ...DAY2_SCHEDULE_DATA, ...DAY3_SCHEDULE_DATA, ...PREFEST_SCHEDULE_DATA];
   const filteredScheduleByDay = ALL_SCHEDULE.filter((item) => item.day === activeDay);
   const uniqueStages = Array.from(new Set(filteredScheduleByDay.map(item => item.stage).filter(Boolean)));
 
@@ -79,25 +79,27 @@ export const ScheduleTimeline: React.FC = () => {
         </div>
 
         {/* Day Selector Tabs */}
-        <div className="flex items-center justify-center gap-2.5 mb-5 overflow-x-auto pb-1">
-          {DAYS_LIST.map((day) => (
-            <button
-              key={day}
-              onClick={() => handleDayChange(day)}
-              className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-sans-manrope font-extrabold transition-all cursor-pointer whitespace-nowrap ${
-                activeDay === day
-                  ? 'bg-gradient-to-r from-[#FF5E84] to-[#FF8A00] text-white shadow-md scale-105'
-                  : 'bg-white border border-black/10 text-[#5F5F5F] hover:text-[#111111]'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>{day}</span>
-            </button>
-          ))}
+        <div className="w-full overflow-x-auto scrollbar-hide mb-5">
+          <div className="flex items-center gap-2 pb-1 w-max mx-auto px-4">
+            {DAYS_LIST.map((day) => (
+              <button
+                key={day}
+                onClick={() => handleDayChange(day)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-sans-manrope font-extrabold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                  activeDay === day
+                    ? 'bg-gradient-to-r from-[#FF5E84] to-[#FF8A00] text-white shadow-md'
+                    : 'bg-white border border-black/10 text-[#5F5F5F] hover:text-[#111111]'
+                }`}
+              >
+                <Calendar className="w-3 h-3 shrink-0" />
+                <span>{day}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Session Filter */}
-        {activeDay.includes('Stages') && (
+        {(activeDay.includes('Competitions') || activeDay.includes('Inauguration')) && (
           <div className="flex items-center justify-center flex-wrap gap-2 mb-5">
             {(['Morning', 'Afternoon', 'All'] as const).map((s) => {
               const labels = {

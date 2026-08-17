@@ -82,7 +82,7 @@ export const LeaderboardSection: React.FC = () => {
       return {
         id: r.id,
         time: `${11 - (i % 5)}:${45 - (i % 8) * 5} AM`,
-        date: '05 Aug, 2026',
+        date: '18 Aug, 2026',
         categoryTag: getCategoryTag(r.category, r.eventTitle),
         competition: r.eventTitle,
         categoryType: r.category,
@@ -546,7 +546,7 @@ export const LeaderboardSection: React.FC = () => {
         <div className="mt-8 pt-4 border-t border-black/8 flex flex-wrap items-center justify-between gap-4 text-xs font-sans-manrope text-[#5F5F5F]">
           <div className="flex items-center gap-2">
             <RotateCw className="w-3.5 h-3.5 text-[#5F5F5F]" />
-            <span>Last updated: 11:45 AM, 05 Aug 2026</span>
+            <span>Last updated: Live • 18–20 Aug 2026</span>
           </div>
 
           <div className="flex items-center gap-2">

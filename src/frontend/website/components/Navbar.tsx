@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Shield, Lock, Settings, LogOut } from 'lucide-react';
+import { Menu, X, User, Shield, Lock, Settings, LogOut, Moon, Sun, Palette } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { NotificationDrawer } from './NotificationDrawer';
 import logoImage from '../../../assets/kalathmakam_2k26_logo.png';
@@ -14,6 +14,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notifDrawerOpen, setNotifDrawerOpen] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    return localStorage.getItem('kalathmakam_theme') || 'light';
+  });
   const { currentUser, logout } = useFestival();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -83,6 +87,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
 
   const isDev = currentUser?.role === 'developer' || currentUser?.role === 'Developer';
   const isAdmin = (currentUser?.role === 'admin' || currentUser?.role === 'Admin') && currentUser?.approved;
+  const canAccessThemes = isDev || isAdmin;
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', selectedTheme);
+    localStorage.setItem('kalathmakam_theme', selectedTheme);
+  }, [selectedTheme]);
+
+  const handleThemeChange = (theme: string) => {
+    setSelectedTheme(theme);
+  };
+
+  const themes = [
+    { id: 'light', name: 'Light Theme', icon: Sun, description: 'Clean & bright' },
+    { id: 'dark', name: 'Dark Theme', icon: Moon, description: 'Easy on eyes' },
+    { id: 'festival', name: 'Festival Theme', icon: Palette, description: 'Vibrant colors' },
+  ];
 
   return (
     <>
@@ -235,7 +256,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
                             </a>
                           )}
                           <button
-                            onClick={() => setUserDropdownOpen(false)}
+                            onClick={() => {
+                              setUserDropdownOpen(false);
+                              setShowSettingsModal(true);
+                            }}
                             className="w-full py-2 px-3 rounded-xl hover:bg-black/5 text-xs font-bold text-[#5F5F5F] flex items-center gap-2 transition-colors cursor-pointer"
                           >
                             <Settings className="w-3.5 h-3.5" />
@@ -394,6 +418,133 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLogin }) => {
         isOpen={notifDrawerOpen}
         onClose={() => setNotifDrawerOpen(false)}
       />
+
+      {/* Account Settings Modal */}
+      {showSettingsModal && (
+        <div
+          onClick={() => setShowSettingsModal(false)}
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[32px] max-w-2xl w-full p-7 border border-black/10 shadow-2xl space-y-6 text-left cursor-default"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-black/8 pb-4">
+              <div>
+                <h3 className="font-serif-cormorant font-bold text-2xl text-[#111111] flex items-center gap-2">
+                  <Settings className="w-6 h-6 text-[#FF5E84]" />
+                  Account Settings
+                </h3>
+                <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-1">
+                  Manage your profile and preferences
+                </p>
+              </div>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-[#111111] cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* User Profile Section */}
+            <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-black/8 space-y-3">
+              <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111] flex items-center gap-2">
+                <User className="w-4 h-4 text-[#FF5E84]" />
+                Profile Information
+              </h4>
+              <div className="flex items-center gap-4">
+                {currentUser?.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt="Avatar" className="w-14 h-14 rounded-full border-2 border-black/10" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#FF5E84] to-[#F59E0B] text-white flex items-center justify-center font-bold text-xl">
+                    {currentUser?.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h5 className="font-sans-manrope font-bold text-base text-[#111111]">{currentUser?.name}</h5>
+                  <p className="font-sans-manrope text-xs text-[#5F5F5F]">{currentUser?.email}</p>
+                  <span
+                    className={`inline-block mt-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                      isDev
+                        ? 'bg-blue-100 text-blue-800'
+                        : isAdmin
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    {currentUser?.role}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Theme Selection (Admin/Developer Only) */}
+            {canAccessThemes && (
+              <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-black/8 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-sans-manrope font-extrabold text-sm text-[#111111] flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-[#FF5E84]" />
+                    Theme Preferences
+                  </h4>
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 uppercase">
+                    {isDev ? 'Developer Only' : 'Admin Only'}
+                  </span>
+                </div>
+                <p className="font-sans-manrope text-xs text-[#5F5F5F]">
+                  Choose your preferred theme. This setting is only available to administrators and developers.
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {themes.map((theme) => {
+                    const Icon = theme.icon;
+                    const isActive = selectedTheme === theme.id;
+                    return (
+                      <button
+                        key={theme.id}
+                        onClick={() => handleThemeChange(theme.id)}
+                        className={`p-4 rounded-xl border-2 transition-all cursor-pointer text-left ${
+                          isActive
+                            ? 'border-[#FF5E84] bg-[#FF5E84]/5 shadow-sm'
+                            : 'border-black/10 bg-white hover:border-black/20'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            isActive ? 'bg-[#FF5E84] text-white' : 'bg-black/5 text-[#5F5F5F]'
+                          }`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          {isActive && (
+                            <span className="text-xs font-bold text-[#FF5E84]">✓ Active</span>
+                          )}
+                        </div>
+                        <h5 className="font-sans-manrope font-bold text-sm text-[#111111]">
+                          {theme.name}
+                        </h5>
+                        <p className="font-sans-manrope text-[11px] text-[#5F5F5F] mt-0.5">
+                          {theme.description}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Footer Actions */}
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-black/8">
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="px-5 py-2.5 rounded-xl bg-[#111111] hover:bg-black text-white font-sans-manrope font-bold text-xs cursor-pointer transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

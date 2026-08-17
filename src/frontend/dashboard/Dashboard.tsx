@@ -450,7 +450,7 @@ export const Dashboard: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">📅</span>
                     <h3 className="font-serif-cormorant font-bold text-2xl sm:text-3xl text-[#111111]">
-                      Today's Schedule (10 August 2026)
+                      Today's Schedule (18 August 2026)
                     </h3>
                   </div>
                   <p className="font-sans-manrope text-xs text-[#5F5F5F]">

@@ -11,25 +11,23 @@
     --text-main: #111111;
     --text-muted: #5F5F5F;
 
-    /* Exact House Branding Colors */
-    --house-nova: #EF4444;   /* Red */
-    --house-vega: #F59E0B;   /* Yellow */
-    --house-orion: #3B82F6;  /* Blue */
-    --house-astra: #10B981;  /* Green */
+    --house-nova: #EF4444;
+    --house-vega: #F59E0B;
+    --house-orion: #3B82F6;
+    --house-astra: #10B981;
   }
 
   html {
     scroll-behavior: smooth;
     font-family: 'Manrope', sans-serif;
-    background-color: #FAF8F5;
+    background-color: var(--bg-paper);
     color: var(--text-main);
   }
 
   body {
     overflow-x: hidden;
-    background-color: #FAF8F5;
-    /* Subtle 2% luxury paper grain noise texture */
-    background-image: 
+    background-color: var(--bg-paper);
+    background-image:
       radial-gradient(at 15% 15%, rgba(255, 94, 132, 0.04) 0px, transparent 50%),
       radial-gradient(at 85% 25%, rgba(245, 158, 11, 0.04) 0px, transparent 50%),
       radial-gradient(at 50% 75%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
@@ -37,52 +35,43 @@
   }
 }
 
-/* Custom Typography Utilities */
-.font-serif-cormorant {
-  font-family: 'Cormorant Garamond', serif;
-}
+/* ─── Typography ─────────────────────────────────────────── */
+.font-serif-cormorant { font-family: 'Cormorant Garamond', serif; }
+.font-sans-manrope    { font-family: 'Manrope', sans-serif; }
+.font-malayalam       { font-family: 'Noto Serif Malayalam', serif; }
 
-.font-sans-manrope {
-  font-family: 'Manrope', sans-serif;
-}
-
-.font-malayalam {
-  font-family: 'Noto Serif Malayalam', serif;
-}
-
-/* Glassmorphism primitives */
+/* ─── Glass primitives ───────────────────────────────────── */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255,255,255,0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
 }
 
 .glass-nav {
-  background: rgba(250, 248, 245, 0.94);
+  background: rgba(250,248,245,0.94);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255,255,255,0.82);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.03);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255,255,255,0.95);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.03);
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
 }
-
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255,255,255,0.96);
   transform: translateY(-4px);
-  box-shadow: 0 20px 45px rgba(255, 94, 132, 0.12);
-  border-color: rgba(255, 94, 132, 0.3);
+  box-shadow: 0 20px 45px rgba(255,94,132,0.12);
+  border-color: rgba(255,94,132,0.3);
 }
 
-/* Gradient Utilities */
+/* ─── Gradient utilities ─────────────────────────────────── */
 .gradient-text-pink {
   background: linear-gradient(135deg, #FF6584 0%, #FFA040 100%);
   -webkit-background-clip: text;
@@ -91,56 +80,143 @@
 
 .gradient-btn-primary {
   background: linear-gradient(135deg, #FF6B8B 0%, #FFA033 100%);
-  box-shadow: 0 4px 15px rgba(255, 94, 132, 0.2);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(255,94,132,0.2);
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
 }
-
 .gradient-btn-primary:hover {
-  box-shadow: 0 8px 25px rgba(255, 94, 132, 0.35);
+  box-shadow: 0 8px 25px rgba(255,94,132,0.35);
   transform: translateY(-2.5px);
 }
 
-/* Hardware Accelerated Crisp Transforms */
+/* ─── GPU render ─────────────────────────────────────────── */
 .gpu-render {
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform;
 }
 
-/* Micro Animations */
+/* ─── Animations ─────────────────────────────────────────── */
 @keyframes gentleFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-3px); }
+  0%,100% { transform: translateY(0px); }
+  50%     { transform: translateY(-3px); }
 }
-
 @keyframes floatPetal {
-  0% { transform: translateY(0px) rotate(0deg); opacity: 0.15; }
-  50% { transform: translateY(-10px) rotate(15deg); opacity: 0.35; }
-  100% { transform: translateY(0px) rotate(0deg); opacity: 0.15; }
+  0%   { transform: translateY(0px) rotate(0deg);   opacity: 0.15; }
+  50%  { transform: translateY(-10px) rotate(15deg); opacity: 0.35; }
+  100% { transform: translateY(0px) rotate(0deg);   opacity: 0.15; }
+}
+.animate-gentle-float { animation: gentleFloat 11s ease-in-out infinite; }
+.animate-petal-float  { animation: floatPetal  9s  ease-in-out infinite; }
+
+/* ─── Hide scrollbar helper ──────────────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ─── Custom scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: #FAF8F5; }
+::-webkit-scrollbar-thumb { background: rgba(255,94,132,0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,94,132,0.6); }
+
+/* ═══════════════════════════════════════════════════════════
+   DARK THEME
+   Applied via:  document.documentElement.setAttribute('data-theme','dark')
+   Strategy: override only simple class selectors — no escaped
+   brackets which break Tailwind v4's CSS parser.
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  background-color: #0A0A0A;
+  color: #E8E8E8;
 }
 
-.animate-gentle-float {
-  animation: gentleFloat 11s ease-in-out infinite;
+[data-theme="dark"] body {
+  background-color: #0A0A0A !important;
+  color: #E8E8E8 !important;
+  background-image: none !important;
 }
 
-.animate-petal-float {
-  animation: floatPetal 9s ease-in-out infinite;
+/* Section / page backgrounds */
+[data-theme="dark"] section,
+[data-theme="dark"] header,
+[data-theme="dark"] footer,
+[data-theme="dark"] main {
+  background-color: #0A0A0A !important;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 7px;
+/* White card surfaces */
+[data-theme="dark"] .bg-white {
+  background-color: #161616 !important;
 }
 
-::-webkit-scrollbar-track {
-  background: #FAF8F5;
+/* Nav */
+[data-theme="dark"] .glass-nav {
+  background: rgba(10,10,10,0.96) !important;
+  border-bottom-color: rgba(255,255,255,0.08) !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 94, 132, 0.3);
-  border-radius: 4px;
+/* Cards */
+[data-theme="dark"] .glass-card {
+  background: rgba(22,22,22,0.92) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+[data-theme="dark"] .glass-card:hover {
+  background: rgba(30,30,30,0.96) !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 94, 132, 0.6);
+/* Headings & body text */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: #F0F0F0 !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] li {
+  color: #C0C0C0 !important;
+}
+
+/* Inputs */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: #1E1E1E !important;
+  color: #E8E8E8 !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #666666 !important;
+}
+
+/* Borders */
+[data-theme="dark"] .border-black {
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+/* Scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-track { background: #0A0A0A; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,94,132,0.4); }
+
+/* Keep accent colors vivid */
+[data-theme="dark"] .text-white  { color: #ffffff !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   FESTIVAL THEME
+   ═══════════════════════════════════════════════════════════ */
+[data-theme="festival"] body {
+  background-color: #FFF0F4 !important;
+}
+[data-theme="festival"] .glass-nav {
+  background: rgba(255,240,244,0.94) !important;
+}
+[data-theme="festival"] .gradient-btn-primary {
+  background: linear-gradient(135deg, #FF1654 0%, #FFB800 100%) !important;
 }

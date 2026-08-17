@@ -11,7 +11,7 @@ export const FestivalControlCenter: React.FC = () => {
 
   // Only consider today's scheduled stage events (not house items) for the live display
   const todayEvents = events.filter(
-    (e) => e.date === '2026-08-10' && e.category !== 'House Item' && e.category !== 'Ceremony' && !e.cancelled
+    (e) => e.date === '2026-08-18' && e.category !== 'House Item' && e.category !== 'Ceremony' && !e.cancelled
   );
 
   // Find active live event or fallback to next upcoming today
@@ -58,7 +58,7 @@ export const FestivalControlCenter: React.FC = () => {
                   </span>
                 </div>
                 <p className="font-sans-manrope text-xs text-[#5F5F5F] mt-0.5">
-                  Real-time Festival Status • Day 2 • MGM Ayiroor
+                  Real-time Festival Status • 18–20 Aug 2026 • MGM Ayiroor
                 </p>
               </div>
             </div>
