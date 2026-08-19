@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../../config/firebase';
 import { cleanVenueName } from '../../utils/venueUtils';
+import { computeStandardCompetitionRanks } from '../utils/ranking';
 
 import type {
   FestivalEdition,
@@ -63,6 +64,7 @@ interface FestivalContextType {
   // Computed Engine Functions
   getHousePoints: (houseId: HouseId, day?: LeaderboardDay) => number;
   getHouseRank: (houseId: HouseId) => number;
+  getHouseRankInfo: (houseId: HouseId) => { rank: number; isTied: boolean; tiedCount: number; tiedWith: HouseId[]; points: number };
   getHouseMedals: (houseId: HouseId) => { gold: number; silver: number; bronze: number; total: number };
   
   // Workflow Actions
@@ -705,13 +707,23 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const getHouseRank = (houseId: HouseId): number => {
-    const standings = houses.map((h) => ({
+    const raw = houses.map((h) => ({
       id: h.id,
       points: getHousePoints(h.id),
     }));
-    standings.sort((a, b) => b.points - a.points);
-    const index = standings.findIndex((h) => h.id === houseId);
-    return index !== -1 ? index + 1 : 4;
+    const ranked = computeStandardCompetitionRanks(raw);
+    const found = ranked.find((h) => h.id === houseId);
+    return found ? found.rank : 4;
+  };
+
+  const getHouseRankInfo = (houseId: HouseId) => {
+    const raw = houses.map((h) => ({
+      id: h.id,
+      points: getHousePoints(h.id),
+    }));
+    const ranked = computeStandardCompetitionRanks(raw);
+    const found = ranked.find((h) => h.id === houseId);
+    return found || { id: houseId, points: 0, rank: 4, isTied: false, tiedCount: 1, tiedWith: [] };
   };
 
   // Note: signInWithRedirect is NOT used — it causes "missing initial state" errors
@@ -1431,6 +1443,7 @@ export const FestivalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         archiveMode,
         getHousePoints,
         getHouseRank,
+        getHouseRankInfo,
         getHouseMedals,
         delayEvent,
         addEvent,

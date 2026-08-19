@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FestivalProvider } from './shared/context/FestivalContext';
 import { Navbar } from './frontend/website/components/Navbar';
 import { Hero } from './frontend/website/components/Hero';
@@ -14,6 +14,7 @@ import { Dashboard } from './frontend/dashboard/Dashboard';
 import { LoginModal } from './shared/components/LoginModal';
 import { PromoModal } from './components/PromoModal';
 import { RegisterModal } from './components/RegisterModal';
+import { DisplayPage } from './frontend/website/pages/DisplayPage';
 import { useVisitorTracking } from './shared/hooks/useVisitorTracking';
 import type { EventItem } from './data/eventsData';
 
@@ -25,6 +26,26 @@ export function AppContent() {
   const [promoModalOpen, setPromoModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [selectedRegisterEvent] = useState<EventItem | null>(null);
+
+  const [isDisplayMode, setIsDisplayMode] = useState(() => {
+    return window.location.pathname === '/display' || window.location.search.includes('display') || window.location.hash === '#display';
+  });
+
+  useEffect(() => {
+    const checkDisplayMode = () => {
+      setIsDisplayMode(window.location.pathname === '/display' || window.location.search.includes('display') || window.location.hash === '#display');
+    };
+    window.addEventListener('popstate', checkDisplayMode);
+    window.addEventListener('hashchange', checkDisplayMode);
+    return () => {
+      window.removeEventListener('popstate', checkDisplayMode);
+      window.removeEventListener('hashchange', checkDisplayMode);
+    };
+  }, []);
+
+  if (isDisplayMode) {
+    return <DisplayPage />;
+  }
 
   const handleViewResults = () => {
     const el = document.getElementById('results');

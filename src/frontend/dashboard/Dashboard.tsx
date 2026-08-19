@@ -28,6 +28,7 @@ import { ScanResultPage } from './pages/ScanResultPage';
 import { VisitorAnalytics } from './components/VisitorAnalytics';
 import { cleanVenueName } from '../../utils/venueUtils';
 import { formatTime12Hour } from '../../utils/timeUtils';
+import { computeStandardCompetitionRanks, getRankMedal } from '../../shared/utils/ranking';
 import type { AnnouncementType, PriorityLevel, HouseId, EventModel } from '../../shared/types/festivalTypes';
 
 export const Dashboard: React.FC = () => {
@@ -429,16 +430,27 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-black/8 shadow-2xs">
-                <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">Leaderboard Leader</span>
-                <div className="font-serif-cormorant font-bold text-2xl text-[#EF4444] truncate">
-                  {(() => {
-                    const topHouse = [...houses]
-                      .map((h) => ({ ...h, pts: getHousePoints(h.id) }))
-                      .sort((a, b) => b.pts - a.pts)[0];
-                    if (!topHouse || topHouse.pts === 0) return 'No Results Yet (0 Pts)';
-                    return `${topHouse.name} (${topHouse.pts} Pts)`;
-                  })()}
-                </div>
+                {(() => {
+                  const rawHouses = houses.map((h) => ({ ...h, points: getHousePoints(h.id) }));
+                  const ranked = computeStandardCompetitionRanks(rawHouses);
+                  const leaders = ranked.filter((h) => h.rank === 1 && h.points > 0);
+                  const isTied = leaders.length > 1;
+
+                  return (
+                    <>
+                      <span className="text-[10px] font-bold text-[#5F5F5F] uppercase">
+                        {isTied ? 'Co-Leaders (Tied)' : 'Leaderboard Leader'}
+                      </span>
+                      <div className="font-serif-cormorant font-bold text-2xl text-[#EF4444] truncate">
+                        {leaders.length === 0
+                          ? 'No Results Yet (0 Pts)'
+                          : isTied
+                          ? `${leaders.map((l) => l.name).join(' & ')} (${leaders[0].points} Pts)`
+                          : `${leaders[0].name} (${leaders[0].points} Pts)`}
+                      </div>
+                    </>
+                  );
+                })()}
                 <span className="text-[11px] text-[#10B981] font-bold">Updated Live</span>
               </div>
             </div>
@@ -901,11 +913,13 @@ export const Dashboard: React.FC = () => {
           const reportPending = eventsAwaitingResults.length;
           const reportDrafts = resultDrafts.length;
           const reportAdmins = users.filter((u) => u.role === 'admin' || u.role === 'Admin' || u.role === 'developer' || u.role === 'Developer').length;
-          const houseData = (['NOVA', 'VEGA', 'ORION', 'ASTRA'] as const).map((id) => ({
+          const rawHouseData = (['NOVA', 'VEGA', 'ORION', 'ASTRA'] as const).map((id) => ({
             id,
+            points: getHousePoints(id),
             pts: getHousePoints(id),
             color: id === 'NOVA' ? '#EF4444' : id === 'VEGA' ? '#F59E0B' : id === 'ORION' ? '#3B82F6' : '#10B981',
-          })).sort((a, b) => b.pts - a.pts);
+          }));
+          const houseData = computeStandardCompetitionRanks(rawHouseData);
           const maxPts = Math.max(...houseData.map((h) => h.pts), 1);
           return (
             <div className="bg-[#FAF8F5] rounded-3xl p-8 border border-black/8 shadow-md text-left space-y-6">
@@ -961,10 +975,12 @@ export const Dashboard: React.FC = () => {
                   </span>
                 </div>
                 <div className="space-y-3">
-                  {houseData.map((house, i) => (
+                  {houseData.map((house) => (
                     <div key={house.id} className="flex items-center gap-3">
-                      <span className="text-xs font-extrabold w-14 font-sans-manrope">
-                        {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '  '} {house.id}
+                      <span className="text-xs font-extrabold w-20 font-sans-manrope flex items-center gap-1">
+                        <span>{getRankMedal(house.rank)}</span>
+                        <span>{house.id}</span>
+                        {house.isTied && <span className="text-[9px] text-[#5F5F5F] font-bold">(Tied)</span>}
                       </span>
                       <div className="flex-1 h-2 bg-black/6 rounded-full overflow-hidden">
                         <div

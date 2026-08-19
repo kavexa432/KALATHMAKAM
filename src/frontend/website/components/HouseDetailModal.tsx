@@ -3,6 +3,7 @@ import { X, Trophy, Award, Users, Star, Shield, Flag } from 'lucide-react';
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
+import { getModalRankBadge } from '../../../shared/utils/ranking';
 
 // Official House Emblem Images
 import vegaEmblem from '../../../assets/houses/vega.png';
@@ -24,7 +25,7 @@ interface HouseDetailModalProps {
 }
 
 export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onClose }) => {
-  const { houses, getHousePoints, getHouseRank, getHouseMedals, results } = useFestival();
+  const { houses, getHousePoints, getHouseRankInfo, getHouseMedals, results } = useFestival();
 
   // Press ESC to close modal
   useEffect(() => {
@@ -44,13 +45,13 @@ export const HouseDetailModal: React.FC<HouseDetailModalProps> = ({ houseId, onC
 
   const colorInfo = houseColors[houseId];
   const points = getHousePoints(houseId);
-  const rank = getHouseRank(houseId);
+  const rankInfo = getHouseRankInfo(houseId);
   const medals = getHouseMedals(houseId);
 
   // House specific verified results
   const houseResults = results.filter((r) => r.houseId === houseId && r.status === 'Published');
 
-  const rankBadge = rank === 1 ? '🥇 1st Rank' : rank === 2 ? '🥈 2nd Rank' : rank === 3 ? '🥉 3rd Rank' : '⭐ 4th Rank';
+  const rankBadge = getModalRankBadge(rankInfo.rank, rankInfo.isTied);
 
   return (
     <div

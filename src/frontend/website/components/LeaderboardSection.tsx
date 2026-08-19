@@ -3,6 +3,7 @@ import { Trophy, TrendingUp, Info, ArrowRight, RotateCw, Clock, Filter, Building
 import { useFestival } from '../../../shared/context/FestivalContext';
 import { houseColors } from '../../../shared/tokens/designTokens';
 import type { HouseId } from '../../../shared/types/festivalTypes';
+import { calculateHouseStandings, getLeaderSummary } from '../../../shared/utils/ranking';
 import { HouseDetailModal } from './HouseDetailModal';
 
 // Official House Emblem Images
@@ -25,39 +26,10 @@ export const LeaderboardSection: React.FC = () => {
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('All');
   const [showPointSystemModal, setShowPointSystemModal] = useState(false);
 
-  // Compute Live House Standings dynamically from Firebase Results (sorted highest to lowest)
-  const standings = houses
-    .map((h) => {
-      const houseId = h.id as HouseId;
-      const pts = getHousePoints(houseId);
-      const medals = getHouseMedals(houseId);
-      
-      // Calculate recent points delta & wins for this house from results
-      const houseResults = results.filter((r) => r.houseId === houseId && r.status === 'Published');
-      // Sort by createdAt timestamp to get the actual most recent win
-      const sortedResults = [...houseResults].sort((a, b) => {
-        const timeA = new Date(a.createdAt || '').getTime();
-        const timeB = new Date(b.createdAt || '').getTime();
-        return timeB - timeA; // Most recent first
-      });
-      const recentDelta = sortedResults.slice(0, 3).reduce((sum, r) => sum + r.points, 0);
-      const totalWins = houseResults.length;
-      const latestWin = sortedResults.length > 0 ? sortedResults[0].eventTitle : 'None yet';
-
-      return {
-        ...h,
-        points: pts,
-        medals,
-        totalWins,
-        latestWin,
-        recentDelta,
-      };
-    })
-    .sort((a, b) => b.points - a.points);
-
-  const leaderHouse = standings[0];
-  const secondHouse = standings[1];
-  const leadPointsDiff = leaderHouse.points - (secondHouse ? secondHouse.points : 0);
+  // Compute Live House Standings dynamically with Standard Competition Ranking (1224 rule)
+  const standings = calculateHouseStandings(houses, getHousePoints, getHouseMedals, results);
+  const leaderSummary = getLeaderSummary(standings);
+  const leaderHouse = standings[0] || houses[0];
   const maxPoints = Math.max(...standings.map((s) => s.points), 1);
 
   const getCategoryTag = (category: string, eventTitle: string) => {
@@ -221,33 +193,44 @@ export const LeaderboardSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Current Leader Card (Right Header) */}
+          {/* Current Leader / Co-Champions Card (Right Header) */}
           <div className="w-full lg:w-auto shrink-0">
             <div className="bg-gradient-to-br from-[#111111] to-[#2B2B2B] text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-white/20 flex items-center gap-4 text-left relative overflow-hidden">
               <div className="absolute -right-4 -bottom-4 opacity-15 pointer-events-none">
                 <Trophy className="w-24 h-24 text-[#F59E0B]" />
               </div>
 
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#F59E0B] to-[#FFA033] p-0.5 shrink-0 shadow-md">
-                <div className="w-full h-full bg-[#111111] rounded-[10px] flex items-center justify-center">
-                  <img
-                    src={houseEmblems[leaderHouse.id as HouseId]}
-                    alt={leaderHouse.name}
-                    className="w-8 h-8 object-contain"
-                  />
-                </div>
+              {/* House Emblem(s) - Supports Multiple Emblems for Co-Champions */}
+              <div className="flex items-center -space-x-3 shrink-0">
+                {leaderSummary.leaders.map((leader) => (
+                  <div
+                    key={leader.id}
+                    className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#F59E0B] to-[#FFA033] p-0.5 shrink-0 shadow-md ring-2 ring-[#111111]"
+                    title={`House ${leader.name}`}
+                  >
+                    <div className="w-full h-full bg-[#111111] rounded-[10px] flex items-center justify-center p-1">
+                      <img
+                        src={houseEmblems[leader.id as HouseId]}
+                        alt={leader.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="space-y-0.5">
                 <div className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-[#F59E0B]">
                   <Crown className="w-3.5 h-3.5" />
-                  <span>CURRENT CHAMPION</span>
+                  <span>{leaderSummary.headerTitle}</span>
                 </div>
                 <h4 className="font-sans-manrope font-black text-lg text-white">
-                  HOUSE {leaderHouse.name} • {leaderHouse.points} PTS
+                  {leaderSummary.isTied
+                    ? `HOUSE ${leaderSummary.leaderNames} • ${leaderSummary.points} PTS`
+                    : `HOUSE ${leaderHouse.name} • ${leaderHouse.points} PTS`}
                 </h4>
                 <p className="font-sans-manrope text-[11px] text-white/70">
-                  {leadPointsDiff > 0 ? `Leading by +${leadPointsDiff} PTS ahead of 2nd place` : 'Tied for 1st place'}
+                  {leaderSummary.headerSubtitle}
                 </p>
               </div>
             </div>
@@ -255,20 +238,12 @@ export const LeaderboardSection: React.FC = () => {
 
         </div>
 
-        {/* Dynamic Top 4 House Cards Row (Compact 260px Height, Left-Aligned, Rich Info) */}
+        {/* Dynamic Top 4 House Cards Row (Standard Competition Ranking with Tied Badges & Crowns) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-          {standings.map((h, index) => {
+          {standings.map((h) => {
             const houseId = h.id as HouseId;
             const colorInfo = houseColors[houseId];
-            const isFirstRank = index === 0;
-
-            const rankBadge = index === 0
-              ? { text: '1st', bg: 'bg-[#F59E0B]', textColor: 'text-white', border: 'border-[#F59E0B]' }
-              : index === 1
-              ? { text: '2nd', bg: 'bg-slate-200', textColor: 'text-slate-800', border: 'border-slate-300' }
-              : index === 2
-              ? { text: '3rd', bg: 'bg-amber-200', textColor: 'text-amber-900', border: 'border-amber-300' }
-              : { text: '4th', bg: 'bg-slate-100', textColor: 'text-slate-600', border: 'border-slate-200' };
+            const isFirstRank = h.rank === 1;
 
             return (
               <div
@@ -284,17 +259,18 @@ export const LeaderboardSection: React.FC = () => {
                   borderTopColor: colorInfo.primary,
                 }}
               >
-                {/* Crown Icon on Top Edge for 1st Rank Leader */}
+                {/* Crown Icon on Top Edge for all 1st Rank Houses (including shared co-leaders) */}
                 {isFirstRank && (
-                  <div className="absolute -top-3 left-6 bg-[#F59E0B] text-white p-1 rounded-full shadow-xs">
+                  <div className="absolute -top-3 left-6 bg-[#F59E0B] text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
                     <Crown className="w-3.5 h-3.5" />
+                    {h.isTied && <span className="text-[9px] font-black uppercase tracking-wider">TIED</span>}
                   </div>
                 )}
 
                 {/* Card Top Header: Rank Badge Right + House Logo Left */}
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-center gap-3">
-                    {/* Compact Scaled Emblem Circle (22% smaller) */}
+                    {/* Compact Scaled Emblem Circle */}
                     <div className="w-12 h-12 rounded-xl bg-white border border-black/8 shadow-2xs flex items-center justify-center p-1.5 shrink-0 group-hover:scale-105 transition-transform">
                       <img
                         src={houseEmblems[houseId]}
@@ -310,14 +286,16 @@ export const LeaderboardSection: React.FC = () => {
                         {h.name}
                       </h3>
                       <span className="font-sans-manrope text-[11px] text-[#5F5F5F] font-semibold">
-                        {h.totalWins} Victories
+                        {h.totalWins} Victories {h.isTied && `• ${h.rankDisplay}`}
                       </span>
                     </div>
                   </div>
 
                   {/* Rank Pill Badge Top Right */}
-                  <span className={`text-base font-sans-manrope font-black px-3 py-1.5 rounded-full uppercase tracking-wider border-2 ${rankBadge.bg} ${rankBadge.textColor} ${rankBadge.border} shadow-sm`}>
-                    {rankBadge.text}
+                  <span
+                    className={`text-sm font-sans-manrope font-black px-3 py-1.5 rounded-full uppercase tracking-wider border-2 ${h.badge.bg} ${h.badge.textColor} ${h.badge.border} shadow-sm`}
+                  >
+                    {h.badge.text}
                   </span>
                 </div>
 
